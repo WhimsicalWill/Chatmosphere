@@ -2,6 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Bot from './components/Bot';
 
+// Material UI imports
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import ChatIcon from '@mui/icons-material/Chat';
+
 function App() {
   const [conversations, setConversations] = useState({
     "Conversation 1": [
@@ -42,26 +47,31 @@ function App() {
   return (
     <div className="container">
       <div className="sidebar">
-        <button
-          onClick={() => {
-            const name = prompt("Enter the name of the new conversation:");
-            if (name) {
-              addConversation(name);
-            }
-          }}
-        >
-          New Conversation
-        </button>
-        <ul>
-          {Object.keys(conversations).map((conversationName, index) => (
-            <li
-              key={index}
-              onClick={() => setCurrentConversation(conversationName)}
-              className={currentConversation === conversationName ? "active" : ""}
-            >
-              {conversationName}
-            </li>
-          ))}
+        <div className="new-chat">
+          <div className="add-conversation-button">
+              <IconButton
+                  onClick={() => {
+                      const name = prompt("Enter the name of the new conversation:");
+                      if (name) {
+                          addConversation(name);
+                      }
+                  }}
+              >
+                  <AddIcon />
+              </IconButton>
+          </div>
+          <span>New conversation</span>
+        </div>
+        <ul className="conversation-list">
+            {Object.keys(conversations).map((conversationName, index) => (
+                <li
+                    key={index}
+                    onClick={() => setCurrentConversation(conversationName)}
+                    className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
+                >
+                    <ChatIcon className='chat-icon' /> {conversationName}
+                </li>
+            ))}
         </ul>
       </div>
       <div className="main">
