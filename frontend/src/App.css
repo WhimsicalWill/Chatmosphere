@@ -1,0 +1,65 @@
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;  /* Change the font */
+    color: #333;  /* Dark grey for the text color */
+    background-color: #f0f0f0;  /* Light grey for the background color */
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 300px;
+    border-right: 1px solid #ddd; /* Lighter border color */
+    padding: 20px; /* Add some padding */
+    background-color: #f5f5f5; /* Light grey background */
+    height: 100vh; /* Full height sidebar */
+    overflow: auto; /* Enable scroll if content exceeds the height */
+}
+
+.sidebar h2 {
+    color: #333; /* Dark grey color for the header */
+    font-size: 1.2em; /* Increase the font size a bit */
+}
+
+.sidebar ul {
+    list-style-type: none; /* Remove default bullet points */
+    padding: 0; /* Remove default padding */
+}
+
+.sidebar ul li {
+    padding: 10px; /* Add some padding to each list item */
+    border-radius: 5px; /* Round the corners a bit */
+    margin-bottom: 10px; /* Add some space between list items */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.sidebar ul li:hover {
+    background-color: #ddd; /* Change background color when hovered over */
+    cursor: pointer; /* Change cursor style when hovered over */
+}
+
+.main {
+    flex-grow: 1;
+    padding: 20px; /* Add some padding */
+}
+
+.chat-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    max-width: 60%;  /* Limit the width of chat messages */
+    clear: both;  /* Clear floats */
+}
+
+.chat-message.user {
+    background-color: #d0d0d0;
+    float: right;  /* Align user messages to the right */
+    margin-right: 20px;  /* Add some space on the right */
+}
+
+.chat-message.bot {
+    background-color: #a0a0ff;
+    float: left;  /* Align bot messages to the left */
+    margin-left: 20px;  /* Add some space on the left */
+}
