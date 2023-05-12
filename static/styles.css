@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+}
+
+#sidebar {
+    width: 300px;
+    border-right: 1px solid black;
+    padding: 10px;
+}
+
+#new-conversation-button {
+    margin-bottom: 10px;
+}
+
+#chat {
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.chat-message.user {
+    background-color: #d0d0d0;
+    align-self: flex-start;
+}
+
+.chat-message.bot {
+    background-color: #a0a0ff;
+    align-self: flex-end;
+}
