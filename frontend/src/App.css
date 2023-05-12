@@ -1,11 +1,14 @@
 body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;  /* Change the font */
-    color: #333;  /* Dark grey for the text color */
-    background-color: #f0f0f0;  /* Light grey for the background color */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+    background-color: #f0f0f0;
+    margin: 0;  /* Remove default margin */
 }
 
 .container {
     display: flex;
+    height: 100vh;  /* Make the container exactly as tall as the viewport */
+    overflow: hidden;  
 }
 
 .sidebar {
@@ -13,7 +16,6 @@ body {
     border-right: 1px solid #ddd; /* Lighter border color */
     padding: 20px; /* Add some padding */
     background-color: #f5f5f5; /* Light grey background */
-    height: 100vh; /* Full height sidebar */
     overflow: auto; /* Enable scroll if content exceeds the height */
 }
 
@@ -40,16 +42,26 @@ body {
 }
 
 .main {
-    flex-grow: 1;
-    padding: 20px; /* Add some padding */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    width: calc(100% - 300px);  /* Subtract sidebar width */
+    box-sizing: border-box;  /* Include padding in height calculation */
+    overflow: hidden; 
+}
+
+.chat-messages {
+    flex-grow: 1;  /* make the chat-messages container grow to take up any remaining space */
+    overflow-y: auto;  /* add scroll if the content exceeds the height */
+    margin-bottom: 20px;  /* add some space at the bottom */
 }
 
 .chat-message {
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    max-width: 60%;  /* Limit the width of chat messages */
-    clear: both;  /* Clear floats */
+    max-width: 60%;
+    clear: both;
 }
 
 .chat-message.user {
@@ -62,4 +74,13 @@ body {
     background-color: #a0a0ff;
     float: left;  /* Align bot messages to the left */
     margin-left: 20px;  /* Add some space on the left */
+}
+
+.send-message {
+    display: flex;
+}
+
+.send-message input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;  /* Include padding and border in the width */
 }
