@@ -6,8 +6,11 @@ import Bot from './components/Bot';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import ChatIcon from '@mui/icons-material/Chat';
+import BrainstormIcon from '@mui/icons-material/Lightbulb';
 
 function App() {
+  const brainstormOpeningText = "Hi! I'm here to get you connected to a human conversation. Just tell me whatever you'd like to talk about. You can use fully formed sentences instead of keywords.";
+
   const [conversations, setConversations] = useState({
     "Conversation 1": [
       { text: "Hello!", user: true },
@@ -16,11 +19,25 @@ function App() {
     "Conversation 2": [
       //... messages for Conversation 2
     ],
+    "Brainstorm": [
+      { text: brainstormOpeningText, user: false },
+    ],
   });
+
+  const [brainstormActive, setBrainstormActive] = useState(false);
+
+  const chatEndRef = useRef(null);
+
+  const [currentConversation, setCurrentConversation] = useState("Conversation 1");
 
   const addConversation = (name) => {
     setConversations({ ...conversations, [name]: [] });
   };
+  
+  // This effect will run whenever the current conversation changes
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversations]);
 
   const addChatMessage = (conversationName, text, user) => {
     return new Promise(resolve => {
@@ -36,43 +53,49 @@ function App() {
     });
   };
 
-  const chatEndRef = useRef(null);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversations]);
-
-  const [currentConversation, setCurrentConversation] = useState("Conversation 1");
-
   return (
     <div className="container">
       <div className="sidebar">
-        <div className="new-chat">
-          <div className="add-conversation-button">
-              <IconButton
-                  onClick={() => {
-                      const name = prompt("Enter the name of the new conversation:");
-                      if (name) {
-                          addConversation(name);
-                      }
-                  }}
-              >
-                  <AddIcon />
-              </IconButton>
-          </div>
-          <span>New conversation</span>
-        </div>
-        <ul className="conversation-list">
-            {Object.keys(conversations).map((conversationName, index) => (
-                <li
-                    key={index}
-                    onClick={() => setCurrentConversation(conversationName)}
-                    className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
+        <div className="conversations-container">
+          <div className="new-chat">
+            <div className="add-conversation-button">
+                <IconButton
+                    onClick={() => {
+                        const name = prompt("Enter the name of the new conversation:");
+                        if (name) {
+                            addConversation(name);
+                        }
+                    }}
                 >
-                    <ChatIcon className='chat-icon' /> {conversationName}
-                </li>
-            ))}
-        </ul>
+                    <AddIcon />
+                </IconButton>
+            </div>
+            <span>New conversation</span>
+          </div>
+          <ul className="conversation-list">
+              {Object.keys(conversations).filter(c => c !== 'Brainstorm').map((conversationName, index) => (
+                  <li
+                      key={index}
+                      onClick={() => {
+                        setCurrentConversation(conversationName);
+                        setBrainstormActive(false);
+                      }}
+                      className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
+                  >
+                      <ChatIcon className='chat-icon' /> {conversationName}
+                  </li>
+              ))}
+          </ul>
+        </div>
+        <div 
+            className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
+            onClick={() => {
+              setBrainstormActive(true);
+              setCurrentConversation('Brainstorm');
+            }}
+        >
+            <BrainstormIcon className='brainstorm-icon' /> Brainstorm
+        </div>
       </div>
       <div className="main">
         <div className="chat-messages">

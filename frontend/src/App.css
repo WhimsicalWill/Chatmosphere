@@ -12,6 +12,9 @@ body {
 }
 
 .sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     width: 300px;
     border-right: 1px solid #ddd; /* Lighter border color */
     padding: 20px; /* Add some padding */
@@ -19,9 +22,14 @@ body {
     overflow: auto; /* Enable scroll if content exceeds the height */
 }
 
+/* TODO: I don't think I'm using this, delete? */
 .sidebar h2 {
     color: #333; /* Dark grey color for the header */
     font-size: 1.2em; /* Increase the font size a bit */
+}
+
+.conversations-container {
+    overflow: auto;
 }
 
 .conversation-list {
@@ -110,4 +118,26 @@ body {
 .send-message input[type="text"] {
     width: 100%;
     box-sizing: border-box;  /* Include padding and border in the width */
+}
+
+.brainstorm {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: #d0f0d0; /* Different shade */
+}
+
+.brainstorm-icon {
+    margin-right: 30px;
+    color: #888; /* Grey icon */
+}
+
+.active-brainstorm {
+    background-color: #b0e0b0; /* Different shade when active */
+    border: 2px solid #333;
 }

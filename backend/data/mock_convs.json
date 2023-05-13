@@ -1,0 +1,84 @@
+{
+  "conversations": [
+    {
+      "id": 1,
+      "topic": "What are some hidden gem restaurants in Pittsburgh?"
+    },
+    {
+      "id": 2,
+      "topic": "Which restaurant has the best ambiance in Pittsburgh?"
+    },
+    {
+      "id": 3,
+      "topic": "What are the biggest challenges in space exploration today?"
+    },
+    {
+      "id": 4,
+      "topic": "What do you think about the future of private companies in space exploration?"
+    },
+    {
+      "id": 5,
+      "topic": "How has COVID-19 changed the future of remote work?"
+    },
+    {
+      "id": 6,
+      "topic": "What are the best strategies for learning a new language?"
+    },
+    {
+      "id": 7,
+      "topic": "What are the most important considerations when starting a small business?"
+    },
+    {
+      "id": 8,
+      "topic": "What are the most effective methods for teaching math to children?"
+    },
+    {
+      "id": 9,
+      "topic": "What are the pros and cons of renewable energy sources?"
+    },
+    {
+      "id": 10,
+      "topic": "How can we improve mental health awareness?"
+    },
+    {
+      "id": 11,
+      "topic": "What are your favorite books and why?"
+    },
+    {
+      "id": 12,
+      "topic": "How is artificial intelligence impacting our daily lives?"
+    },
+    {
+      "id": 13,
+      "topic": "What are the benefits and drawbacks of social media?"
+    },
+    {
+      "id": 14,
+      "topic": "What are the best practices for maintaining a healthy lifestyle?"
+    },
+    {
+      "id": 15,
+      "topic": "How does climate change impact biodiversity?"
+    },
+    {
+      "id": 16,
+      "topic": "What are the best techniques for improving productivity?"
+    },
+    {
+      "id": 17,
+      "topic": "What do you think about the future of cryptocurrency?"
+    },
+    {
+      "id": 18,
+      "topic": "How do video games influence society and culture?"
+    },
+    {
+      "id": 19,
+      "topic": "What are your thoughts on universal basic income?"
+    },
+    {
+      "id": 20,
+      "topic": "How can we foster a more inclusive and diverse society?"
+    }
+  ]
+}
