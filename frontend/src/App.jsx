@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Bot from './components/Bot';
+// import axiosInstance from './axiosInstance';
 
 // Material UI imports
 import IconButton from '@mui/material/IconButton';
@@ -116,10 +117,17 @@ function App() {
               event.preventDefault(); // Prevent form submission
               const message = event.target.value;
               event.target.value = '';
-              if (message) {
+              if (message && currentConversation !== 'Brainstorm') {
                 await addChatMessage(currentConversation, message, true);
-                const botResponse = Bot.getResponse(message);
-                await addChatMessage(currentConversation, botResponse, false);
+                const randomBotResponse = Bot.getRandomResponse(message);
+                await addChatMessage(currentConversation, randomBotResponse, false);
+              }
+              else if (message) {
+                await addChatMessage(currentConversation, message, true);
+                const botResponses = await Bot.getResponse(message);
+                for (const botResponse of botResponses) {
+                  await addChatMessage(currentConversation, botResponse, false);
+                }
               }
             }
           }} />

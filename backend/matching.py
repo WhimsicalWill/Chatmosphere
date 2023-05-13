@@ -32,5 +32,6 @@ class ConversationMatcher:
         print("Done.")
         res = []
         for idx, score in zip(I[0], D[0]):
-            res.append((self.conversations[idx], score))
+            # res.append((self.conversations[idx], score))
+            res.append(self.conversations[idx])
         return res
