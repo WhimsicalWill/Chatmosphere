@@ -23,7 +23,7 @@ class ChatApplication:
         self.api = Api(self.app)
         self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         os.makedirs(self.db_dir, exist_ok=True)
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.self.db')
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)

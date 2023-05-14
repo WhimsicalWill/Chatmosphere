@@ -17,12 +17,17 @@ class Bot {
       });
       console.log(response.data);
       const similarConvs = response.data.similar_conversations;
-      const segwayResponse = response.data.segway_response;
-      const responses = segwayResponse.split('\n');
-      return responses;
+      const segwayResponses = response.data.segway_response.split('\n');
+      console.log(similarConvs);
+      console.log(segwayResponses);
+      const combined = segwayResponses.map((segwayResponse, i) => ({
+         text: segwayResponse, 
+         similarConv: similarConvs[i] 
+      }));
+      return combined;
     } catch (error) {
       console.error(error);
-      return ["An error occurred :("]; // return an empty array in the case of an error
+      return [{ text: "An error occurred :(", similarConv: "" }]; // return an array with one element in the case of an error
     }
   }
 }

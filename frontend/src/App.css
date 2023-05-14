@@ -114,6 +114,16 @@ body {
     margin-left: 20px;  /* Add some space on the left */
 }
 
+.similar-conversation {
+    margin-top: 10px;
+    padding: 5px;
+    background-color: lightgreen;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .send-message {
     display: flex;
 }

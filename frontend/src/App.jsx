@@ -6,20 +6,22 @@ import Bot from './components/Bot';
 import ChatBubble from '@mui/icons-material/ChatBubble';
 import BrainstormIcon from '@mui/icons-material/Lightbulb';
 import Forum from '@mui/icons-material/Forum';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
 
 function App() {
   const brainstormOpeningText = "Hi! I'm here to get you connected to a human conversation. Just tell me whatever you'd like to talk about. You can use fully formed sentences instead of keywords.";
 
   const [conversations, setConversations] = useState({
     "Conversation 1": [
-      { text: "Hello!", user: true },
-      { text: "Hi there!", user: false },
+      { text: "Hello!", user: true, similarConv: null},
+      { text: "Hi there!", user: false, similarConv: null },
     ],
     "Conversation 2": [
       //... messages for Conversation 2
     ],
     "Brainstorm": [
-      { text: brainstormOpeningText, user: false },
+      { text: brainstormOpeningText, user: false, similarConv: null },
     ],
   });
 
@@ -38,19 +40,66 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
-  const addChatMessage = (conversationName, text, user) => {
+  const addChatMessage = (conversationName, text, user, similarConv = null) => {
     return new Promise(resolve => {
       setConversations(prevConversations => {
         if (!prevConversations[conversationName]) return prevConversations; // handle error here
         const updatedConversations = {
           ...prevConversations,
-          [conversationName]: [...prevConversations[conversationName], { text, user }],
+          [conversationName]: [...prevConversations[conversationName], { text, user, similarConv }],
         };
         resolve(updatedConversations);
         return updatedConversations;
       });
     });
   };
+
+  const handleSidebarClick = (conversationName, isBrainstorm = false) => {
+    setCurrentConversation(conversationName);
+    setBrainstormActive(isBrainstorm);
+  };
+
+  const handleNewMessage = async (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent form submission
+      const message = event.target.value;
+      event.target.value = '';
+      if (message && currentConversation !== 'Brainstorm') {
+        await addChatMessage(currentConversation, message, true);
+        const randomBotResponse = Bot.getRandomResponse(message);
+        await addChatMessage(currentConversation, randomBotResponse, false);
+      }
+      else if (message) {
+        await addChatMessage(currentConversation, message, true);
+        const botResponses = await Bot.getResponse(message);
+        for (const botResponse of botResponses) {
+          await addChatMessage(currentConversation, botResponse.text, false, botResponse.similarConv);
+        }
+      }
+    }
+  };
+
+
+  // const handleNewMessage = async (event) => {
+  //   if (event.key === 'Enter') {
+  //     event.preventDefault(); // Prevent form submission
+  //     const message = event.target.value;
+  //     event.target.value = '';
+  //     if (message) {
+  //       await addChatMessage(currentConversation, message, true);
+  //       if (currentConversation !== 'Brainstorm') {
+  //         const randomBotResponse = Bot.getRandomResponse(message);
+  //         await addChatMessage(currentConversation, randomBotResponse, false);
+  //       } else {
+  //         const botResponses = await Bot.getResponse(message);
+  //         console.log("botResponses: ", botResponses);
+  //         for (const botResponse of botResponses) {
+  //           await addChatMessage(currentConversation, botResponse.text, false, botResponse.similarConv);
+  //         }
+  //       }
+  //     }
+  //   }
+  // };
 
   return (
     <div className="container">
@@ -63,10 +112,7 @@ function App() {
               {Object.keys(conversations).filter(c => c !== 'Brainstorm').map((conversationName, index) => (
                   <li
                       key={index}
-                      onClick={() => {
-                        setCurrentConversation(conversationName);
-                        setBrainstormActive(false);
-                      }}
+                      onClick={() => handleSidebarClick(conversationName, false)}
                       className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
                   >
                       <ChatBubble className='chat-icon' /> {conversationName}
@@ -76,10 +122,7 @@ function App() {
         </div>
         <div 
             className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
-            onClick={() => {
-              setBrainstormActive(true);
-              setCurrentConversation('Brainstorm');
-            }}
+            onClick={() => handleSidebarClick('Brainstorm', true) }
         >
             <BrainstormIcon className='brainstorm-icon' /> Brainstorm
         </div>
@@ -93,30 +136,24 @@ function App() {
                 className={`chat-message ${message.user ? 'user' : 'bot'}`}
               >
                 {message.text}
+                {message.similarConv && 
+                  <div className="similar-conversation">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddIcon />}
+                      onClick={addConversation(message.similarConv)}
+                    >
+                      {message.similarConv}
+                    </Button>
+                  </div>
+                }
               </div>
             ))}
           <div className="chat-message" ref={chatEndRef} />
         </div>
         <div className="send-message">
-          <input id="messageInput" type="text" onKeyDown={async (event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault(); // Prevent form submission
-              const message = event.target.value;
-              event.target.value = '';
-              if (message && currentConversation !== 'Brainstorm') {
-                await addChatMessage(currentConversation, message, true);
-                const randomBotResponse = Bot.getRandomResponse(message);
-                await addChatMessage(currentConversation, randomBotResponse, false);
-              }
-              else if (message) {
-                await addChatMessage(currentConversation, message, true);
-                const botResponses = await Bot.getResponse(message);
-                for (const botResponse of botResponses) {
-                  await addChatMessage(currentConversation, botResponse, false);
-                }
-              }
-            }
-          }} />
+          <input id="messageInput" type="text" onKeyDown={async (event) => await handleNewMessage(event)} />
         </div>
       </div>
     </div>
