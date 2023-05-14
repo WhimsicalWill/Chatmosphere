@@ -4,49 +4,85 @@ import Bot from './components/Bot';
 
 // Material UI imports
 import ChatBubble from '@mui/icons-material/ChatBubble';
-import BrainstormIcon from '@mui/icons-material/Lightbulb';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import Forum from '@mui/icons-material/Forum';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
-  const brainstormOpeningText = "Hi! I'm here to get you connected to a human conversation. Just tell me whatever you'd like to talk about. You can use fully formed sentences instead of keywords.";
-
   const [conversations, setConversations] = useState({
     "Conversation 1": [
-      { text: "Hello!", user: true, similarConv: null},
-      { text: "Hi there!", user: false, similarConv: null },
+      { text: "Hello!", user: true, match: null},
+      { text: "Hi there!", user: false, match: null },
     ],
     "Conversation 2": [
       //... messages for Conversation 2
     ],
     "Brainstorm": [
-      { text: brainstormOpeningText, user: false, similarConv: null },
+      //... messages for Brainstorm
     ],
   });
-
   const [brainstormActive, setBrainstormActive] = useState(false);
-
+  const [currentConversation, setCurrentConversation] = useState("Conversation 1");
+  const [newChatName, setNewChatName] = useState("");
+  const [isNewChatActive, setNewChatActive] = useState(false);
   const chatEndRef = useRef(null);
 
-  const [currentConversation, setCurrentConversation] = useState("Conversation 1");
-
-  const addConversation = (name) => {
-    setConversations({ ...conversations, [name]: [] });
-  };
-  
   // This effect will run whenever the current conversation changes
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
-  const addChatMessage = (conversationName, text, user, similarConv = null) => {
+  const startNewChat = () => {
+    setNewChatActive(true);
+  };
+
+  const submitNewChat = async (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent form submission
+        const message = event.target.value;
+        event.target.value = '';
+        if (message) {
+          setCurrentConversation('Brainstorm');
+          await addChatMessage('Brainstorm', message, true);
+          const botResponses = await Bot.getResponse(message);
+          for (const botResponse of botResponses) {
+            await addChatMessage('Brainstorm', botResponse.text, false, botResponse.match);
+          }
+        }
+        setNewChatActive(false);
+        setNewChatName("");
+    }
+  };
+
+  const addConversation = (name) => {
+    setConversations({ ...conversations, [name]: [] });
+  };
+
+  const deleteConversation = (name) => {
+    setConversations(prevConversations => {
+      const updatedConversations = { ...prevConversations };
+      delete updatedConversations[name];
+      if (currentConversation === name) {
+        const remainingConversations = Object.keys(updatedConversations);
+        if (remainingConversations.length > 0) {
+          setCurrentConversation(remainingConversations[0]); // Select the first remaining conversation
+        } else {
+          setCurrentConversation(null); // No conversations left
+        }
+      }
+      return updatedConversations;
+    });
+  };
+
+  const addChatMessage = (conversationName, text, user, match = null) => {
     return new Promise(resolve => {
       setConversations(prevConversations => {
         if (!prevConversations[conversationName]) return prevConversations; // handle error here
         const updatedConversations = {
           ...prevConversations,
-          [conversationName]: [...prevConversations[conversationName], { text, user, similarConv }],
+          [conversationName]: [...prevConversations[conversationName], { text, user, match }],
         };
         resolve(updatedConversations);
         return updatedConversations;
@@ -73,33 +109,11 @@ function App() {
         await addChatMessage(currentConversation, message, true);
         const botResponses = await Bot.getResponse(message);
         for (const botResponse of botResponses) {
-          await addChatMessage(currentConversation, botResponse.text, false, botResponse.similarConv);
+          await addChatMessage(currentConversation, botResponse.text, false, botResponse.match);
         }
       }
     }
   };
-
-
-  // const handleNewMessage = async (event) => {
-  //   if (event.key === 'Enter') {
-  //     event.preventDefault(); // Prevent form submission
-  //     const message = event.target.value;
-  //     event.target.value = '';
-  //     if (message) {
-  //       await addChatMessage(currentConversation, message, true);
-  //       if (currentConversation !== 'Brainstorm') {
-  //         const randomBotResponse = Bot.getRandomResponse(message);
-  //         await addChatMessage(currentConversation, randomBotResponse, false);
-  //       } else {
-  //         const botResponses = await Bot.getResponse(message);
-  //         console.log("botResponses: ", botResponses);
-  //         for (const botResponse of botResponses) {
-  //           await addChatMessage(currentConversation, botResponse.text, false, botResponse.similarConv);
-  //         }
-  //       }
-  //     }
-  //   }
-  // };
 
   return (
     <div className="container">
@@ -108,6 +122,24 @@ function App() {
           <div className="conversations-header">
             <h2><Forum className='header-icon' /> Conversations</h2>
           </div>
+          {isNewChatActive ?
+              <input
+                  className="new-chat-input"
+                  type="text"
+                  placeholder="What do you want to talk about?"
+                  value={newChatName}
+                  onChange={(event) => setNewChatName(event.target.value)}
+                  onKeyDown={(event) => submitNewChat(event)}
+                  onBlur={() => setNewChatActive(false)}
+              />
+              :
+              <div 
+                  className="conversation" 
+                  onClick={() => startNewChat()}
+              >
+                  <LightbulbIcon className='brainstorm-icon' /> New Chat
+              </div>
+          }
           <ul className="conversation-list">
               {Object.keys(conversations).filter(c => c !== 'Brainstorm').map((conversationName, index) => (
                   <li
@@ -116,15 +148,24 @@ function App() {
                       className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
                   >
                       <ChatBubble className='chat-icon' /> {conversationName}
+                      <DeleteIcon 
+                        className='delete-icon' 
+                        onClick={(event) => {
+                          event.stopPropagation(); // prevent the sidebar click event from firing
+                          deleteConversation(conversationName);
+                        }}
+                      />
                   </li>
               ))}
           </ul>
         </div>
+        {/* The following is not being used but I'm keeping it because the space may be useful
+        in the UI at some later point. Currently, clicking it just focuses the brainstorm conversation. */}
         <div 
             className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
             onClick={() => handleSidebarClick('Brainstorm', true) }
         >
-            <BrainstormIcon className='brainstorm-icon' /> Brainstorm
+            <LightbulbIcon className='brainstorm-icon' /> Brainstorm
         </div>
       </div>
       <div className="main">
@@ -136,15 +177,15 @@ function App() {
                 className={`chat-message ${message.user ? 'user' : 'bot'}`}
               >
                 {message.text}
-                {message.similarConv && 
-                  <div className="similar-conversation">
+                {message.match && 
+                  <div className="conversation-match">
                     <Button
                       variant="contained"
                       color="primary"
                       startIcon={<AddIcon />}
-                      onClick={addConversation(message.similarConv)}
+                      onClick={() => addConversation(message.match)}
                     >
-                      {message.similarConv}
+                      {message.match}
                     </Button>
                   </div>
                 }
@@ -152,9 +193,11 @@ function App() {
             ))}
           <div className="chat-message" ref={chatEndRef} />
         </div>
-        <div className="send-message">
-          <input id="messageInput" type="text" onKeyDown={async (event) => await handleNewMessage(event)} />
-        </div>
+        {!brainstormActive && (
+          <div className="send-message">
+            <input id="messageInput" type="text" placeholder="Send a message." onKeyDown={async (event) => handleNewMessage(event)} />
+          </div>
+        )}
       </div>
     </div>
   );

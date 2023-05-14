@@ -16,18 +16,18 @@ class Bot {
         params: { topic: message }
       });
       console.log(response.data);
-      const similarConvs = response.data.similar_conversations;
+      const convMatches = response.data.similar_conversations;
       const segwayResponses = response.data.segway_response.split('\n');
-      console.log(similarConvs);
+      console.log(convMatches);
       console.log(segwayResponses);
       const combined = segwayResponses.map((segwayResponse, i) => ({
          text: segwayResponse, 
-         similarConv: similarConvs[i] 
+         match: convMatches[i] 
       }));
       return combined;
     } catch (error) {
       console.error(error);
-      return [{ text: "An error occurred :(", similarConv: "" }]; // return an array with one element in the case of an error
+      return [{ text: "An error occurred :(", match: "" }]; // return an array with one element in the case of an error
     }
   }
 }

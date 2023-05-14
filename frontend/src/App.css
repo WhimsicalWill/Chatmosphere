@@ -22,12 +22,6 @@ body {
     overflow: auto; /* Enable scroll if content exceeds the height */
 }
 
-/* TODO: I don't think I'm using this, delete? */
-.sidebar h2 {
-    color: #333; /* Dark grey color for the header */
-    font-size: 1.2em; /* Increase the font size a bit */
-}
-
 .conversations-container {
     overflow: auto;
 }
@@ -64,10 +58,17 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    font-size: 0.9em; /* Decrease font size a bit */
 }
 
 .chat-icon {
     margin-right: 30px;
+}
+
+.delete-icon {
+  margin-left: auto;
+  cursor: pointer;
+  color: #888; /* grey color */
 }
 
 .conversation:hover {
@@ -114,10 +115,10 @@ body {
     margin-left: 20px;  /* Add some space on the left */
 }
 
-.similar-conversation {
-    margin-top: 10px;
+.conversation-match {
+    margin-top: 5;
     padding: 5px;
-    background-color: lightgreen;
+    /* background-color: lightgreen; */
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
@@ -129,8 +130,12 @@ body {
 }
 
 .send-message input[type="text"] {
-    width: 100%;
-    box-sizing: border-box;  /* Include padding and border in the width */
+  width: 100%;
+  height: 40px; /* Increase height */
+  padding: 10px; /* Add padding */
+  border-radius: 10px; /* Make it round */
+  border: 1px solid #ddd; /* Add border */
+  box-sizing: border-box; /* Include padding and border in the width */
 }
 
 .brainstorm {
@@ -153,4 +158,18 @@ body {
 .active-brainstorm {
     background-color: #b0e0b0; /* Different shade when active */
     border: 2px solid #333;
+}
+
+.new-chat-input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    width: 90%;
+    margin-bottom: 10px;
+    transition: border 0.3s ease;
+}
+
+.new-chat-input:focus {
+    border: 1px solid #333;
+    outline: none;
 }
