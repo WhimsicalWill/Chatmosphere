@@ -1,11 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Bot from './components/Bot';
-// import axiosInstance from './axiosInstance';
 
 // Material UI imports
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
 import ChatBubble from '@mui/icons-material/ChatBubble';
 import BrainstormIcon from '@mui/icons-material/Lightbulb';
 import Forum from '@mui/icons-material/Forum';

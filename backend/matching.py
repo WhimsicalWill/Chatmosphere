@@ -107,8 +107,12 @@ class ConversationSegway:
             input_variables=["query", "conv1", "conv2", "conv3"],
             example_separator="\n",
         )
+        print("Set up few shot prompt")
 
     def get_response(self, query, convs):
+        print("Generating response...")
+        print("Query:", query)
+        print("Conversations:", convs)
         # TODO: add error handling
         assert len(convs) == 3, "Must provide three conversations"
 
@@ -120,5 +124,7 @@ class ConversationSegway:
             "conv3": convs[2]
         }
 
+        print("Input:", input)
         response = self.chain.run(input)
+        print("Response:", response)
         return response

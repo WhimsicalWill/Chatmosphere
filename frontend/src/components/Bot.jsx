@@ -12,12 +12,13 @@ class Bot {
 
   static async getResponse(message) {
     try {
-      const response = await axiosInstance.get('/similar-conversations', {
+      const response = await axiosInstance.get('/bot-response', {
         params: { topic: message }
       });
       console.log(response.data);
-      const botResponse = response.data.bot_response;
-      const responses = botResponse.split('\n');
+      const similarConvs = response.data.similar_conversations;
+      const segwayResponse = response.data.segway_response;
+      const responses = segwayResponse.split('\n');
       return responses;
     } catch (error) {
       console.error(error);
