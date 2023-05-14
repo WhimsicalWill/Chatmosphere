@@ -32,6 +32,24 @@ body {
     overflow: auto;
 }
 
+.conversations-header {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin-bottom: 20px; /* Add some space below the header */
+}
+
+.conversations-header h2 {
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    font-size: 1.5em; /* Increase the font size a bit */
+    color: #333; /* Dark grey color for the header */
+}
+
+.header-icon {
+    margin-right: 10px;
+}
+
 .conversation-list {
     list-style-type: none; /* Remove default bullet points */
     padding: 0; /* Remove default padding */
@@ -50,21 +68,6 @@ body {
 
 .chat-icon {
     margin-right: 30px;
-}
-
-.add-conversation-button {
-    margin-right: 30px;
-}
-
-.new-chat {
-    padding: 10px; /* Add some padding to each list item */
-    border-radius: 5px; /* Round the corners a bit */
-    margin-bottom: 10px; /* Add some space between list items */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    cursor: pointer; /* Change cursor style */
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
 }
 
 .conversation:hover {

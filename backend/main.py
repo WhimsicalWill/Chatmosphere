@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 from flask_cors import CORS
 
-from matching import ConversationMatcher
+from matching import ConversationMatcher, ConversationSegway
 
 
 # Create the Flask app
@@ -19,10 +19,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(db_dir, 'tes
 db = SQLAlchemy(app)
 
 # Load the conversations into the ConversationMatcher
-matcher = ConversationMatcher(k=2)  # Change k to whatever value you want
+matcher = ConversationMatcher(k=3)  # Change k to whatever value you want
 with open(os.path.join(db_dir, 'mock_convs.json')) as f:
     data = json.load(f)  # TODO: Load from actual SQL database
 matcher.add_conversations([conv['topic'] for conv in data['conversations']])
+
+# Set up the ConversationSegway
+segway = ConversationSegway()
 
 
 # Define a User model
@@ -32,6 +35,7 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
 
 # Define a Conversation model
 class Conversation(db.Model):
@@ -43,6 +47,7 @@ class Conversation(db.Model):
     def __repr__(self):
         return f'<Conversation {self.topic}>'
 
+
 # Define your API resources
 class UserResource(Resource):
     def get(self, user_id):
@@ -52,24 +57,27 @@ class UserResource(Resource):
         else:
             return {"error": "User not found"}, 404
 
+
 class ConversationResource(Resource):
     def get(self, conversation_id):
         conversation = Conversation.query.get(conversation_id)
         if conversation:
-            return {'topic': conversation.topic, 'username': conversation.user.username}
+            return {'topic': conversation.topic, 'username': conversation.user.username}, 200
         else:
             return {"error": "Conversation not found"}, 404
 
 
-class SimilarConversationResource(Resource):
+class BotResponseResource(Resource):
     def get(self):
         topic = request.args.get('topic')
         if topic:
             similar_convs = matcher.get_similar_conversations(topic)
-            return {'similar_conversations': similar_convs}
+            segway_response = segway.get_response(topic, similar_convs)
+            return {'segway_response': segway_response}, 200
         else:
             return {"error": "No topic provided"}, 400
 
+    # TODO: actually use the database instead of mock data
     def post(self):
         topic = request.args.get('topic')
         if topic:
@@ -83,7 +91,7 @@ class SimilarConversationResource(Resource):
 
 
 # Add the API resources
-api.add_resource(SimilarConversationResource, '/similar-conversations')
+api.add_resource(BotResponseResource, '/bot-response')
 api.add_resource(UserResource, '/user/<int:user_id>')
 api.add_resource(ConversationResource, '/conversation/<int:conversation_id>')
 

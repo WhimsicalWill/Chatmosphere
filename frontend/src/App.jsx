@@ -6,8 +6,9 @@ import Bot from './components/Bot';
 // Material UI imports
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
-import ChatIcon from '@mui/icons-material/Chat';
+import ChatBubble from '@mui/icons-material/ChatBubble';
 import BrainstormIcon from '@mui/icons-material/Lightbulb';
+import Forum from '@mui/icons-material/Forum';
 
 function App() {
   const brainstormOpeningText = "Hi! I'm here to get you connected to a human conversation. Just tell me whatever you'd like to talk about. You can use fully formed sentences instead of keywords.";
@@ -58,20 +59,8 @@ function App() {
     <div className="container">
       <div className="sidebar">
         <div className="conversations-container">
-          <div className="new-chat">
-            <div className="add-conversation-button">
-                <IconButton
-                    onClick={() => {
-                        const name = prompt("Enter the name of the new conversation:");
-                        if (name) {
-                            addConversation(name);
-                        }
-                    }}
-                >
-                    <AddIcon />
-                </IconButton>
-            </div>
-            <span>New conversation</span>
+          <div className="conversations-header">
+            <h2><Forum className='header-icon' /> Conversations</h2>
           </div>
           <ul className="conversation-list">
               {Object.keys(conversations).filter(c => c !== 'Brainstorm').map((conversationName, index) => (
@@ -83,7 +72,7 @@ function App() {
                       }}
                       className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
                   >
-                      <ChatIcon className='chat-icon' /> {conversationName}
+                      <ChatBubble className='chat-icon' /> {conversationName}
                   </li>
               ))}
           </ul>

@@ -16,11 +16,8 @@ class Bot {
         params: { topic: message }
       });
       console.log(response.data);
-      const similarConversations = response.data.similar_conversations;
-      const responses = [];
-      for (const conv of similarConversations) {
-        responses.push(`Here's a similar conversation: ${conv}`);
-      }
+      const botResponse = response.data.bot_response;
+      const responses = botResponse.split('\n');
       return responses;
     } catch (error) {
       console.error(error);
