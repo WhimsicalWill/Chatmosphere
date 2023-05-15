@@ -18,17 +18,36 @@ export function MainChat({
     chatToRender = brainstormActive ? topics["Brainstorm"]["Brainstorm"] : topics[currentTopic][currentChat];
   }
 
+  const instructionOverview = (
+    <div className="instruction-text">
+      <h2>Welcome to Chatmos</h2>
+      <p>Here are some tips to get you started:</p>
+      <ul>
+        <li>Select a topic from the sidebar to start a chat.</li>
+        <li>Enter a message into the input box at the bottom to send a message.</li>
+        <li>You can add a new topic by clicking on the '+' button in the sidebar.</li>
+      </ul>
+    </div>
+  );
+
   return (
     <div className="chat-messages">
-      {shouldRenderChat &&
-        chatToRender.map((message, index) => (
-          <div
-            key={index}
-            className={`chat-message ${message.user ? 'user' : 'bot'}`}
-          >
-            {message.text}
-            {message.match && 
-            <div className="topic-match">
+      {shouldRenderChat ? (
+        <>
+          <div className="chat-header-container">
+            {/* TODO: load the user's profile */}
+            <img className="profile-picture" src={"https://cdn-icons-png.flaticon.com/128/3135/3135715.png"} alt="Profile" />
+            <h1 className="chat-header-text">{currentChat}</h1>
+          </div> 
+          {
+            chatToRender.map((message, index) => (
+            <div
+              key={index}
+              className={`chat-message ${message.user ? 'user' : 'bot'}`}
+            >
+              {message.text}
+              {message.match && 
+              <div className="topic-match">
                 <Button
                 variant="contained"
                 color="primary"
@@ -37,24 +56,28 @@ export function MainChat({
                 >
                 {message.match}
                 </Button>
+              </div>
+              }
             </div>
-            }
-          </div>
-        ))
-      }
+            ))
+          }
+        </>
+      ) : (
+        instructionOverview
+      )}
       <div className="chat-message" ref={chatEndRef} />
     </div>
   );
 }
 
 export function MainInput({ 
+  currentChat,
   brainstormActive,
-  currentTab,
   handleNewMessage,
 }) {
   return (
     <>
-      {!brainstormActive && currentTab === 'Active Chats' && (
+      {!brainstormActive && currentChat && (
         <div className="send-message">
           <input id="messageInput" type="text" placeholder="Send a message." onKeyDown={async (event) => handleNewMessage(event)} />
         </div>

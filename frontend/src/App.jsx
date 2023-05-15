@@ -25,7 +25,7 @@ function App() {
   });
   const [brainstormActive, setBrainstormActive] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Topic 1");
-  const [currentChat, setCurrentChat] = useState("Chat 1");
+  const [currentChat, setCurrentChat] = useState(null);
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const [currentTab, setCurrentTab] = useState('Topics');
   const chatEndRef = useRef(null);
@@ -146,9 +146,9 @@ function App() {
     // Set the first chat of the selected topic as the current chat
     const availableChats = Object.keys(topics[topicName]);
     if (availableChats.length > 0) {
-      setCurrentChat(null); // No chats left
-    } else {
       setCurrentChat(availableChats[0]);
+    } else {
+      setCurrentChat(null); // No chats left
     }
 
     // If brainstorm is currently active, deactivate it
@@ -182,7 +182,7 @@ function App() {
     }
   };
 
-  const activeChatsProps = { 
+  const sidebarProps = { 
     currentTab,
     topics, 
     currentTopic, 
@@ -194,6 +194,7 @@ function App() {
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
+    brainstormActive,
   };
 
   const mainProps = {
@@ -213,7 +214,7 @@ function App() {
       <div className="sidebar">
         <SidebarHeader />
         <SidebarTabHeader currentTab={currentTab} handleBackClick={handleBackClick} />
-        <SidebarContent {...activeChatsProps} />
+        <SidebarContent {...sidebarProps} />
       </div>
       <div className="main">
         <MainChat {...mainProps} />
