@@ -1,6 +1,8 @@
 import os
 import json
+import os
 
+from dotenv import load_dotenv
 from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
@@ -122,5 +124,6 @@ class ChatApplication:
 
 
 if __name__ == '__main__':
+    load_dotenv()  # Loads the OPENAI_API_KEY from .env
     chat_app = ChatApplication()
     chat_app.run()

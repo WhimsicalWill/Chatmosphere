@@ -1,16 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Bot from './components/Bot';
+import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Sidebar';
+import Main from './components/Main';
 
 // Material UI imports
-import ChatBubble from '@mui/icons-material/ChatBubble';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import Forum from '@mui/icons-material/Forum';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function App() {
   const [topics, setTopics] = useState({
@@ -20,13 +15,7 @@ function App() {
         { text: "Hi there!", user: false, match: null },
         //... more messages
       ],
-      "Chat 2": [
-        //... messages for Chat 2
-      ],
       //... more chats
-    },
-    "Topic 2": {
-      //... chats for Topic 2
     },
     // this topic / chat is specifically for the bot to process new topics
     // TODO: separate out this logic and handle it more cleanly
@@ -164,146 +153,49 @@ function App() {
     }
   };
 
-  // Declare some tricky sections as variables
-  const editingNewTopicSection = isEditingNewTopic ?
-    <input
-      className="new-topic-input"
-      type="text"
-      placeholder="What do you want to talk about?"
-      value={newTopicName}
-      onChange={(event) => setNewTopicName(event.target.value)}
-      onKeyDown={(event) => submitNewTopicName(event)}
-      onBlur={() => setEditingNewTopic(false)}
-    />
-    :
-    <div 
-      className="topic" 
-      onClick={() => setEditingNewTopic(true)}
-    >
-      <LightbulbIcon className='brainstorm-icon' /> New Topic
-    </div>
-  ;
+  const activeChatsProps = { 
+    currentTab,
+    topics, 
+    currentTopic, 
+    currentChat, 
+    setCurrentChat, 
+    deleteChat,
+    deleteTopic,
+    newTopicName,
+    handleTopicClick,
+    setNewTopicName,
+    submitNewTopicName,
+    isEditingNewTopic,
+    setEditingNewTopic,
+  };
 
-  const topicListSection = 
-    <ul className="topic-list">
-      {Object.keys(topics).filter(c => c !== 'Brainstorm').map((topicName, index) => (
-        <li
-          key={index}
-          onClick={() => handleTopicClick(topicName, false)}
-          className={`topic ${currentTopic === topicName ? "active-topic" : ""}`}
-        >
-          <ChatBubble className='topic-icon' /> {topicName}
-          <DeleteIcon 
-            className='delete-icon' 
-            onClick={(event) => {
-              event.stopPropagation(); // prevent the sidebar click event from firing
-              deleteTopic(topicName);
-            }}
-          />
-        </li>
-      ))}
-    </ul>
-  ;
-
+  const mainProps = {
+    currentTopic,
+    currentChat,
+    topics,
+    addTopic,
+    handleNewMessage,
+    chatEndRef,
+    brainstormActive,
+  }
+  
 
   return (
     <div className="container">
       <div className="sidebar">
-        <div className="sidebar-container">
-          <a href="https://github.com/WhimsicalWill/Chatmos" target="_blank" rel="noopener noreferrer">
-            <div className="sidebar-header">
-              <Forum className='header-icon' />
-                <h2>Chatmos</h2>
-              {/* Invisible 'dummy' icon to balance the visible icon */}
-              <IconButton style={{ visibility: "hidden" }}>
-                <Forum />
-              </IconButton>
-            </div>
-          </a>
-          {/* The tab header adds a dummy button for proper centering*/}
-          <div className="tab-header">
-            {currentTab === 'Active Chats' ? (
-              <IconButton onClick={handleBackClick}>
-                <ArrowBackIcon />
-              </IconButton>
-            ) : (
-              <IconButton style={{ visibility: "hidden" }}>
-                <ArrowBackIcon />
-              </IconButton>
-            )}
-            <h2>{currentTab}</h2>
-            <IconButton style={{ visibility: "hidden" }}>
-              <ArrowBackIcon />
-            </IconButton>
-          </div>
-          {currentTab === 'Topics' && (
-            <>
-              {editingNewTopicSection}
-              {topicListSection}
-            </>
-          )}
-          {currentTab === 'Active Chats' && (
-            <ul className="chat-list">
-              {Object.keys(topics[currentTopic]).map((chatName, index) => (
-                <li
-                  key={index}
-                  onClick={() => setCurrentChat(chatName, false)}
-                  className={`chat ${currentChat === chatName ? "active-chat" : ""}`}
-                >
-                  {/* TODO: Find a better icon for topic */}
-                  <ChatBubble className='chat-icon' /> {chatName}
-                  <DeleteIcon 
-                    className='delete-icon' 
-                    onClick={(event) => {
-                      event.stopPropagation(); // prevent the sidebar click event from firing
-                      deleteChat(currentTopic, chatName);
-                    }}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <SidebarHeader />
+        <SidebarTabHeader currentTab={currentTab} handleBackClick={handleBackClick} />
+        <SidebarContent {...activeChatsProps} />
         {/* The following is not being used but I'm keeping it because the space may be useful
         in the UI at some later point. Currently, clicking it just focuses the brainstorm topic. */}
         <div 
-            className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
-            onClick={() => handleTopicClick('Brainstorm', true) }
+          className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
+          onClick={() => handleTopicClick('Brainstorm', true) }
         >
-            <LightbulbIcon className='brainstorm-icon' /> Brainstorm
+          <LightbulbIcon className='brainstorm-icon' /> Brainstorm
         </div>
       </div>
-      <div className="main">
-        <div className="chat-messages">
-          {currentTopic && currentChat &&
-            topics[currentTopic][currentChat].map((message, index) => (
-              <div
-                key={index}
-                className={`chat-message ${message.user ? 'user' : 'bot'}`}
-              >
-                {message.text}
-                {message.match && 
-                  <div className="topic-match">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<AddIcon />}
-                      onClick={() => addTopic(message.match)}
-                    >
-                      {message.match}
-                    </Button>
-                  </div>
-                }
-              </div>
-            ))}
-          <div className="chat-message" ref={chatEndRef} />
-        </div>
-        {!brainstormActive && (
-          <div className="send-message">
-            <input id="messageInput" type="text" placeholder="Send a message." onKeyDown={async (event) => handleNewMessage(event)} />
-          </div>
-        )}
-      </div>
+      <Main {...mainProps} />
     </div>
   );
 }
