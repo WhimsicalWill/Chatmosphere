@@ -1,9 +1,13 @@
-import faiss
 import numpy as np
+import os
+
+import faiss
+import openai
 from openai.embeddings_utils import get_embedding
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain import PromptTemplate, FewShotPromptTemplate
+from dotenv import load_dotenv
 
 
 class ConversationMatcher:
@@ -17,6 +21,12 @@ class ConversationMatcher:
         self.conversations = []
         self.embeddings = None
         self.index = None
+        self.init_api_key()
+
+    def init_api_key(self):
+        # Loads and sets the api key using the OpenAI library
+        load_dotenv()  
+        openai.api_key = os.getenv('OPENAI_API_KEY')
 
     def add_conversations(self, conversations):
         self.conversations.extend(conversations)

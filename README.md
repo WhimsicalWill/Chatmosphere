@@ -50,10 +50,11 @@ conda env create -f environment.yml
 conda activate conv
 ```
 
-Set your OpenAI API key as an environment variable.
+Put your OpenAI API key in a hidden file called `.env` in the backend directory.
 
 ```bash
-export OPENAI_API_KEY=<your-api-key>
+cd backend
+echo "OPENAI_API_KEY=<your-api-key>" > .env
 ```
 
 Run the Flask server.
