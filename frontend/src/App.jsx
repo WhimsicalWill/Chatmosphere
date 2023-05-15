@@ -11,87 +11,95 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
-  const [conversations, setConversations] = useState({
-    "Conversation 1": [
-      { text: "Hello!", user: true, match: null},
-      { text: "Hi there!", user: false, match: null },
-    ],
-    "Conversation 2": [
-      //... messages for Conversation 2
-    ],
-    "Brainstorm": [
-      //... messages for Brainstorm
-    ],
+  const [topics, setTopics] = useState({
+    "Topic 1": {
+      "Chat 1": [
+        { text: "Hello!", user: true, match: null },
+        { text: "Hi there!", user: false, match: null },
+        //... more messages
+      ],
+      "Chat 2": [
+        //... messages for Chat 2
+      ],
+      //... more chats
+    },
+    "Topic 2": {
+      //... chats for Topic 2
+    },
+    //... more topics
   });
   const [brainstormActive, setBrainstormActive] = useState(false);
-  const [currentConversation, setCurrentConversation] = useState("Conversation 1");
-  const [newChatName, setNewChatName] = useState("");
-  const [isNewChatActive, setNewChatActive] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState("Topic 1");
+  const [currentChat, setCurrentChat] = useState("Chat 1");
+  const [newTopicName, setNewTopicName] = useState("");
+  const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const chatEndRef = useRef(null);
 
-  // This effect will run whenever the current conversation changes
+  // This effect will run whenever the current topic changes
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversations]);
+  }, [topics]);
 
-  const startNewChat = () => {
-    setNewChatActive(true);
-  };
-
-  const submitNewChat = async (event) => {
+  const submitNewTopicName = async (event) => {
     if (event.key === 'Enter') {
         event.preventDefault(); // Prevent form submission
         const message = event.target.value;
         event.target.value = '';
         if (message) {
-          setCurrentConversation('Brainstorm');
+          setCurrentTopic('Brainstorm');
           await addChatMessage('Brainstorm', message, true);
           const botResponses = await Bot.getResponse(message);
           for (const botResponse of botResponses) {
             await addChatMessage('Brainstorm', botResponse.text, false, botResponse.match);
           }
         }
-        setNewChatActive(false);
-        setNewChatName("");
+        setEditingNewTopic(false);
+        setNewTopicName("");
     }
   };
 
-  const addConversation = (name) => {
-    setConversations({ ...conversations, [name]: [] });
+  const addTopic = (name) => {
+    setTopics({ ...topics, [name]: [] });
   };
 
-  const deleteConversation = (name) => {
-    setConversations(prevConversations => {
-      const updatedConversations = { ...prevConversations };
-      delete updatedConversations[name];
-      if (currentConversation === name) {
-        const remainingConversations = Object.keys(updatedConversations);
-        if (remainingConversations.length > 0) {
-          setCurrentConversation(remainingConversations[0]); // Select the first remaining conversation
+  const deleteTopic = (name) => {
+    setTopics(prevTopics => {
+      const updatedTopics = { ...prevTopics };
+      delete updatedTopics[name];
+      if (currentTopic === name) {
+        const remainingTopics = Object.keys(updatedTopics);
+        if (remainingTopics.length > 0) {
+          setCurrentTopic(remainingTopics[0]); // Select the first remaining topic
         } else {
-          setCurrentConversation(null); // No conversations left
+          setCurrentTopic(null); // No topics left
         }
       }
-      return updatedConversations;
+      return updatedTopics;
     });
   };
 
-  const addChatMessage = (conversationName, text, user, match = null) => {
+  const addChatMessage = (topicName, chatName, text, user, match=null) => {
     return new Promise(resolve => {
-      setConversations(prevConversations => {
-        if (!prevConversations[conversationName]) return prevConversations; // handle error here
-        const updatedConversations = {
-          ...prevConversations,
-          [conversationName]: [...prevConversations[conversationName], { text, user, match }],
+      setTopics(prevTopics => {
+        if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
+
+        const updatedTopics = {
+          ...prevTopics,
+          [topicName]: {
+            ...prevTopics[topicName],
+            [chatName]: [...prevTopics[topicName][chatName], { text, user, match }],
+          },
         };
-        resolve(updatedConversations);
-        return updatedConversations;
+
+        resolve(updatedTopics);
+        return updatedTopics;
       });
     });
   };
 
-  const handleSidebarClick = (conversationName, isBrainstorm = false) => {
-    setCurrentConversation(conversationName);
+  const handleSidebarClick = (topicName, isBrainstorm = false) => {
+    setCurrentTopic(topicName);
+    setCurrentChat(null);
     setBrainstormActive(isBrainstorm);
   };
 
@@ -100,16 +108,16 @@ function App() {
       event.preventDefault(); // Prevent form submission
       const message = event.target.value;
       event.target.value = '';
-      if (message && currentConversation !== 'Brainstorm') {
-        await addChatMessage(currentConversation, message, true);
+      if (message && currentTopic !== 'Brainstorm') {
+        await addChatMessage(currentTopic, message, true);
         const randomBotResponse = Bot.getRandomResponse(message);
-        await addChatMessage(currentConversation, randomBotResponse, false);
+        await addChatMessage(currentTopic, randomBotResponse, false);
       }
       else if (message) {
-        await addChatMessage(currentConversation, message, true);
+        await addChatMessage(currentTopic, message, true);
         const botResponses = await Bot.getResponse(message);
         for (const botResponse of botResponses) {
-          await addChatMessage(currentConversation, botResponse.text, false, botResponse.match);
+          await addChatMessage(currentTopic, botResponse.text, false, botResponse.match);
         }
       }
     }
@@ -118,41 +126,43 @@ function App() {
   return (
     <div className="container">
       <div className="sidebar">
-        <div className="conversations-container">
-          <div className="conversations-header">
+        <div className="topics-container">
+          <div className="topics-header">
+            {/* TODO: try moving this out of the topics-header div*/}
             <h2><Forum className='header-icon' /> Chatmos</h2>
           </div>
-          {isNewChatActive ?
+          {isEditingNewTopic ?
               <input
                   className="new-chat-input"
                   type="text"
                   placeholder="What do you want to talk about?"
-                  value={newChatName}
-                  onChange={(event) => setNewChatName(event.target.value)}
-                  onKeyDown={(event) => submitNewChat(event)}
-                  onBlur={() => setNewChatActive(false)}
+                  value={newTopicName}
+                  onChange={(event) => setNewTopicName(event.target.value)}
+                  onKeyDown={(event) => submitNewTopicName(event)}
+                  onBlur={() => setEditingNewTopic(false)}
               />
               :
               <div 
-                  className="conversation" 
-                  onClick={() => startNewChat()}
+                  className="topic" 
+                  onClick={() => setEditingNewTopic(true)}
               >
                   <LightbulbIcon className='brainstorm-icon' /> New Topic
               </div>
           }
-          <ul className="conversation-list">
-              {Object.keys(conversations).filter(c => c !== 'Brainstorm').map((conversationName, index) => (
+          <ul className="topic-list">
+              {Object.keys(topics).filter(c => c !== 'Brainstorm').map((topicName, index) => (
                   <li
                       key={index}
-                      onClick={() => handleSidebarClick(conversationName, false)}
-                      className={`conversation ${currentConversation === conversationName ? "active-conversation" : ""}`}
+                      onClick={() => handleSidebarClick(topicName, false)}
+                      className={`topic ${currentTopic === topicName ? "active-topic" : ""}`}
                   >
-                      <ChatBubble className='chat-icon' /> {conversationName}
+                      {/* TODO: Find a better icon for topic */}
+                      <ChatBubble className='topic-icon' /> {topicName}
                       <DeleteIcon 
                         className='delete-icon' 
                         onClick={(event) => {
                           event.stopPropagation(); // prevent the sidebar click event from firing
-                          deleteConversation(conversationName);
+                          deleteTopic(topicName);
                         }}
                       />
                   </li>
@@ -160,7 +170,7 @@ function App() {
           </ul>
         </div>
         {/* The following is not being used but I'm keeping it because the space may be useful
-        in the UI at some later point. Currently, clicking it just focuses the brainstorm conversation. */}
+        in the UI at some later point. Currently, clicking it just focuses the brainstorm topic. */}
         <div 
             className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
             onClick={() => handleSidebarClick('Brainstorm', true) }
@@ -170,20 +180,20 @@ function App() {
       </div>
       <div className="main">
         <div className="chat-messages">
-          {currentConversation &&
-            conversations[currentConversation].map((message, index) => (
+          {currentTopic && currentChat &&
+            topics[currentTopic][currentChat].map((message, index) => (
               <div
                 key={index}
                 className={`chat-message ${message.user ? 'user' : 'bot'}`}
               >
                 {message.text}
                 {message.match && 
-                  <div className="conversation-match">
+                  <div className="topic-match">
                     <Button
                       variant="contained"
                       color="primary"
                       startIcon={<AddIcon />}
-                      onClick={() => addConversation(message.match)}
+                      onClick={() => addTopic(message.match)}
                     >
                       {message.match}
                     </Button>
