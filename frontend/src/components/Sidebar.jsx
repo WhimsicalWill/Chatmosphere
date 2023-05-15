@@ -15,9 +15,7 @@ export function SidebarHeader() {
         <Forum className='header-icon' />
         <h2>Chatmos</h2>
         {/* Invisible 'dummy' icon to balance the visible icon */}
-        <IconButton style={{ visibility: "hidden" }}>
-          <Forum />
-        </IconButton>
+        <Forum className='header-icon' style={{ visibility: "hidden" }} />
       </div>
     </a>
   );
@@ -56,6 +54,7 @@ export function SidebarContent({
   isEditingNewTopic,
   setEditingNewTopic,
   brainstormActive,
+  setBrainstormActive,
 }) {
   // Declare some tricky sections as variables
   const editingNewTopicSection = isEditingNewTopic ?
@@ -69,7 +68,11 @@ export function SidebarContent({
     :
     <div 
       className="topic" 
-      onClick={() => setEditingNewTopic(true)}
+      onClick={() => {
+          setEditingNewTopic(true);
+          setBrainstormActive(true);
+        }
+      }
     >
       <AddIcon className='brainstorm-icon' /> New Topic
     </div>

@@ -30,6 +30,8 @@ export function MainChat({
     </div>
   );
 
+  const chatHeaderText = brainstormActive ? "AI Helper" : currentChat;
+
   return (
     <div className="chat-messages">
       {shouldRenderChat ? (
@@ -37,7 +39,7 @@ export function MainChat({
           <div className="chat-header-container">
             {/* TODO: load the user's profile */}
             <img className="profile-picture" src={"https://cdn-icons-png.flaticon.com/128/3135/3135715.png"} alt="Profile" />
-            <h1 className="chat-header-text">{currentChat}</h1>
+            <h1 className="chat-header-text">{chatHeaderText}</h1>
           </div> 
           {
             chatToRender.map((message, index) => (

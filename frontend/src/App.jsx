@@ -158,6 +158,7 @@ function App() {
 
   const handleBackClick = () => {
     setCurrentTab('Topics');
+    setCurrentTopic(null);
     setCurrentChat(null);
   };
 
@@ -195,6 +196,7 @@ function App() {
     isEditingNewTopic,
     setEditingNewTopic,
     brainstormActive,
+    setBrainstormActive,
   };
 
   const mainProps = {
