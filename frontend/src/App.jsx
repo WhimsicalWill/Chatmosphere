@@ -2,10 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Bot from './components/Bot';
 import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Sidebar';
-import Main from './components/Main';
-
-// Material UI imports
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import { MainChat, MainInput } from './components/Main';
 
 function App() {
   const [topics, setTopics] = useState({
@@ -45,8 +42,7 @@ function App() {
         const message = event.target.value;
         event.target.value = '';
         if (message) {
-          setCurrentTopic('Brainstorm');
-          setCurrentChat('Brainstorm');
+          setBrainstormActive(true);
           await addChatMessage('Brainstorm', 'Brainstorm', message, true);
           const botResponses = await Bot.getResponse(message);
           for (const botResponse of botResponses) {
@@ -119,12 +115,11 @@ function App() {
     });
   };
 
-  const handleTopicClick = (topicName, isBrainstorm = false) => {
+  const handleTopicClick = (topicName) => {
     setCurrentTopic(topicName);
-    // If we're in the brainstorm chat, automatically set the current chat to brainstorm (it's the only chat)
-    setCurrentChat(isBrainstorm ? 'Brainstorm' : null);
-    setBrainstormActive(isBrainstorm);
     setCurrentTab('Active Chats');
+    // If brainstorm is currently active, deactivate it
+    setBrainstormActive(false);
   };
 
   const handleBackClick = () => {
@@ -174,7 +169,6 @@ function App() {
     currentChat,
     topics,
     addTopic,
-    handleNewMessage,
     chatEndRef,
     brainstormActive,
   }
@@ -186,16 +180,11 @@ function App() {
         <SidebarHeader />
         <SidebarTabHeader currentTab={currentTab} handleBackClick={handleBackClick} />
         <SidebarContent {...activeChatsProps} />
-        {/* The following is not being used but I'm keeping it because the space may be useful
-        in the UI at some later point. Currently, clicking it just focuses the brainstorm topic. */}
-        <div 
-          className={`brainstorm ${brainstormActive ? "active-brainstorm" : ""}`} 
-          onClick={() => handleTopicClick('Brainstorm', true) }
-        >
-          <LightbulbIcon className='brainstorm-icon' /> Brainstorm
-        </div>
       </div>
-      <Main {...mainProps} />
+      <div className="main">
+        <MainChat {...mainProps} />
+        <MainInput handleNewMessage={handleNewMessage} brainstormActive={brainstormActive} />
+      </div>
     </div>
   );
 }

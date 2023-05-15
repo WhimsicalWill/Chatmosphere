@@ -83,7 +83,7 @@ export function SidebarContent({
       {Object.keys(topics).filter(c => c !== 'Brainstorm').map((topicName, index) => (
         <li
           key={index}
-          onClick={() => handleTopicClick(topicName, false)}
+          onClick={() => handleTopicClick(topicName)}
           className={`topic ${currentTopic === topicName ? "active-topic" : ""}`}
         >
           <ChatBubble className='topic-icon' /> {topicName}

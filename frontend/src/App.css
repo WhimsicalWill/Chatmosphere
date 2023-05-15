@@ -1,53 +1,53 @@
 body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: #333;
-    background-color: #f0f0f0;
-    margin: 0;  /* Remove default margin */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333;
+  background-color: #f0f0f0;
+  margin: 0;
 }
 
 .container {
-    display: flex;
-    height: 100vh;  /* Make the container exactly as tall as the viewport */
-    overflow: hidden;  
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar, .main {
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 300px;
-    border-right: 1px solid #ddd; /* Lighter border color */
-    padding: 20px; /* Add some padding */
-    background-color: #f5f5f5; /* Light grey background */
-    overflow: auto; /* Enable scroll if content exceeds the height */
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background-color: #f5f5f5;
 }
 
-.sidebar-container {
-    overflow: auto;
+.main {
+  width: calc(100% - 300px);
+  box-sizing: border-box;
 }
 
-.tab-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
+.sidebar-header, .tab-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  justify-content: space-between;
 }
 
 .sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    margin-bottom: 20px; /* Add some space below the header */
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
+  justify-content: start;
+  margin-bottom: 20px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 5px;
 }
 
 .sidebar-header h2 {
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
-    font-size: 1.5em; /* Increase the font size a bit */
+  margin: 0;
+  padding: 0;
+  font-size: 1.5em;
 }
 
 .sidebar-header a {
@@ -55,214 +55,125 @@ body {
   color: inherit;
 }
 
-.header-icon {
-    margin-right: 10px;
-}
-
-.topic-list {
-    list-style-type: none; /* Remove default bullet points */
-    padding: 0; /* Remove default padding */
-}
-
-.topic {
-    padding: 10px; /* Add some padding to each list item */
-    border-radius: 5px; /* Round the corners a bit */
-    margin-bottom: 10px; /* Add some space between list items */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    cursor: pointer; /* Change cursor style */
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    font-size: 0.9em; /* Decrease font size a bit */
-}
-
-.topic-icon, .chat-icon {
-    margin-right: 30px;
+.header-icon, .topic-icon, .chat-icon, .brainstorm-icon {
+  margin-right: 30px;
 }
 
 .delete-icon {
-    margin-left: auto;
-    cursor: pointer;
-    color: #888; /* grey color */
+  margin-left: auto;
+  cursor: pointer;
+  color: #888;
 }
 
-.topic:hover {
-    background-color: #ddd; /* Change background color when hovered over */
+.topic-list, .chat-list {
+  list-style-type: none;
+  padding: 0;
 }
 
-.active-topic {
-    background-color: #ddd;  /* Change background color */
-    border: 2px solid #333;  /* Add border */
+.topic, .chat, .brainstorm {
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 0.9em;
 }
 
-.chat-list {
-    list-style-type: none; /* Remove default bullet points */
-    padding: 0; /* Remove default padding */
+.topic:hover, .chat:hover, .brainstorm:hover {
+  background-color: #ddd;
 }
 
-.chat {
-    padding: 10px; /* Add some padding to each list item */
-    border-radius: 5px; /* Round the corners a bit */
-    margin-bottom: 10px; /* Add some space between list items */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    cursor: pointer; /* Change cursor style */
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    font-size: 0.9em; /* Decrease font size a bit */
-}
-
-.chat:hover {
-    background-color: #ddd; /* Change background color when hovered over */
-}
-
-.active-chat {
-    background-color: #ddd;  /* Change background color */
-    border: 2px solid #333;  /* Add border */
-}
-
-.main {
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    width: calc(100% - 300px);  /* Subtract sidebar width */
-    box-sizing: border-box;  /* Include padding in height calculation */
-    overflow: hidden; 
+.active-topic, .active-chat, .active-brainstorm {
+  background-color: #ddd;
+  border: 2px solid #333;
 }
 
 .chat-messages {
-    flex-grow: 1;  /* make the chat-messages container grow to take up any remaining space */
-    overflow-y: auto;  /* add scroll if the content exceeds the height */
-    margin-bottom: 20px;  /* add some space at the bottom */
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
 }
 
 .chat-message {
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    max-width: 60%;
-    clear: both;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  max-width: 60%;
+  clear: both;
 }
 
 .chat-message.user {
-    background-color: #d0d0d0;
-    float: right;  /* Align user messages to the right */
-    margin-right: 20px;  /* Add some space on the right */
+  background-color: #d0d0d0;
+  float: right;
+  margin-right: 20px;
 }
 
 .chat-message.bot {
-    background-color: #a0a0ff;
-    float: left;  /* Align bot messages to the left */
-    margin-left: 20px;  /* Add some space on the left */
+  background-color: #a0a0ff;
+  float: left;
+  margin-left: 20px;
 }
 
 .topic-match {
-    margin-top: 5;
-    padding: 5px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* TODO: minify the .topic and .chat styling, as they are essentially the same */
-/* TODO: this may involve brainstorming how they should differ */
-
-.topic, .chat {
-    font-size: 1em; /* Increase the font size */
-    font-weight: 500; /* Make the font a bit heavier */
-    line-height: 1.5; /* Increase the line height */
-}
-
-/* Add a hover effect to the topics and chats */
-.topic:hover, .chat:hover {
-    background-color: #e0e0e0; /* Slightly lighter color on hover */
-    border: 1px solid #999; /* Add a border on hover */
-}
-
-/* Use different colors for topics and chats */
-.topic {
-    background-color: #f0f0f0; /* Light grey for topics */
-}
-
-.chat {
-    background-color: #fff; /* White for chats */
-}
-
-/* Increase the padding for topics and chats */
-.topic, .chat {
-    padding: 15px; /* Increase the padding */
-}
-
-/* Add visual feedback for the current selection */
-.active-topic, .active-chat {
-    background-color: #ddd; /* Darker background for the selected item */
-    border: 2px solid #333; /* Add a border to the selected item */
+  margin-top: 5;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .send-message {
-    display: flex;
+  display: flex;
 }
 
 .send-message input[type="text"] {
-    width: 100%;
-    height: 40px; /* Increase height */
-    padding: 10px; /* Add padding */
-    border-radius: 10px; /* Make it round */
-    border: 1px solid #ddd; /* Add border */
-    box-sizing: border-box; /* Include padding and border in the width */
+  width: 100%;
+  height: 40px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
 .brainstorm {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    transition: background-color 0.3s ease;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: #d0f0d0; /* Different shade */
-}
-
-.brainstorm-icon {
-    margin-right: 30px;
-    color: #888; /* Grey icon */
+  background-color: #d0f0d0;
 }
 
 .active-brainstorm {
-    background-color: #b0e0b0; /* Different shade when active */
-    border: 2px solid #333;
+  background-color: #b0e0b0;
 }
 
 .new-topic-input {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    width: 90%;
-    margin-bottom: 10px;
-    transition: border 0.3s ease;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  width: 90%;
+  margin-bottom: 10px;
+  transition: border 0.3s ease;
 }
 
 .new-topic-input:focus {
-    border: 1px solid #333;
-    outline: none;
+  border: 1px solid #333;
+  outline: none;
 }
 
-/* This applies to all scrollable elements */
 ::-webkit-scrollbar {
-    width: 8px;  /* Width of the scrollbar */
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;  /* Background color of the track */
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;  /* Color of the scroll thumb */
-    border-radius: 4px;  /* Round the corners */
+  background: #888;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;  /* Darken the thumb color when hovering */
+  background: #555;
 }
