@@ -8,8 +8,8 @@ function App() {
   const [topics, setTopics] = useState({
     "Topic 1": {
       "Chat 1": [
-        { text: "Hello!", user: true, match: null },
-        { text: "Hi there!", user: false, match: null },
+        { text: "Hello!", user: true, match: null, chatId: 0 },
+        { text: "Hi there!", user: false, match: null, chatID: 1 },
         //... more messages
       ],
       //... more chats
@@ -26,7 +26,6 @@ function App() {
   const [brainstormActive, setBrainstormActive] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Topic 1");
   const [currentChat, setCurrentChat] = useState("Chat 1");
-  const [newTopicName, setNewTopicName] = useState("");
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const [currentTab, setCurrentTab] = useState('Topics');
   const chatEndRef = useRef(null);
@@ -50,12 +49,35 @@ function App() {
           }
         }
         setEditingNewTopic(false);
-        setNewTopicName("");
     }
   };
 
-  const addTopic = (name) => {
-    setTopics({ ...topics, [name]: [] });
+  const addChatUnderTopic = (chatName, chatId) => {
+    const brainstormChats = topics["Brainstorm"]["Brainstorm"];
+    let topicName = null;
+
+    // retrieve the nearest user message above this chatId to use as the topic name
+    for (let j = chatId - 1; j >= 0; j--) {
+      if (brainstormChats[j].user) {
+        topicName = brainstormChats[j].text;
+        break;
+      }
+    }
+
+    if (!topicName) return; // handle error here
+
+    // add a new topic if it doesn't already exist and add a new chat under that topic
+    setTopics(prevTopics => {
+      const updatedTopics = { ...prevTopics };
+      if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
+      if (!updatedTopics[topicName][chatName]) updatedTopics[topicName][chatName] = [];
+      
+      return updatedTopics;
+    });
+
+    // focus on the new chat and topic
+    setCurrentTopic(topicName);
+    setCurrentChat(chatName);
   };
 
   const deleteTopic = (name) => {
@@ -101,11 +123,13 @@ function App() {
       setTopics(prevTopics => {
         if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
 
+        const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
+
         const updatedTopics = {
           ...prevTopics,
           [topicName]: {
             ...prevTopics[topicName],
-            [chatName]: [...prevTopics[topicName][chatName], { text, user, match }],
+            [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
           },
         };
 
@@ -118,9 +142,19 @@ function App() {
   const handleTopicClick = (topicName) => {
     setCurrentTopic(topicName);
     setCurrentTab('Active Chats');
+    
+    // Set the first chat of the selected topic as the current chat
+    const availableChats = Object.keys(topics[topicName]);
+    if (availableChats.length > 0) {
+      setCurrentChat(null); // No chats left
+    } else {
+      setCurrentChat(availableChats[0]);
+    }
+
     // If brainstorm is currently active, deactivate it
     setBrainstormActive(false);
   };
+
 
   const handleBackClick = () => {
     setCurrentTab('Topics');
@@ -156,9 +190,7 @@ function App() {
     setCurrentChat, 
     deleteChat,
     deleteTopic,
-    newTopicName,
     handleTopicClick,
-    setNewTopicName,
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
@@ -168,9 +200,11 @@ function App() {
     currentTopic,
     currentChat,
     topics,
-    addTopic,
+    addChatUnderTopic,
     chatEndRef,
     brainstormActive,
+    currentTab,
+    handleNewMessage,
   }
   
 
@@ -183,7 +217,7 @@ function App() {
       </div>
       <div className="main">
         <MainChat {...mainProps} />
-        <MainInput handleNewMessage={handleNewMessage} brainstormActive={brainstormActive} />
+        <MainInput {...mainProps} />
       </div>
     </div>
   );

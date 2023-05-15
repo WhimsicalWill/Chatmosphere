@@ -51,9 +51,7 @@ export function SidebarContent({
   setCurrentChat, 
   deleteChat, 
   deleteTopic,
-  newTopicName,
   handleTopicClick,
-  setNewTopicName,
   submitNewTopicName,
   isEditingNewTopic,
   setEditingNewTopic 
@@ -64,8 +62,6 @@ export function SidebarContent({
       className="new-topic-input"
       type="text"
       placeholder="What do you want to talk about?"
-      value={newTopicName}
-      onChange={(event) => setNewTopicName(event.target.value)}
       onKeyDown={(event) => submitNewTopicName(event)}
       onBlur={() => setEditingNewTopic(false)}
     />

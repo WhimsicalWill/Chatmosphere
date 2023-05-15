@@ -6,7 +6,7 @@ export function MainChat({
   currentTopic,
   currentChat,
   topics,
-  addTopic,
+  addChatUnderTopic,
   chatEndRef,
   brainstormActive,
 }) {
@@ -28,16 +28,16 @@ export function MainChat({
           >
             {message.text}
             {message.match && 
-              <div className="topic-match">
+            <div className="topic-match">
                 <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => addTopic(message.match)}
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => addChatUnderTopic(message.match, message.chatId)} // added chatId
                 >
-                  {message.match}
+                {message.match}
                 </Button>
-              </div>
+            </div>
             }
           </div>
         ))
@@ -48,12 +48,13 @@ export function MainChat({
 }
 
 export function MainInput({ 
-  handleNewMessage,
   brainstormActive,
+  currentTab,
+  handleNewMessage,
 }) {
   return (
     <>
-      {!brainstormActive && (
+      {!brainstormActive && currentTab === 'Active Chats' && (
         <div className="send-message">
           <input id="messageInput" type="text" placeholder="Send a message." onKeyDown={async (event) => handleNewMessage(event)} />
         </div>
