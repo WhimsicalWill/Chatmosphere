@@ -22,7 +22,7 @@ body {
     overflow: auto; /* Enable scroll if content exceeds the height */
 }
 
-.topics-container {
+.sidebar-container {
     overflow: auto;
 }
 
@@ -33,18 +33,26 @@ body {
     padding: 10px 0;
 }
 
-.topics-header {
+.sidebar-header {
     display: flex;
     align-items: center;
     justify-content: start;
     margin-bottom: 20px; /* Add some space below the header */
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
 }
 
-.topics-header h2 {
+.sidebar-header h2 {
     margin: 0; /* Remove default margin */
     padding: 0; /* Remove default padding */
     font-size: 1.5em; /* Increase the font size a bit */
-    color: #333; /* Dark grey color for the header */
+}
+
+.sidebar-header a {
+  text-decoration: none;
+  color: inherit;
 }
 
 .header-icon {
@@ -68,7 +76,7 @@ body {
     font-size: 0.9em; /* Decrease font size a bit */
 }
 
-.topic-icon {
+.topic-icon, .chat-icon {
     margin-right: 30px;
 }
 
@@ -157,6 +165,41 @@ body {
     align-items: center;
 }
 
+/* TODO: minify the .topic and .chat styling, as they are essentially the same */
+/* TODO: this may involve brainstorming how they should differ */
+
+.topic, .chat {
+    font-size: 1em; /* Increase the font size */
+    font-weight: 500; /* Make the font a bit heavier */
+    line-height: 1.5; /* Increase the line height */
+}
+
+/* Add a hover effect to the topics and chats */
+.topic:hover, .chat:hover {
+    background-color: #e0e0e0; /* Slightly lighter color on hover */
+    border: 1px solid #999; /* Add a border on hover */
+}
+
+/* Use different colors for topics and chats */
+.topic {
+    background-color: #f0f0f0; /* Light grey for topics */
+}
+
+.chat {
+    background-color: #fff; /* White for chats */
+}
+
+/* Increase the padding for topics and chats */
+.topic, .chat {
+    padding: 15px; /* Increase the padding */
+}
+
+/* Add visual feedback for the current selection */
+.active-topic, .active-chat {
+    background-color: #ddd; /* Darker background for the selected item */
+    border: 2px solid #333; /* Add a border to the selected item */
+}
+
 .send-message {
     display: flex;
 }
@@ -204,4 +247,22 @@ body {
 .new-topic-input:focus {
     border: 1px solid #333;
     outline: none;
+}
+
+/* This applies to all scrollable elements */
+::-webkit-scrollbar {
+    width: 8px;  /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;  /* Background color of the track */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;  /* Color of the scroll thumb */
+    border-radius: 4px;  /* Round the corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;  /* Darken the thumb color when hovering */
 }

@@ -209,18 +209,32 @@ function App() {
   return (
     <div className="container">
       <div className="sidebar">
-        <div className="topics-container">
-          <div className="topics-header">
-            {/* TODO: try moving this out of the topics-header div*/}
-            <h2><Forum className='header-icon' /> Chatmos</h2>
-          </div>
+        <div className="sidebar-container">
+          <a href="https://github.com/WhimsicalWill/Chatmos" target="_blank" rel="noopener noreferrer">
+            <div className="sidebar-header">
+              <Forum className='header-icon' />
+                <h2>Chatmos</h2>
+              {/* Invisible 'dummy' icon to balance the visible icon */}
+              <IconButton style={{ visibility: "hidden" }}>
+                <Forum />
+              </IconButton>
+            </div>
+          </a>
+          {/* The tab header adds a dummy button for proper centering*/}
           <div className="tab-header">
-            {currentTab === 'Active Chats' && (
+            {currentTab === 'Active Chats' ? (
               <IconButton onClick={handleBackClick}>
+                <ArrowBackIcon />
+              </IconButton>
+            ) : (
+              <IconButton style={{ visibility: "hidden" }}>
                 <ArrowBackIcon />
               </IconButton>
             )}
             <h2>{currentTab}</h2>
+            <IconButton style={{ visibility: "hidden" }}>
+              <ArrowBackIcon />
+            </IconButton>
           </div>
           {currentTab === 'Topics' && (
             <>
