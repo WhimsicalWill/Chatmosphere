@@ -120,7 +120,7 @@ function App() {
       <div className="sidebar">
         <div className="conversations-container">
           <div className="conversations-header">
-            <h2><Forum className='header-icon' /> Conversations</h2>
+            <h2><Forum className='header-icon' /> Chatmos</h2>
           </div>
           {isNewChatActive ?
               <input
@@ -137,7 +137,7 @@ function App() {
                   className="conversation" 
                   onClick={() => startNewChat()}
               >
-                  <LightbulbIcon className='brainstorm-icon' /> New Chat
+                  <LightbulbIcon className='brainstorm-icon' /> New Topic
               </div>
           }
           <ul className="conversation-list">

@@ -1,6 +1,6 @@
-# Conversationalist
+# Chatmos
 
-Conversationalist is a web application designed to foster 1-1 human connections around specific topics or ideas. Users can cast out multiple conversations at once, maximizing their chances of making a connection. With the help of artificial intelligence, users are seamlessly matched with conversation partners based on their interests. The application also provides several additional functionalities like content moderation, language support, and sentiment analysis to ensure a safe and enriching user experience.
+Chatmos is a web application designed to foster 1-1 human connections around specific topics or ideas. Users can cast out multiple conversations at once, maximizing their chances of making a connection. With the help of artificial intelligence, users are seamlessly matched with conversation partners based on their interests. The application also provides several additional functionalities like content moderation, language support, and sentiment analysis to ensure a safe and enriching user experience.
 
 # Features
 - Topic-based Conversation Matching: Find other users interested in the same topics as you.
@@ -23,7 +23,7 @@ Download Anaconda [here](https://www.anaconda.com/download).
 Clone this repository to your local machine.
 
 ```bash
-git clone https://github.com/username/Conversationalist.git
+git clone https://github.com/username/Chatmos.git
 ```
 
 ## Frontend Setup
@@ -48,6 +48,12 @@ Navigate to the backend directory and create a new Conda environment from the `e
 cd backend
 conda env create -f environment.yml
 conda activate conv
+```
+
+Set your OpenAI API key as an environment variable.
+
+```bash
+export OPENAI_API_KEY=<your-api-key>
 ```
 
 Run the Flask server.
