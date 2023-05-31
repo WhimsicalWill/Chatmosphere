@@ -64,7 +64,11 @@ class ConversationMatcher:
         for idx, score in zip(I[0], D[0]):
             if idx in self.user_topic_ids[user_id]:
                 continue
-            res.append(self.conversations[idx])
+            res.append({
+                "chatName": self.conversations[idx],
+                "topicId": idx, # make sure these properties exist or are computed
+                "userId": 1 - user_id # TODO: make this scale to > 2 users
+            })
             if len(res) == self.k:
                 break
         return res

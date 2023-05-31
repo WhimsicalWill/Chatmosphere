@@ -31,6 +31,11 @@ class ChatApplication:
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
+        self.chat_id = 0
+    
+    def get_next_chat_id(self):
+        self.chat_id += 1
+        return self.chat_id
 
     # Define User and Conversation database models here
     def setup_models(self):
@@ -63,6 +68,7 @@ class ChatApplication:
         Conversation = self.Conversation
         matcher = self.matcher
         segway = self.segway
+        get_next_chat_id = self.get_next_chat_id
 
         # Define your API resources
         class UserResource(Resource):
@@ -107,6 +113,27 @@ class ChatApplication:
                     return {"error": "No topic provided"}, 400
 
 
+        class NextChatIdResource(Resource):
+            def get(self):
+                next_id = get_next_chat_id()  # Retrieve the next chat id
+                return {'nextChatId': next_id}, 200
+
+        class CreateChatResource(Resource):
+            def post(self):
+                topic = request.args.get('topic')
+                user_id = request.args.get('user_id')
+                if not topic or not user_id:
+                    return {"error": "Both topic and user_id are required"}, 400
+
+                # You'll have to replace these lines with your own logic
+                new_chat_id = get_next_chat_id()  # get the next chat id
+                chat_info = {"chatId": new_chat_id, "topic": topic, "users": [user_id]}  # construct the chat info
+                # store the chat info in memory or database
+
+                return chat_info, 200  # return the newly created chat info
+
+        self.api.add_resource(CreateChatResource, '/create-chat')
+        self.api.add_resource(NextChatIdResource, '/next-chat-id')  # Add new endpoint for retrieving next chat id
         self.api.add_resource(UserResource, '/user/<int:user_id>')
         self.api.add_resource(ConversationResource, '/conversation/<int:conversation_id>')
         self.api.add_resource(BotResponseResource, '/bot-response')

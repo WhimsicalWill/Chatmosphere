@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
-import Bot from './components/Bot';
+import ApiManager from './components/ApiManager';
 import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Sidebar';
 import { MainChat, MainInput } from './components/Main';
 import io from 'socket.io-client';
@@ -8,26 +8,31 @@ import io from 'socket.io-client';
 function App() {
   const userId = 0; // TODO: add user-authentication and retrieve the user's id
   const socket = io('http://localhost:5000');
+  
+  const createNewChat = (chatName) => {
+      return { id: ApiManager.getNextChatId(), name: chatName, messages: [] };
+  };
+
+  const exampleChat = createNewChat("Example Chat");
+  const brainstormChat = createNewChat("Brainstorm");
   const [topics, setTopics] = useState({
-    "Topic 1": {
-      "Chat 1": [
-        { text: "Hello!", user: true, match: null, chatId: 0 },
-        { text: "Hi there!", user: false, match: null, chatID: 1 },
-        //... more messages
-      ],
+    "Example Topic": {
+      // each message formatted as { text: "Hello!", user: true, matchInfo: null, messageId: 0 },
+      "Example Chat": exampleChat,
       //... more chats
     },
     // this topic / chat is specifically for the bot to process new topics
-    // TODO: separate out this logic and handle it more cleanly
     "Brainstorm": {
-      "Brainstorm": [
-        //... chats for Brainstorm
-      ],
+      "Brainstorm": brainstormChat,
     },
     //... more topics
   });
+  const topicChatMap = {
+    [exampleChat.id]: ['Example Topic', 'Example Chat'],
+    [brainstormChat.id]: ['Brainstorm', 'Brainstorm']
+  };
   const [brainstormActive, setBrainstormActive] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("Topic 1");
+  const [currentTopic, setCurrentTopic] = useState("Example Topic");
   const [currentChat, setCurrentChat] = useState(null);
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const [currentTab, setCurrentTab] = useState('Topics');
@@ -45,42 +50,60 @@ function App() {
         event.target.value = '';
         if (message) {
           setBrainstormActive(true);
-          await addChatMessage('Brainstorm', 'Brainstorm', message, true);
-          const botResponses = await Bot.getResponse(message);
+          // TODO: might have to pass null in place of the botResponse.matchInfo
+          await socket.emit('new_message', brainstormChat.id, message, true);
+          const botResponses = await ApiManager.getResponse(message);
           for (const botResponse of botResponses) {
-            await addChatMessage('Brainstorm', 'Brainstorm', botResponse.text, false, botResponse.match);
+            await socket.emit('new_message', brainstormChat.id, botResponse.text, false, botResponse.matchInfo);
           }
         }
         setEditingNewTopic(false);
     }
   };
 
-  const addChatUnderTopic = (chatName, chatId) => {
+  const addChatUnderTopic = async (matchInfo, messageId) => {
     const brainstormChats = topics["Brainstorm"]["Brainstorm"];
     let topicName = null;
 
-    // retrieve the nearest user message above this chatId to use as the topic name
-    for (let j = chatId - 1; j >= 0; j--) {
+    // Call backend to create a new chat (with a chat id)
+    const chatId = await ApiManager.createChatAndGetId(matchInfo.userId, matchInfo.topicId);
+    if (!chatId) {
+      console.error('Failed to create a new chat');
+      return;
+    }
+
+    // Retrieve the nearest user message above this messageId to use as the topic name
+    for (let j = messageId - 1; j >= 0; j--) {
       if (brainstormChats[j].user) {
         topicName = brainstormChats[j].text;
         break;
       }
     }
 
-    if (!topicName) return; // handle error here
+    if (!topicName) {
+      console.error('Failed to find a user message to use as the topic name');
+      return;
+    }
 
-    // add a new topic if it doesn't already exist and add a new chat under that topic
+    // Add a new topic if it doesn't already exist and add a new chat under that topic
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
-      if (!updatedTopics[topicName][chatName]) updatedTopics[topicName][chatName] = [];
-      
+
+      // Use matchInfo.text as the chat title
+      const chatTitle = matchInfo.chatName;
+      if (!updatedTopics[topicName][chatTitle]) 
+        updatedTopics[topicName][chatTitle] = createNewChat(chatTitle, chatId);
+
       return updatedTopics;
     });
 
-    // focus on the new chat and topic
+    // Update topicChatMap
+    topicChatMap[chatId] = [topicName, matchInfo.chatName];
+
+    // Focus on the new chat and topic
     setCurrentTopic(topicName);
-    setCurrentChat(chatName);
+    setCurrentChat(chatTitle);
   };
 
   const deleteTopic = (name) => {
@@ -121,47 +144,21 @@ function App() {
     });
   };
 
-  // const addChatMessage = (topicName, chatName, text, user, match=null) => {
-  //   return new Promise(resolve => {
-  //     setTopics(prevTopics => {
-  //       if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
-
-  //       const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
-
-  //       const updatedTopics = {
-  //         ...prevTopics,
-  //         [topicName]: {
-  //           ...prevTopics[topicName],
-  //           [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
-  //         },
-  //       };
-
-  //       resolve(updatedTopics);
-  //       return updatedTopics;
-  //     });
-  //   });
-  // };
-
-  const addChatMessage = (message) => {
-    // Emit a new_message event with the message
-    socket.emit('new_message', message);
-  };
-
   socket.on('chat', (response) => {
     // When a chat event is received, add the message to state
     setTopics(prevTopics => {
       // You'd need to determine the topicName and chatName from the response
-      const { topicName, chatName, text, user, match } = response;
+      const { topicName, chatName, text, user, matchInfo } = response;
 
       if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
 
-      const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
+      const messageId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the messageId
 
       const updatedTopics = {
         ...prevTopics,
         [topicName]: {
           ...prevTopics[topicName],
-          [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
+          [chatName]: [...prevTopics[topicName][chatName], { text, user, matchInfo, messageId }],
         },
       };
 
@@ -199,16 +196,16 @@ function App() {
       event.target.value = '';
       // TODO: this if else can be made more readable
       if (message && currentTopic !== 'Brainstorm') {
-        await addChatMessage(currentTopic, currentChat, message, true);
-        const randomBotResponse = Bot.getRandomResponse(message, userId);
+        await socket.emit('new_message', currentChat.id, message, true, null);
+        const randomBotResponse = ApiManager.getRandomResponse(message, userId);
         // TODO: remove the line below, since the other use will be sending messages
-        await addChatMessage(currentTopic, currentChat, randomBotResponse, false);
+        await socket.emit('new_message', currentChat.id, randomBotResponse, true, null);
       }
       else if (message) {
-        await addChatMessage(currentTopic, currentChat, message, true);
-        const botResponses = await Bot.getResponse(message, userId);
+        await socket.emit('new_message', currentChat.id, message, true, null);
+        const botResponses = await ApiManager.getResponse(message, userId);
         for (const botResponse of botResponses) {
-          await addChatMessage(currentTopic, currentChat, botResponse.text, false, botResponse.match);
+          await socket.emit('new_message', currentChat.id, botResponse.text, false, botResponse.matchInfo);
         }
       }
     }
