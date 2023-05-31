@@ -10,21 +10,28 @@ class Bot {
     return randomResponse;
   }
 
-  static async getResponse(message) {
+  static async getResponse(message, userId) {
     try {
       const response = await axiosInstance.get('/bot-response', {
-        params: { topic: message }
+        params: { 
+          topic: message,
+          userId: userId,
+        }
       });
+
       console.log(response.data);
       const convMatches = response.data.similar_conversations;
       const segwayResponses = response.data.segway_response.split('\n');
       console.log(convMatches);
       console.log(segwayResponses);
+
       const combined = segwayResponses.map((segwayResponse, i) => ({
-         text: segwayResponse, 
-         match: convMatches[i] 
+        text: segwayResponse,
+        match: convMatches[i]
       }));
+
       return combined;
+
     } catch (error) {
       console.error(error);
       return [{ text: "An error occurred :(", match: "" }]; // return an array with one element in the case of an error

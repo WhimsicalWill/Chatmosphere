@@ -2,12 +2,13 @@ import os
 import json
 import os
 
-from flask import Flask, request, render_template
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 from flask_cors import CORS
 
 from matching import ConversationMatcher, ConversationSegway
+from extensions import socketio
 
 
 class ChatApplication:
@@ -25,6 +26,8 @@ class ChatApplication:
         self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         os.makedirs(self.db_dir, exist_ok=True)
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
+        socketio.init_app(self.app)
+        socketio.run(self.app)
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
@@ -83,9 +86,9 @@ class ChatApplication:
         class BotResponseResource(Resource):
             def get(self):
                 topic = request.args.get('topic')
+                user_id = request.args.get('user_id')
                 if topic:
-                    similar_convs = matcher.get_similar_conversations(topic)
-                    print(f"Similar conversations:\n{similar_convs}")
+                    similar_convs = matcher.get_similar_conversations(topic, user_id)
                     segway_response = segway.get_response(topic, similar_convs)
                     return {'similar_conversations': similar_convs, 'segway_response': segway_response}, 200
                 else:
@@ -109,10 +112,11 @@ class ChatApplication:
         self.api.add_resource(BotResponseResource, '/bot-response')
 
     def setup_conversation_handler(self):
-        self.matcher = ConversationMatcher(k=3)
+        self.matcher = ConversationMatcher(k=2)
         with open(os.path.join(self.db_dir, 'mock_convs.json')) as f:
             data = json.load(f)  # TODO: Load from actual SQL database
-        self.matcher.add_conversations([conv['topic'] for conv in data['conversations']])
+        convs = [(conv['user_id'], conv['topic']) for conv in data['conversations']]
+        self.matcher.add_conversations(convs)
         self.segway = ConversationSegway()
 
     def run(self):

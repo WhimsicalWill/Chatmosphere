@@ -3,8 +3,11 @@ import './App.css';
 import Bot from './components/Bot';
 import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Sidebar';
 import { MainChat, MainInput } from './components/Main';
+import io from 'socket.io-client';
 
 function App() {
+  const userId = 0; // TODO: add user-authentication and retrieve the user's id
+  const socket = io('http://localhost:5000');
   const [topics, setTopics] = useState({
     "Topic 1": {
       "Chat 1": [
@@ -118,26 +121,53 @@ function App() {
     });
   };
 
-  const addChatMessage = (topicName, chatName, text, user, match=null) => {
-    return new Promise(resolve => {
-      setTopics(prevTopics => {
-        if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
+  // const addChatMessage = (topicName, chatName, text, user, match=null) => {
+  //   return new Promise(resolve => {
+  //     setTopics(prevTopics => {
+  //       if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
 
-        const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
+  //       const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
 
-        const updatedTopics = {
-          ...prevTopics,
-          [topicName]: {
-            ...prevTopics[topicName],
-            [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
-          },
-        };
+  //       const updatedTopics = {
+  //         ...prevTopics,
+  //         [topicName]: {
+  //           ...prevTopics[topicName],
+  //           [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
+  //         },
+  //       };
 
-        resolve(updatedTopics);
-        return updatedTopics;
-      });
-    });
+  //       resolve(updatedTopics);
+  //       return updatedTopics;
+  //     });
+  //   });
+  // };
+
+  const addChatMessage = (message) => {
+    // Emit a new_message event with the message
+    socket.emit('new_message', message);
   };
+
+  socket.on('chat', (response) => {
+    // When a chat event is received, add the message to state
+    setTopics(prevTopics => {
+      // You'd need to determine the topicName and chatName from the response
+      const { topicName, chatName, text, user, match } = response;
+
+      if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
+
+      const chatId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the chatId
+
+      const updatedTopics = {
+        ...prevTopics,
+        [topicName]: {
+          ...prevTopics[topicName],
+          [chatName]: [...prevTopics[topicName][chatName], { text, user, match, chatId }],
+        },
+      };
+
+      return updatedTopics;
+    });
+  });
 
   const handleTopicClick = (topicName) => {
     setCurrentTopic(topicName);
@@ -170,12 +200,13 @@ function App() {
       // TODO: this if else can be made more readable
       if (message && currentTopic !== 'Brainstorm') {
         await addChatMessage(currentTopic, currentChat, message, true);
-        const randomBotResponse = Bot.getRandomResponse(message);
+        const randomBotResponse = Bot.getRandomResponse(message, userId);
+        // TODO: remove the line below, since the other use will be sending messages
         await addChatMessage(currentTopic, currentChat, randomBotResponse, false);
       }
       else if (message) {
         await addChatMessage(currentTopic, currentChat, message, true);
-        const botResponses = await Bot.getResponse(message);
+        const botResponses = await Bot.getResponse(message, userId);
         for (const botResponse of botResponses) {
           await addChatMessage(currentTopic, currentChat, botResponse.text, false, botResponse.match);
         }
