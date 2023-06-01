@@ -8,7 +8,7 @@ from flask_restful import Resource, Api
 from flask_cors import CORS
 
 from matching import ConversationMatcher, ConversationSegway
-from extensions import socketio
+from events import socketio
 
 
 class ChatApplication:
@@ -120,8 +120,8 @@ class ChatApplication:
 
         class CreateChatResource(Resource):
             def post(self):
-                topic_id = request.args.get('topicId')
                 other_user_id = request.args.get('otherUserId')
+                topic_id = request.args.get('topicId')
                 if not topic_id or not other_user_id:
                     return {"error": "Both topic_id and other_user_id are required"}, 400
 
