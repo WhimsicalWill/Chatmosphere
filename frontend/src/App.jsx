@@ -7,6 +7,7 @@ import io from 'socket.io-client';
 
 function App() {
   const userId = 0; // TODO: add user-authentication and retrieve the user's id
+  const botId = -1;
   const socket = io('http://localhost:5000');
   
   const createNewChat = (chatName) => {
@@ -18,6 +19,7 @@ function App() {
   const [topics, setTopics] = useState({
     "Example Topic": {
       // each message formatted as { text: "Hello!", user: true, matchInfo: null, messageId: 0 },
+      // TODO: use chatId instead of chatName for uniqueness
       "Example Chat": exampleChat,
       //... more chats
     },
@@ -71,6 +73,8 @@ function App() {
       console.error('Failed to create a new chat');
       return;
     }
+    // call socket.join to join a room with the chatId
+    socket.emit('join', { username: userId, room: chatId });
 
     // Retrieve the nearest user message above this messageId to use as the topic name
     for (let j = messageId - 1; j >= 0; j--) {
@@ -107,6 +111,7 @@ function App() {
   };
 
   const deleteTopic = (name) => {
+    // TODO: socket leave room by chatId
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       delete updatedTopics[name];
@@ -123,6 +128,7 @@ function App() {
   };
 
   const deleteChat = (topicName, chatName) => {
+    // TODO: socket leave room by chatId
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       if (!updatedTopics[topicName]) return updatedTopics; // handle error here
@@ -132,6 +138,7 @@ function App() {
 
       updatedTopics[topicName] = updatedChats;
 
+      // TODO: should use chatId instead of chatName for uniqueness
       if (currentChat === chatName) {
         const remainingChats = Object.keys(updatedChats);
         if (remainingChats.length > 0) {
@@ -152,19 +159,25 @@ function App() {
 
       if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics; // handle error here
 
-      const messageId = prevTopics[topicName][chatName].length; // Use the length of the chat array as the messageId
+      const messageId = prevTopics[topicName][chatName].messages.length; // Use the length of the messages array as the messageId
+
+      const updatedChat = {
+        ...prevTopics[topicName][chatName],
+        messages: [...prevTopics[topicName][chatName].messages, { text, user, matchInfo, messageId }]
+      };
 
       const updatedTopics = {
         ...prevTopics,
         [topicName]: {
           ...prevTopics[topicName],
-          [chatName]: [...prevTopics[topicName][chatName], { text, user, matchInfo, messageId }],
+          [chatName]: updatedChat,
         },
       };
 
       return updatedTopics;
     });
   });
+
 
   const handleTopicClick = (topicName) => {
     setCurrentTopic(topicName);
@@ -196,16 +209,37 @@ function App() {
       event.target.value = '';
       // TODO: this if else can be made more readable
       if (message && currentTopic !== 'Brainstorm') {
-        await socket.emit('new_message', currentChat.id, message, true, null);
+        // { username: userId, room: chatId }
+        await socket.emit('new_message', { 
+          room: currentChat.id,
+          message: message,
+          userId: userId,
+          matchInfo: null,
+        });
         const randomBotResponse = ApiManager.getRandomResponse(message, userId);
         // TODO: remove the line below, since the other use will be sending messages
-        await socket.emit('new_message', currentChat.id, randomBotResponse, true, null);
+        await socket.emit('new_message', { 
+          room: currentChat.id,
+          message: randomBotResponse,
+          userId: botId,
+          matchInfo: null,
+        });
       }
       else if (message) {
-        await socket.emit('new_message', currentChat.id, message, true, null);
+        await socket.emit('new_message', { 
+          room: currentChat.id,
+          message: message,
+          userId: userId,
+          matchInfo: null,
+        });
         const botResponses = await ApiManager.getResponse(message, userId);
         for (const botResponse of botResponses) {
-          await socket.emit('new_message', currentChat.id, botResponse.text, false, botResponse.matchInfo);
+          await socket.emit('new_message', { 
+            room: currentChat.id,
+            message: botResponse.text,
+            userId: botId,
+            match: botResponse.matchInfo,
+          });
         }
       }
     }

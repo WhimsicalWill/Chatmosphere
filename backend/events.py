@@ -1,33 +1,32 @@
-from flask import request
-from flask_socketio import emit
+from flask_socketio import join_room, leave_room, send
 
 from extensions import socketio
-
-users = {}
 
 @socketio.on("connect")
 def handle_connect():
     print("Client connected!")
 
-@socketio.on("user_join")
-def handle_user_join(username):
-    print(f"User {username} joined!")
-    users[username] = request.sid
+@socketio.on('join')
+def on_join(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    send(f'{username} has entered the room.', room=room)
 
-#   const { topicName, chatName, text, user, match } = response;
+@socketio.on('leave')
+def on_leave(data):
+    username = data['username']
+    room = data['room']
+    leave_room(room)
+    send(f'{username} has left the room.', room=room)
+
 @socketio.on("new_message")
-def handle_new_message(message):
-    # topic and chat name determine the room
+def handle_new_message(data):
+    print(f"New message received from {data['userId']}!")
+    send(data, room=data['room'])
 
-    # broadcast a new chat message to all users in the room
-
-    # should the AI response also be handled this way?
-    # answer: yes, because this script will also handle adding to db
-    # and handling everything in one place simplifies logic
-
-    print(f"New message: {message}")
-    username = None 
-    for user in users:
-        if users[user] == request.sid:
-            username = user
-    emit("chat", {"message": message, "username": username}, broadcast=True)
+# How to use on the frontend:
+# const socket = io.connect('http://localhost:5000');
+# socket.emit('join', { username: 'Alice', room: 'chatroom1' });
+# socket.emit('leave', { username: 'Alice', room: 'chatroom1' });
+# socket.emit('message', { username: 'Alice', room: 'chatroom1', message: 'Hello, everyone!' });

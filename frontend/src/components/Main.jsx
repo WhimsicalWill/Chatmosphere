@@ -42,7 +42,7 @@ export function MainChat({
             <h1 className="chat-header-text">{chatHeaderText}</h1>
           </div> 
           {
-            chatToRender.map((message, index) => (
+            chatToRender.messages.map((message, index) => (
             <div
               key={index}
               className={`chat-message ${message.user ? 'user' : 'bot'}`}

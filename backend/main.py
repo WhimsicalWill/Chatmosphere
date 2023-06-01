@@ -27,7 +27,7 @@ class ChatApplication:
         os.makedirs(self.db_dir, exist_ok=True)
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
         socketio.init_app(self.app)
-        socketio.run(self.app)
+        socketio.run(self.app, cors_allowed_origins="*")
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
@@ -120,20 +120,20 @@ class ChatApplication:
 
         class CreateChatResource(Resource):
             def post(self):
-                topic = request.args.get('topic')
-                user_id = request.args.get('user_id')
-                if not topic or not user_id:
-                    return {"error": "Both topic and user_id are required"}, 400
+                topic_id = request.args.get('topicId')
+                other_user_id = request.args.get('otherUserId')
+                if not topic_id or not other_user_id:
+                    return {"error": "Both topic_id and other_user_id are required"}, 400
 
-                # You'll have to replace these lines with your own logic
-                new_chat_id = get_next_chat_id()  # get the next chat id
-                chat_info = {"chatId": new_chat_id, "topic": topic, "users": [user_id]}  # construct the chat info
-                # store the chat info in memory or database
+                new_chat_id = get_next_chat_id()
+                chat_info = {"chatId": new_chat_id}
+                socketio.emit('new_chat', chat_info, room=other_user_id)
 
                 return chat_info, 200  # return the newly created chat info
 
+
         self.api.add_resource(CreateChatResource, '/create-chat')
-        self.api.add_resource(NextChatIdResource, '/next-chat-id')  # Add new endpoint for retrieving next chat id
+        self.api.add_resource(NextChatIdResource, '/next-chat-id')
         self.api.add_resource(UserResource, '/user/<int:user_id>')
         self.api.add_resource(ConversationResource, '/conversation/<int:conversation_id>')
         self.api.add_resource(BotResponseResource, '/bot-response')
