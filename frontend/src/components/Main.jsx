@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 
 export function MainChat({ 
+  brainstormId,
   currentTopic,
   currentChat,
   topics,
@@ -10,14 +11,16 @@ export function MainChat({
   chatEndRef,
   brainstormActive,
   userId,
-  isLoading,
 }) {
   
-  const shouldRenderChat = isLoading && (brainstormActive || (currentTopic && currentChat));
+  // TODO: remember to be careful about IDs for currentTopic/Chat, as 0 might eval to false
+  const shouldRenderChat = brainstormActive || (currentTopic && currentChat);
   let chatToRender = [];
+  let chatHeaderText = "";
 
   if (shouldRenderChat) {
-    chatToRender = brainstormActive ? topics["Brainstorm"]["Brainstorm"] : topics[currentTopic][currentChat];
+    chatToRender = brainstormActive ? topics["Brainstorm"][brainstormId] : topics[currentTopic][currentChat];
+    chatHeaderText = brainstormActive ? "AI Helper" : topics[currentTopic][currentChat].name;
   }
 
   const instructionOverview = (
@@ -32,7 +35,6 @@ export function MainChat({
     </div>
   );
 
-  const chatHeaderText = brainstormActive ? "AI Helper" : currentChat;
 
   return (
     <div className="chat-messages">

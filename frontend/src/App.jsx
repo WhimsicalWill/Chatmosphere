@@ -3,61 +3,39 @@ import './App.css';
 import ApiManager from './ApiManager';
 import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Sidebar';
 import { MainChat, MainInput } from './components/Main';
-import { useSocket } from './Socket';
+import { setupSocket } from './Socket';
 
 function App() {
-  const userId = 0; // TODO: add user-authentication and retrieve the user's id
+  // TODO: add user-authentication and retrieve the user's id
+  const userId = 0;
   const botId = -1;
-  
-  const [topics, setTopics] = useState({});
-  const [brainstormChat, setBrainstormChat] = useState(null);
-  const [topicChatMap, setTopicChatMap] = useState({}); 
+  const brainstormId = -1;
+
+  // state variables cause the component to re-render when they are updated
   const [brainstormActive, setBrainstormActive] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("Example Topic");
+  const [currentTopic, setCurrentTopic] = useState(null);
   const [currentChat, setCurrentChat] = useState(null);
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const [currentTab, setCurrentTab] = useState('Topics');
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [topics, setTopics] = useState({
+    "Brainstorm": {
+      // each message formatted as { text: "Hello!", user: true, matchInfo: null, messageId: 0 },
+      [brainstormId]: { name: "Brainstorm", messages: [] },
+      //... more chats
+    },
+    //... more topics
+  });
+
+  // ref variables are persistent and changes to them do not cause the component to re-render
   const chatEndRef = useRef(null);
-  const socketRef = useSocket({ userId, setTopics, setTopicChatMap, setCurrentTopic, setCurrentChat, topicChatMap });
+  const socketRef = useRef(null);
 
-  // TODO: there is a cycle in our dependencies
-  // Socket depends on topicChatMap
-  // but topicChatMap depends on socket
-  const fetchInitialData = async () => {
-    const chatId = await ApiManager.getNextChatId();
-    const chatName = "Brainstorm";
-
-    const newBrainstormChat = { id: chatId, name: chatName, messages: [] };
-    setBrainstormChat(newBrainstormChat);
-
-    socketRef.current.emit('join', { username: userId, room: chatId });
-    console.log('Joined brainstorm chat room:', chatId)
-
-    const newTopics = {
-      "Brainstorm": {
-        "Brainstorm": newBrainstormChat,
-      },
-      //... more topics
-    };
-    setTopics(newTopics);
-
-    const newTopicChatMap = {
-      [chatId]: ['Brainstorm', 'Brainstorm']
-    };
-    setTopicChatMap(newTopicChatMap);
-    console.log(newTopicChatMap);
-    console.log(topicChatMap);
-  }
-
+  // This effect ensures we only set up the socket once, when App is mounted
   useEffect(() => {
-    if (socketRef.current) {
-      fetchInitialData().then(() => setIsLoading(false));
-    }
-  }, [socketRef.current]);
-
-  // debugging socketRef.current
-  console.log('socketRef.current:', socketRef.current);
+      const cleanup = setupSocket({ socketRef, brainstormId, userId, topics, setTopics });
+      return cleanup;
+  }, []);
 
   // This effect will run whenever the current topic changes
   useEffect(() => {
@@ -67,6 +45,13 @@ function App() {
   // TODO: remove duplicated brainstorm logic (in this and sendMessage)
   const submitNewTopicName = async (event) => {
     if (event.key === 'Enter') {
+
+        // return early if socket is not setup yet
+        if (!socketRef.current) {
+         console.log('Socket not setup yet');
+         return;
+        }
+
         event.preventDefault(); // Prevent form submission
         const message = event.target.value;
         event.target.value = '';
@@ -74,7 +59,7 @@ function App() {
           setBrainstormActive(true);
           // TODO: might have to pass null in place of the botResponse.matchInfo
           socketRef.current.emit('new_message', { 
-            room: brainstormChat.id,
+            room: brainstormId,
             message: message,
             userId: userId,
             match: null,
@@ -82,7 +67,7 @@ function App() {
           const botResponses = await ApiManager.getResponse(message, userId);
           for (const botResponse of botResponses) {
             socketRef.current.emit('new_message', { 
-              room: brainstormChat.id,
+              room: brainstormId,
               message: botResponse.text,
               userId: botId,
               match: botResponse.matchInfo,
@@ -94,7 +79,7 @@ function App() {
   };
 
   const addChatUnderTopic = async (matchInfo, messageId) => {
-    const brainstormChats = topics["Brainstorm"]["Brainstorm"];
+    const brainstormChat = topics["Brainstorm"][brainstormId];
     let topicName = null;
 
     // Call backend to create a new chat (with a chat id)
@@ -108,8 +93,8 @@ function App() {
 
     // Retrieve the nearest user message above this messageId to use as the topic name
     for (let j = messageId - 1; j >= 0; j--) {
-      if (brainstormChats[j].user) {
-        topicName = brainstormChats[j].text;
+      if (brainstormChat[j].user === userId) {
+        topicName = brainstormChat[j].text;
         break;
       }
     }
@@ -127,20 +112,15 @@ function App() {
       if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
 
       // Use matchInfo.text as the chat title
-      if (!updatedTopics[topicName][chatName]) 
-        updatedTopics[topicName][chatName] = { id: chatId, name: chatName, messages: [] }
+      if (!updatedTopics[topicName][chatId]) 
+        updatedTopics[topicName][chatId] = { name: chatName, messages: [] }
 
       return updatedTopics;
     });
 
-    setTopicChatMap(prevTopicChatMap => ({
-      ...prevTopicChatMap,
-      [chatId]: [topicName, matchInfo.chatName]
-    }));
-
     // Focus on the new chat and topic
     setCurrentTopic(topicName);
-    setCurrentChat(chatName);
+    setCurrentChat(chatId);
   };
 
   const deleteTopic = (name) => {
@@ -160,19 +140,19 @@ function App() {
     });
   };
 
-  const deleteChat = (topicName, chatName) => {
+  // changed chatName to chatId
+  const deleteChat = (topicName, chatId) => {
     // TODO: socketRef.current leave room by chatId
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       if (!updatedTopics[topicName]) return updatedTopics; // handle error here
 
       const updatedChats = { ...updatedTopics[topicName] };
-      delete updatedChats[chatName];
+      delete updatedChats[chatId];
 
       updatedTopics[topicName] = updatedChats;
 
-      // TODO: should use chatId instead of chatName for uniqueness
-      if (currentChat === chatName) {
+      if (currentChat === chatId) {
         const remainingChats = Object.keys(updatedChats);
         if (remainingChats.length > 0) {
           setCurrentChat(remainingChats[0]); // Select the first remaining chat
@@ -208,6 +188,13 @@ function App() {
 
   const handleNewMessage = async (event) => {
     if (event.key === 'Enter') {
+      
+      // return early if socket is not setup yet
+      if (!socketRef.current) {
+        console.log('Socket not setup yet');
+        return;
+      }
+
       event.preventDefault(); // Prevent form submission
       const message = event.target.value;
       event.target.value = '';
@@ -216,7 +203,7 @@ function App() {
       if (message && currentTopic !== 'Brainstorm') {
         // { username: userId, room: chatId }
         socketRef.current.emit('new_message', { 
-          room: currentChat.id,
+          room: currentChat,
           message: message,
           userId: userId,
           matchInfo: null,
@@ -224,7 +211,7 @@ function App() {
         const randomBotResponse = ApiManager.getRandomResponse(message, userId);
         // TODO: remove the line below, since the other use will be sending messages
         socketRef.current.emit('new_message', { 
-          room: currentChat.id,
+          room: currentChat,
           message: randomBotResponse,
           userId: botId,
           matchInfo: null,
@@ -232,7 +219,7 @@ function App() {
       }
       else if (message) {
         socketRef.current.emit('new_message', { 
-          room: currentChat.id,
+          room: currentChat,
           message: message,
           userId: userId,
           matchInfo: null,
@@ -240,7 +227,7 @@ function App() {
         const botResponses = await ApiManager.getResponse(message, userId);
         for (const botResponse of botResponses) {
           socketRef.current.emit('new_message', { 
-            room: currentChat.id,
+            room: currentChat,
             message: botResponse.text,
             userId: botId,
             match: botResponse.matchInfo,
@@ -267,6 +254,7 @@ function App() {
   };
 
   const mainProps = {
+    brainstormId,
     currentTopic,
     currentChat,
     topics,
@@ -276,7 +264,6 @@ function App() {
     currentTab,
     handleNewMessage,
     userId,
-    isLoading,
   }
   
 

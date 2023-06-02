@@ -109,19 +109,19 @@ export function SidebarContent({
       )}
       {currentTab === 'Active Chats' && (
         <ul className="chat-list">
-          {Object.keys(topics[currentTopic]).map((chatName, index) => (
+          {Object.keys(topics[currentTopic]).map((chatId, index) => (
             <li
               key={index}
-              onClick={() => setCurrentChat(chatName, false)}
-              className={`chat ${currentChat === chatName && !brainstormActive ? "active-chat" : ""}`}
+              onClick={() => setCurrentChat(chatId)}
+              className={`chat ${currentChat === chatId && !brainstormActive ? "active-chat" : ""}`}
             >
               {/* TODO: Find a better icon for topic */}
-              <ChatBubble className='chat-icon' /> {chatName}
+              <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].chatName}
               <DeleteIcon 
                 className='delete-icon' 
                 onClick={(event) => {
                   event.stopPropagation(); // prevent the sidebar click event from firing
-                  deleteChat(currentTopic, chatName);
+                  deleteChat(currentTopic, chatId);
                 }}
               />
             </li>
