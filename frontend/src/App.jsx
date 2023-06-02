@@ -20,7 +20,7 @@ function App() {
 
   const [topics, setTopics] = useState({
     "Brainstorm": {
-      // each message formatted as { text: "Hello!", user: true, matchInfo: null, messageId: 0 },
+      // each message formatted as { message: "Hello!", user: true, matchInfo: null, messageId: 0 },
       [brainstormId]: { name: "Brainstorm", messages: [] },
       //... more chats
     },
@@ -59,18 +59,18 @@ function App() {
           setBrainstormActive(true);
           // TODO: might have to pass null in place of the botResponse.matchInfo
           socketRef.current.emit('new_message', { 
-            room: brainstormId,
+            chatId: brainstormId,
             message: message,
             userId: userId,
-            match: null,
+            matchInfo: null,
           });
           const botResponses = await ApiManager.getResponse(message, userId);
           for (const botResponse of botResponses) {
             socketRef.current.emit('new_message', { 
-              room: brainstormId,
+              chatId: brainstormId,
               message: botResponse.text,
               userId: botId,
-              match: botResponse.matchInfo,
+              matchInfo: botResponse.matchInfo,
             });
           }
         }
@@ -203,7 +203,7 @@ function App() {
       if (message && currentTopic !== 'Brainstorm') {
         // { username: userId, room: chatId }
         socketRef.current.emit('new_message', { 
-          room: currentChat,
+          chatId: currentChat,
           message: message,
           userId: userId,
           matchInfo: null,
@@ -211,7 +211,7 @@ function App() {
         const randomBotResponse = ApiManager.getRandomResponse(message, userId);
         // TODO: remove the line below, since the other use will be sending messages
         socketRef.current.emit('new_message', { 
-          room: currentChat,
+          chatId: currentChat,
           message: randomBotResponse,
           userId: botId,
           matchInfo: null,
@@ -219,7 +219,7 @@ function App() {
       }
       else if (message) {
         socketRef.current.emit('new_message', { 
-          room: currentChat,
+          chatId: currentChat,
           message: message,
           userId: userId,
           matchInfo: null,
@@ -227,10 +227,10 @@ function App() {
         const botResponses = await ApiManager.getResponse(message, userId);
         for (const botResponse of botResponses) {
           socketRef.current.emit('new_message', { 
-            room: currentChat,
+            chatId: currentChat,
             message: botResponse.text,
             userId: botId,
-            match: botResponse.matchInfo,
+            matchInfo: botResponse.matchInfo,
           });
         }
       }

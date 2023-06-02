@@ -49,18 +49,18 @@ export function MainChat({
             chatToRender.messages.map((message, index) => (
             <div
               key={index}
-              className={`chat-message ${message.user === userId ? 'user' : 'bot'}`}
+              className={`chat-message ${message.userId === userId ? 'user' : 'bot'}`}
             >
-              {message.text}
+              {message.message}
               {message.matchInfo && 
               <div className="topic-match">
                 <Button
                 variant="contained"
                 color="primary"
                 startIcon={<AddIcon />}
-                onClick={() => addChatUnderTopic(message.matchInfo, message.messageId)} // added messageId
+                onClick={() => addChatUnderTopic(message.matchInfo, message.messageId)}
                 >
-                {message.matchInfo.text}
+                {message.matchInfo.chatName}
                 </Button>
               </div>
               }

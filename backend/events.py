@@ -25,7 +25,7 @@ def on_leave(data):
 @socketio.on("new_message")
 def handle_new_message(data):
     print(f"New message received from {data['userId']}!")
-    send(data, room=data['room'])
+    send(data, room=data['chatId'])
 
 # How to use on the frontend:
 # const socket = io.connect('http://localhost:5000');

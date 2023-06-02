@@ -19,20 +19,23 @@ class ApiManager {
         }
       });
 
-      console.log(response.data);
       const convMatches = response.data.similar_conversations;
       const segwayResponses = response.data.segway_response.split('\n');
+
+      console.log('segwayResponses', segwayResponses);
 
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
         matchInfo: convMatches[i]
       }));
 
+      console.log("API response:", combined);
+
       return combined;
 
     } catch (error) {
       console.error(error);
-      return [{ text: "An error occurred :(", matchInfo: "" }]; // return an array with one element in the case of an error
+      return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
     }
   }
   // Add function to create a new chat

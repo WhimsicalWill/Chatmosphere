@@ -1,13 +1,12 @@
 import io from 'socket.io-client';
 
-const findNamesFromChatId = (topics, chatId) => {
-  for (let topic in topics) {
-    console.log('Topic:', topic, 'Chats:', topics[topic]);
-    if (topics[topic][chatId]) {
-      return [topic, topics[topic][chatId].name];
+const findParentTopic = (topics, chatId) => {
+  for (let topicName in topics) {
+    if (topics[topicName][chatId]) {
+      return topicName;
     }
   }
-  return [null, null];
+  return null;
 };
 
 export const setupSocket = ({
@@ -33,31 +32,28 @@ export const setupSocket = ({
   socketRef.current.on('message', (response) => {
     console.log('Received message:', response);
 
-    // TODO: fix the response from the backend not returning chatId
-    const { chatId, message, user, matchInfo } = response;
-    // print the topic keys and the chat id
-    console.log('Topics:', topics, 'Chat id:', chatId);
-    const [topicName, chatName] = findNamesFromChatId(topics, chatId);
+    const { chatId, message, userId, matchInfo } = response;
+    const topicName = findParentTopic(topics, chatId);
 
-    if (!topicName || !chatName) {
+    if (!topicName) {
       console.error('No topic or chat name found for given chatId');
       return;
     }
 
     // update the topic object to include the new message
     setTopics(prevTopics => {
-      if (!prevTopics[topicName] || !prevTopics[topicName][chatName]) return prevTopics;
+      if (!prevTopics[topicName] || !prevTopics[topicName][chatId]) return prevTopics;
 
-      const messageId = prevTopics[topicName][chatName].messages.length;
+      const messageId = prevTopics[topicName][chatId].messages.length;
       const updatedChat = {
-        ...prevTopics[topicName][chatName],
-        messages: [...prevTopics[topicName][chatName].messages, { message, user, matchInfo, messageId }],
+        ...prevTopics[topicName][chatId],
+        messages: [...prevTopics[topicName][chatId].messages, { message, userId, matchInfo, messageId }],
       };
       const updatedTopics = {
         ...prevTopics,
         [topicName]: {
           ...prevTopics[topicName],
-          [chatName]: updatedChat,
+          [chatId]: updatedChat,
         },
       };
 
@@ -83,8 +79,8 @@ export const setupSocket = ({
       const updatedTopics = { ...prevTopics };
 
       if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
-      if (!updatedTopics[topicName][chatName]) 
-        updatedTopics[topicName][chatName] = { id: chatId, name: chatName, messages: [] }
+      if (!updatedTopics[topicName][chatId]) 
+        updatedTopics[topicName][chatId] = { name: chatName, messages: [] }
 
       return updatedTopics;
     });

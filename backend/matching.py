@@ -119,7 +119,8 @@ class ConversationSegway:
 
         # Define the prefix for the prompt, giving clear instructions on how to construct an engaging response
         prompt_prefix = "Connect the user's query with each of the conversations below, crafting an intriguing line for each one." \
-                        "Keep the user's curiosity alive and drive their engagement. Here are some examples:\n"
+                        "Keep the user's curiosity alive and drive their engagement." \
+                        "Please make sure to put each sentence on its own line. Here are some examples:\n"
 
         # Generate the few-shot prompt with the provided examples and structure
         self.few_shot_prompt = FewShotPromptTemplate(
@@ -127,7 +128,7 @@ class ConversationSegway:
             example_prompt=example_prompt,
             prefix=prompt_prefix,
             suffix="Query: {query}\nConversation 1: {conv1}\n" \
-                "Conversation 2: {conv2}" \
+                "Conversation 2: {conv2}\n" \
                 "Answer:",
             input_variables=["query", "conv1", "conv2"],
             example_separator="\n",
