@@ -21,13 +21,14 @@ class ChatApplication:
         self.setup_resources()
 
     def configure_app(self):
-        CORS(self.app)
+        # CORS(self.app)
+        CORS(self.app, resources={r"/*": {"origins": "*"}})
         self.api = Api(self.app)
         self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         os.makedirs(self.db_dir, exist_ok=True)
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
-        socketio.init_app(self.app)
-        socketio.run(self.app, cors_allowed_origins="*")
+        # socketio.init_app(self.app)
+        socketio.init_app(self.app, cors_allowed_origins="*")
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
@@ -92,7 +93,7 @@ class ChatApplication:
         class BotResponseResource(Resource):
             def get(self):
                 topic = request.args.get('topic')
-                user_id = request.args.get('user_id')
+                user_id = int(request.args.get('userId'))
                 if topic:
                     similar_convs = matcher.get_similar_conversations(topic, user_id)
                     segway_response = segway.get_response(topic, similar_convs)
@@ -149,7 +150,8 @@ class ChatApplication:
     def run(self):
         with self.app.app_context():
             self.db.create_all()  # Creates the database tables
-        self.app.run(debug=True)
+        # self.app.run(debug=True)
+        socketio.run(self.app, debug=True)
         print("Backend started")
 
 

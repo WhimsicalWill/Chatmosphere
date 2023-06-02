@@ -9,9 +9,11 @@ export function MainChat({
   addChatUnderTopic,
   chatEndRef,
   brainstormActive,
+  userId,
+  isLoading,
 }) {
   
-  const shouldRenderChat = brainstormActive || (currentTopic && currentChat);
+  const shouldRenderChat = isLoading && (brainstormActive || (currentTopic && currentChat));
   let chatToRender = [];
 
   if (shouldRenderChat) {
@@ -45,7 +47,7 @@ export function MainChat({
             chatToRender.messages.map((message, index) => (
             <div
               key={index}
-              className={`chat-message ${message.user ? 'user' : 'bot'}`}
+              className={`chat-message ${message.user === userId ? 'user' : 'bot'}`}
             >
               {message.text}
               {message.matchInfo && 

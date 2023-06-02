@@ -66,8 +66,8 @@ class ConversationMatcher:
                 continue
             res.append({
                 "chatName": self.conversations[idx],
-                "topicId": idx, # make sure these properties exist or are computed
-                "userId": 1 - user_id # TODO: make this scale to > 2 users
+                "topicId": int(idx), # make sure these properties exist or are computed
+                "userId": int(1 - user_id) # TODO: make this scale to > 2 users
             })
             if len(res) == self.k:
                 break

@@ -1,4 +1,4 @@
-import axiosInstance from '../axiosInstance';
+import axiosInstance from './axiosInstance';
 
 // Sample bot responses
 const responses = ["Hey!", "How can I assist you?", "Nice to meet you!"];
@@ -22,8 +22,6 @@ class ApiManager {
       console.log(response.data);
       const convMatches = response.data.similar_conversations;
       const segwayResponses = response.data.segway_response.split('\n');
-      console.log(convMatches);
-      console.log(segwayResponses);
 
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
