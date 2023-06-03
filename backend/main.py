@@ -31,8 +31,8 @@ class ChatApplication:
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
-        self.chat_id = 0
-        self.user_id = 0
+        self.chat_id = -1
+        self.user_id = -1
     
     def get_next_chat_id(self):
         self.chat_id += 1
@@ -124,6 +124,7 @@ class ChatApplication:
                 next_id = get_next_chat_id()  # Retrieve the next chat id
                 return {'nextChatId': next_id}, 200
 
+
         class NextUserIdResource(Resource):
             def get(self):
                 next_id = get_next_user_id()  # Retrieve the next chat id
@@ -132,9 +133,10 @@ class ChatApplication:
 
         class CreateChatResource(Resource):
             def post(self):
-                other_user_id = request.args.get('otherUserId')
-                topic_id = int(request.args.get('topicId'))
-                chat_name = request.args.get('chatName')
+                data = request.get_json()
+                other_user_id = data.get('otherUserId')
+                topic_id = int(data.get('topicId'))
+                chat_name = data.get('chatName')
                 topic_name = matcher.conversations[topic_id]
 
                 print("Creating new chat...")

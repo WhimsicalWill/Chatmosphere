@@ -62,6 +62,8 @@ class ConversationMatcher:
         print("Done.")
         res = []
         for idx, score in zip(I[0], D[0]):
+            if user_id not in self.user_topic_ids:
+                continue
             if idx in self.user_topic_ids[user_id]:
                 continue
             res.append({

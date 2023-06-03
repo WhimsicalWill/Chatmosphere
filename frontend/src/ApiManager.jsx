@@ -58,7 +58,7 @@ class ApiManager {
       // modify the api call to feed in the two users
       const response = await axiosInstance.get('/next-user-id');
       console.log(response.data);
-      return response.data.nextChatId;
+      return response.data.nextUserId;
     } catch (error) {
       console.error(error);
       return null; // return null in the case of an error
@@ -66,13 +66,12 @@ class ApiManager {
   }
 
   static async createChatAndGetId(otherUserId, topicId, chatName) {
+    console.log('Creating match with', otherUserId, topicId, chatName);
     try {
       const response = await axiosInstance.post('/create-chat', {
-        params: {
-          otherUserId: otherUserId,
-          topicId: topicId,
-          chatName: chatName,
-        }
+        otherUserId: otherUserId,
+        topicId: topicId,
+        chatName: chatName,
       });
 
       const chatId = response.data.chatId;

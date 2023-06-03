@@ -13,9 +13,10 @@ export const setupSocket = ({
   socketRef,
   brainstormId,
   userId, 
-  topics,
   setTopics, 
 }) => {
+
+  console.log("Debugging userId:", userId);
 
   socketRef.current = io('http://localhost:5000');
   socketRef.current.emit('user_join', { username: userId, room: userId });
@@ -30,15 +31,12 @@ export const setupSocket = ({
     
     // update the topic object to include the new message
     setTopics(prevTopics => {
-      console.log('prevTopics', prevTopics);
       const topicName = findParentTopic(prevTopics, chatId);
 
       if (!topicName) {
         console.error('No topic or chat name found for given chatId');
         return;
       }
-
-      console.log('prevTopics', prevTopics);
 
       if (!prevTopics[topicName] || !prevTopics[topicName][chatId]) return prevTopics;
 

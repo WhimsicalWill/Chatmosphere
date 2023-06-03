@@ -27,15 +27,25 @@ function App() {
 
   // ref variables are persistent and changes to them do not cause the component to re-render
   // TODO: add user-authentication and retrieve the user's id
-  const userId = useRef(ApiManager.getNextUserId());
+  const userId = useRef(null);
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
-  // This effect ensures we only set up the socket once, when App is mounted
+  // This effect fetches the user id
   useEffect(() => {
-      const cleanup = setupSocket({ socketRef, brainstormId, userId: userId.current, topics, setTopics });
-      return cleanup;
+    (async () => {
+      userId.current = await ApiManager.getNextUserId();
+    })();
   }, []);
+
+  // This effect sets up the socket
+  useEffect(() => {
+    // Check if userId.current is a numeric value
+    if (typeof userId.current === 'number') {
+      const cleanup = setupSocket({ socketRef, brainstormId, userId: userId.current, setTopics });
+      return () => cleanup;
+    }
+  }, [userId.current]);
 
   // This effect will run whenever the current topic changes
   useEffect(() => {
@@ -94,7 +104,7 @@ function App() {
 
     // Call backend to create a new chat (with a chat id)
     const chatId = await ApiManager.createChatAndGetId(matchInfo.userId, matchInfo.topicId, topicName);
-    if (!chatId) {
+    if (chatId == null) {
       console.error('Failed to create a new chat');
       return;
     }
