@@ -24,8 +24,8 @@ export const setupSocket = ({
   // set up handlers for message and new_chat events
 
   socketRef.current = io('http://localhost:5000');
-  socketRef.current.emit('join', { username: userId, room: userId });
-  socketRef.current.emit('join', { username: userId, room: brainstormId });
+  socketRef.current.emit('user_join', { username: userId, room: userId });
+  socketRef.current.emit('chat_join', { username: userId, room: brainstormId });
   console.log('Connected to backend and joined rooms')
 
   // handle receiving a message for a specific chat
@@ -33,15 +33,19 @@ export const setupSocket = ({
     console.log('Received message:', response);
 
     const { chatId, message, userId, matchInfo } = response;
-    const topicName = findParentTopic(topics, chatId);
-
-    if (!topicName) {
-      console.error('No topic or chat name found for given chatId');
-      return;
-    }
-
+    
     // update the topic object to include the new message
     setTopics(prevTopics => {
+      console.log('prevTopics', prevTopics);
+      const topicName = findParentTopic(prevTopics, chatId);
+
+      if (!topicName) {
+        console.error('No topic or chat name found for given chatId');
+        return;
+      }
+
+      console.log('prevTopics', prevTopics);
+
       if (!prevTopics[topicName] || !prevTopics[topicName][chatId]) return prevTopics;
 
       const messageId = prevTopics[topicName][chatId].messages.length;
@@ -72,7 +76,7 @@ export const setupSocket = ({
       return;
     }
 
-    socketRef.current.emit('join', { username: userId, room: chatId });
+    socketRef.current.emit('chat_join', { username: userId, room: chatId });
     const topicName = 'SomeTopic';
     const chatName = 'SomeChatName';
     setTopics(prevTopics => {

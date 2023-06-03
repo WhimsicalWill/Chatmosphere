@@ -19,7 +19,7 @@ class ApiManager {
         }
       });
 
-      const convMatches = response.data.similar_conversations;
+      const convMatches = response.data.conv_matches;
       const segwayResponses = response.data.segway_response.split('\n');
 
       console.log('segwayResponses', segwayResponses);

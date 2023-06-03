@@ -27,7 +27,6 @@ class ChatApplication:
         self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         os.makedirs(self.db_dir, exist_ok=True)
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
-        # socketio.init_app(self.app)
         socketio.init_app(self.app, cors_allowed_origins="*")
 
     def setup_database(self):
@@ -95,9 +94,9 @@ class ChatApplication:
                 topic = request.args.get('topic')
                 user_id = int(request.args.get('userId'))
                 if topic:
-                    similar_convs = matcher.get_similar_conversations(topic, user_id)
-                    segway_response = segway.get_response(topic, similar_convs)
-                    return {'similar_conversations': similar_convs, 'segway_response': segway_response}, 200
+                    conv_matches = matcher.get_similar_conversations(topic, user_id)
+                    segway_response = segway.get_response(topic, conv_matches)
+                    return {'conv_matches': conv_matches, 'segway_response': segway_response}, 200
                 else:
                     return {"error": "No topic provided"}, 400
 
@@ -123,12 +122,14 @@ class ChatApplication:
             def post(self):
                 other_user_id = request.args.get('otherUserId')
                 topic_id = request.args.get('topicId')
-                if not topic_id or not other_user_id:
-                    return {"error": "Both topic_id and other_user_id are required"}, 400
 
+                # if not topic_id or not other_user_id:
+                #     return {"error": "Both topic_id and other_user_id are required"}, 400
+
+                print("Creating new chat...")
                 new_chat_id = get_next_chat_id()
                 chat_info = {"chatId": new_chat_id}
-                socketio.emit('new_chat', chat_info, room=other_user_id)
+                socketio.emit('new_chat', chat_info, room=f"userId_{other_user_id}")
 
                 return chat_info, 200  # return the newly created chat info
 

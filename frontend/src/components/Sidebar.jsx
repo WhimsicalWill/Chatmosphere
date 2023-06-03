@@ -116,7 +116,7 @@ export function SidebarContent({
               className={`chat ${currentChat === chatId && !brainstormActive ? "active-chat" : ""}`}
             >
               {/* TODO: Find a better icon for topic */}
-              <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].chatName}
+              <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].name}
               <DeleteIcon 
                 className='delete-icon' 
                 onClick={(event) => {

@@ -6,29 +6,36 @@ from extensions import socketio
 def handle_connect():
     print("Client connected!")
 
-@socketio.on('join')
+@socketio.on('user_join')
 def on_join(data):
     username = data['username']
-    room = data['room']
+    room = "userId_" + str(data['room'])
     join_room(room)
     print(f"{username} has joined the room {room}.")
-    # send(f'{username} has entered the room.', room=room)
 
-@socketio.on('leave')
+@socketio.on('chat_join')
+def on_join(data):
+    username = data['username']
+    room = "chatId_" + str(data['room'])
+    join_room(room)
+    print(f"{username} has joined the room {room}.")
+
+@socketio.on('user_leave')
 def on_leave(data):
     username = data['username']
-    room = data['room']
+    room = "userId_" + str(data['room'])
     leave_room(room)
     print(f"{username} has left the room {room}.")
-    # send(f'{username} has left the room.', room=room)
+
+@socketio.on('chat_leave')
+def on_leave(data):
+    username = data['username']
+    room = "chatId_" + str(data['room'])
+    leave_room(room)
+    print(f"{username} has left the room {room}.")
 
 @socketio.on("new_message")
 def handle_new_message(data):
     print(f"New message received from {data['userId']}!")
-    send(data, room=data['chatId'])
-
-# How to use on the frontend:
-# const socket = io.connect('http://localhost:5000');
-# socket.emit('join', { username: 'Alice', room: 'chatroom1' });
-# socket.emit('leave', { username: 'Alice', room: 'chatroom1' });
-# socket.emit('message', { username: 'Alice', room: 'chatroom1', message: 'Hello, everyone!' });
+    room = "chatId_" + str(data['chatId'])
+    send(data, room=room)

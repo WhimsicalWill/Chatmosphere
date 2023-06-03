@@ -80,6 +80,8 @@ function App() {
 
   const addChatUnderTopic = async (matchInfo, messageId) => {
     const brainstormChat = topics["Brainstorm"][brainstormId];
+
+    console.log('brainstormChat', brainstormChat);
     let topicName = null;
 
     // Call backend to create a new chat (with a chat id)
@@ -89,12 +91,12 @@ function App() {
       return;
     }
     // call socketRef.current.join to join a room with the chatId
-    socketRef.current.emit('join', { username: userId, room: chatId });
+    socketRef.current.emit('chat_join', { username: userId, room: chatId });
 
     // Retrieve the nearest user message above this messageId to use as the topic name
     for (let j = messageId - 1; j >= 0; j--) {
-      if (brainstormChat[j].user === userId) {
-        topicName = brainstormChat[j].text;
+      if (Number(brainstormChat.messages[j].userId) === Number(userId)) {
+        topicName = brainstormChat.messages[j].message;
         break;
       }
     }
@@ -104,6 +106,7 @@ function App() {
       return;
     }
 
+    console.log('matchInfo.chatName', matchInfo.chatName);
     const chatName = matchInfo.chatName;
 
     // Add a new topic if it doesn't already exist and add a new chat under that topic
@@ -114,6 +117,8 @@ function App() {
       // Use matchInfo.text as the chat title
       if (!updatedTopics[topicName][chatId]) 
         updatedTopics[topicName][chatId] = { name: chatName, messages: [] }
+
+      console.log('updatedTopics', topics);
 
       return updatedTopics;
     });
@@ -198,7 +203,6 @@ function App() {
       event.preventDefault(); // Prevent form submission
       const message = event.target.value;
       event.target.value = '';
-      console.log('Entering message:', message);
       // TODO: this if else can be made more readable
       if (message && currentTopic !== 'Brainstorm') {
         // { username: userId, room: chatId }
