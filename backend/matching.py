@@ -58,7 +58,7 @@ class ConversationMatcher:
         print("Searching index...")
         # Find 3x the desired results to give room to avoid self-matches
         # TODO: this needs better error handling (i.e. retry w/ 4*self.k)
-        D, I = self.index.search(query_embedding, 3*self.k)
+        D, I = self.index.search(query_embedding, 5*self.k)
         print("Done.")
         res = []
         for idx, score in zip(I[0], D[0]):
@@ -142,7 +142,7 @@ class ConversationSegway:
         print("Query:", query)
         print("Conversations:", convs)
         # TODO: add error handling
-        assert len(convs) == 2, "Must provide two conversations"
+        assert len(convs) == 2, "Must provide two conversations, not {}".format(len(convs))
 
         # Assuming convs is a list of three conversations
         input = {

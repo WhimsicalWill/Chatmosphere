@@ -222,14 +222,6 @@ function App() {
           userId: userId.current,
           matchInfo: null,
         });
-        const randomBotResponse = ApiManager.getRandomResponse(message, userId.current);
-        // TODO: remove the line below, since the other use will be sending messages
-        socketRef.current.emit('new_message', { 
-          chatId: currentChat,
-          message: randomBotResponse,
-          userId: botId,
-          matchInfo: null,
-        });
       }
       else if (message) {
         socketRef.current.emit('new_message', { 
