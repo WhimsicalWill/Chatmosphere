@@ -32,10 +32,15 @@ class ChatApplication:
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
         self.chat_id = 0
+        self.user_id = 0
     
     def get_next_chat_id(self):
         self.chat_id += 1
         return self.chat_id
+
+    def get_next_user_id(self):
+        self.user_id += 1
+        return self.user_id
 
     # Define User and Conversation database models here
     def setup_models(self):
@@ -69,6 +74,7 @@ class ChatApplication:
         matcher = self.matcher
         segway = self.segway
         get_next_chat_id = self.get_next_chat_id
+        get_next_user_id = self.get_next_user_id
 
         # Define your API resources
         class UserResource(Resource):
@@ -118,17 +124,22 @@ class ChatApplication:
                 next_id = get_next_chat_id()  # Retrieve the next chat id
                 return {'nextChatId': next_id}, 200
 
+        class NextUserIdResource(Resource):
+            def get(self):
+                next_id = get_next_user_id()  # Retrieve the next chat id
+                return {'nextUserId': next_id}, 200
+
+
         class CreateChatResource(Resource):
             def post(self):
                 other_user_id = request.args.get('otherUserId')
-                topic_id = request.args.get('topicId')
-
-                # if not topic_id or not other_user_id:
-                #     return {"error": "Both topic_id and other_user_id are required"}, 400
+                topic_id = int(request.args.get('topicId'))
+                chat_name = request.args.get('chatName')
+                topic_name = matcher.conversations[topic_id]
 
                 print("Creating new chat...")
                 new_chat_id = get_next_chat_id()
-                chat_info = {"chatId": new_chat_id}
+                chat_info = {"chatId": new_chat_id, "chatName": chat_name, "topicName": topic_name}
                 socketio.emit('new_chat', chat_info, room=f"userId_{other_user_id}")
 
                 return chat_info, 200  # return the newly created chat info
@@ -136,6 +147,7 @@ class ChatApplication:
 
         self.api.add_resource(CreateChatResource, '/create-chat')
         self.api.add_resource(NextChatIdResource, '/next-chat-id')
+        self.api.add_resource(NextUserIdResource, '/next-user-id')
         self.api.add_resource(UserResource, '/user/<int:user_id>')
         self.api.add_resource(ConversationResource, '/conversation/<int:conversation_id>')
         self.api.add_resource(BotResponseResource, '/bot-response')

@@ -2,6 +2,7 @@ import React from 'react';
 
 // Material UI imports
 import ChatBubble from '@mui/icons-material/ChatBubble';
+import Topic from '@mui/icons-material/Topic';
 import Forum from '@mui/icons-material/Forum';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -86,7 +87,7 @@ export function SidebarContent({
           onClick={() => handleTopicClick(topicName)}
           className={`topic ${currentTopic === topicName && !brainstormActive ? "active-topic" : ""}`}
         >
-          <ChatBubble className='topic-icon' /> {topicName}
+          <Topic className='topic-icon' /> {topicName}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {

@@ -6,8 +6,6 @@ import { MainChat, MainInput } from './components/Main';
 import { setupSocket } from './Socket';
 
 function App() {
-  // TODO: add user-authentication and retrieve the user's id
-  const userId = 0;
   const botId = -1;
   const brainstormId = -1;
 
@@ -28,12 +26,14 @@ function App() {
   });
 
   // ref variables are persistent and changes to them do not cause the component to re-render
+  // TODO: add user-authentication and retrieve the user's id
+  const userId = useRef(ApiManager.getNextUserId());
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
   // This effect ensures we only set up the socket once, when App is mounted
   useEffect(() => {
-      const cleanup = setupSocket({ socketRef, brainstormId, userId, topics, setTopics });
+      const cleanup = setupSocket({ socketRef, brainstormId, userId: userId.current, topics, setTopics });
       return cleanup;
   }, []);
 
@@ -61,10 +61,10 @@ function App() {
           socketRef.current.emit('new_message', { 
             chatId: brainstormId,
             message: message,
-            userId: userId,
+            userId: userId.current,
             matchInfo: null,
           });
-          const botResponses = await ApiManager.getResponse(message, userId);
+          const botResponses = await ApiManager.getResponse(message, userId.current);
           for (const botResponse of botResponses) {
             socketRef.current.emit('new_message', { 
               chatId: brainstormId,
@@ -84,22 +84,22 @@ function App() {
     console.log('brainstormChat', brainstormChat);
     let topicName = null;
 
+    // Retrieve the nearest user message above this messageId to use as the topic name
+    for (let j = messageId - 1; j >= 0; j--) {
+      if (Number(brainstormChat.messages[j].userId) === Number(userId.current)) {
+        topicName = brainstormChat.messages[j].message;
+        break;
+      }
+    }
+
     // Call backend to create a new chat (with a chat id)
-    const chatId = await ApiManager.createChatAndGetId(matchInfo.userId, matchInfo.topicId);
+    const chatId = await ApiManager.createChatAndGetId(matchInfo.userId, matchInfo.topicId, topicName);
     if (!chatId) {
       console.error('Failed to create a new chat');
       return;
     }
     // call socketRef.current.join to join a room with the chatId
-    socketRef.current.emit('chat_join', { username: userId, room: chatId });
-
-    // Retrieve the nearest user message above this messageId to use as the topic name
-    for (let j = messageId - 1; j >= 0; j--) {
-      if (Number(brainstormChat.messages[j].userId) === Number(userId)) {
-        topicName = brainstormChat.messages[j].message;
-        break;
-      }
-    }
+    socketRef.current.emit('chat_join', { username: userId.current, room: chatId });
 
     if (!topicName) {
       console.error('Failed to find a user message to use as the topic name');
@@ -209,10 +209,10 @@ function App() {
         socketRef.current.emit('new_message', { 
           chatId: currentChat,
           message: message,
-          userId: userId,
+          userId: userId.current,
           matchInfo: null,
         });
-        const randomBotResponse = ApiManager.getRandomResponse(message, userId);
+        const randomBotResponse = ApiManager.getRandomResponse(message, userId.current);
         // TODO: remove the line below, since the other use will be sending messages
         socketRef.current.emit('new_message', { 
           chatId: currentChat,
@@ -225,10 +225,10 @@ function App() {
         socketRef.current.emit('new_message', { 
           chatId: currentChat,
           message: message,
-          userId: userId,
+          userId: userId.current,
           matchInfo: null,
         });
-        const botResponses = await ApiManager.getResponse(message, userId);
+        const botResponses = await ApiManager.getResponse(message, userId.current);
         for (const botResponse of botResponses) {
           socketRef.current.emit('new_message', { 
             chatId: currentChat,
@@ -267,7 +267,7 @@ function App() {
     brainstormActive,
     currentTab,
     handleNewMessage,
-    userId,
+    userId: userId.current,
   }
   
 

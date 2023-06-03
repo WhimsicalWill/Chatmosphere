@@ -38,6 +38,7 @@ class ApiManager {
       return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
     }
   }
+
   // Add function to create a new chat
   static async getNextChatId() {
     try {
@@ -51,12 +52,26 @@ class ApiManager {
     }
   }
 
-  static async createChatAndGetId(otherUserId, topicId) {
+  // Add function to create a new chat
+  static async getNextUserId() {
+    try {
+      // modify the api call to feed in the two users
+      const response = await axiosInstance.get('/next-user-id');
+      console.log(response.data);
+      return response.data.nextChatId;
+    } catch (error) {
+      console.error(error);
+      return null; // return null in the case of an error
+    }
+  }
+
+  static async createChatAndGetId(otherUserId, topicId, chatName) {
     try {
       const response = await axiosInstance.post('/create-chat', {
         params: {
           otherUserId: otherUserId,
           topicId: topicId,
+          chatName: chatName,
         }
       });
 

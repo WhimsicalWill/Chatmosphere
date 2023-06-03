@@ -17,12 +17,6 @@ export const setupSocket = ({
   setTopics, 
 }) => {
 
-  // init socket as ref
-  // connect socket to server using io
-  // emit join event so user joins their room
-  // emit join event so user joins the brainstorm room
-  // set up handlers for message and new_chat events
-
   socketRef.current = io('http://localhost:5000');
   socketRef.current.emit('user_join', { username: userId, room: userId });
   socketRef.current.emit('chat_join', { username: userId, room: brainstormId });
@@ -69,7 +63,7 @@ export const setupSocket = ({
   socketRef.current.on('new_chat', (chatInfo) => {
     console.log('New chat created:', chatInfo);
 
-    const chatId = chatInfo.chatId;
+    const { chatId, chatName, topicName } = chatInfo;
 
     if (!chatId) {
       console.error('No chatId received');
@@ -77,8 +71,7 @@ export const setupSocket = ({
     }
 
     socketRef.current.emit('chat_join', { username: userId, room: chatId });
-    const topicName = 'SomeTopic';
-    const chatName = 'SomeChatName';
+    
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
 
@@ -92,4 +85,4 @@ export const setupSocket = ({
 
   // Return a cleanup function
   return () => { socketRef.current.disconnect(); }
-};
+}
