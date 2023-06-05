@@ -16,8 +16,6 @@ export const setupSocket = ({
   setTopics, 
 }) => {
 
-  console.log("Debugging userId:", userId);
-
   socketRef.current = io('http://localhost:5000');
   socketRef.current.emit('user_join', { username: userId, room: userId });
   socketRef.current.emit('chat_join', { username: userId, room: brainstormId });

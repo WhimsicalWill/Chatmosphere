@@ -11,7 +11,6 @@ export function MainChat({
   userId,
 }) {
   
-  // TODO: remember to be careful about IDs for currentTopic/Chat, as 0 might eval to false
   const shouldRenderChat = currentTopic && currentChat;
   let messagesToRender = [];
   let chatHeaderText = "";

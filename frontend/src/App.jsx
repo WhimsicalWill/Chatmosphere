@@ -141,6 +141,7 @@ function App() {
   const handleTopicClick = (topicName) => {
     setCurrentTopic(topicName);
     setCurrentTab('Active Chats');
+    setEditingNewTopic(false)
     
     // Set the first chat of the selected topic as the current chat
     const availableChats = Object.keys(topics[topicName]);
@@ -159,7 +160,6 @@ function App() {
 
   const submitNewTopicName = (event) => {
     const messageSent = handleMessage(event, brainstormId);
-    console.log('messageSent', messageSent);
     if (!messageSent) return;
     setEditingNewTopic(false);
     setCurrentTopic('Brainstorm');

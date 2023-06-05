@@ -57,6 +57,7 @@ export function SidebarContent({
   setEditingNewTopic,
   brainstormId,
 }) {
+
   // Declare some tricky sections as variables
   const editingNewTopicSection = isEditingNewTopic ?
     <input
@@ -82,7 +83,7 @@ export function SidebarContent({
 
   const topicListSection = 
     <ul className="topic-list">
-      {Object.keys(topics).filter(c => c !== 'Brainstorm').map((topicName, index) => (
+      {topics && Object.keys(topics).filter(t => t !== 'Brainstorm').map((topicName, index) => (
         <li
           key={index}
           onClick={() => handleTopicClick(topicName)}
@@ -101,6 +102,30 @@ export function SidebarContent({
     </ul>
   ;
 
+  const chatListSection =
+    <ul className="chat-list">
+      {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatId, index) => (
+        <li
+          key={index}
+          onClick={() => {
+            setCurrentChat(chatId);
+            setEditingNewTopic(false);
+          }}
+          className={`chat ${currentChat === chatId ? "active-chat" : ""}`}
+        >
+          <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].name}
+          <DeleteIcon 
+            className='delete-icon' 
+            onClick={(event) => {
+              event.stopPropagation(); // prevent the sidebar click event from firing
+              deleteChat(currentTopic, chatId);
+            }}
+          />
+        </li>
+      ))}
+    </ul>
+  ;
+
   return (
     <>
       {currentTab === 'Topics' && (
@@ -109,27 +134,7 @@ export function SidebarContent({
           {topicListSection}
         </>
       )}
-      {currentTab === 'Active Chats' && (
-        <ul className="chat-list">
-          {Object.keys(topics[currentTopic]).map((chatId, index) => (
-            <li
-              key={index}
-              onClick={() => setCurrentChat(chatId)}
-              className={`chat ${currentChat === chatId ? "active-chat" : ""}`}
-            >
-              {/* TODO: Find a better icon for topic */}
-              <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].name}
-              <DeleteIcon 
-                className='delete-icon' 
-                onClick={(event) => {
-                  event.stopPropagation(); // prevent the sidebar click event from firing
-                  deleteChat(currentTopic, chatId);
-                }}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      {currentTab === 'Active Chats' && chatListSection}
     </>
   );
 }
