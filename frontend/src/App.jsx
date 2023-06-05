@@ -95,10 +95,6 @@ function App() {
 
       return updatedTopics;
     });
-
-    // Focus on the new chat and topic
-    setCurrentTopic(topicName);
-    setCurrentChat(chatId);
   };
 
   const deleteTopic = (name) => {
@@ -161,8 +157,8 @@ function App() {
     setCurrentChat(null);
   };
 
-  const submitNewTopicName = async (event) => {
-    const messageSent = await handleMessage(event, brainstormId);
+  const submitNewTopicName = (event) => {
+    const messageSent = handleMessage(event, brainstormId);
     console.log('messageSent', messageSent);
     if (!messageSent) return;
     setEditingNewTopic(false);
@@ -170,9 +166,8 @@ function App() {
     setCurrentChat(brainstormId);
   }
 
-  const handleMessage = async (event, chatId) => {
+  const handleMessage = (event, chatId) => {
     if (event.key !== 'Enter') {
-      console.log('Key is not enter');
       return false;
     }
     
@@ -188,10 +183,14 @@ function App() {
     event.target.value = '';
     
     if (!message) {
-      console.log('Message is empty');
       return false;
     }
 
+    handleMessageHelper(event, chatId, message);
+    return true;
+  };
+
+  const handleMessageHelper = async (event, chatId, message) => {
     socketRef.current.emit('new_message', { 
       chatId: chatId,
       message: message,
@@ -210,8 +209,6 @@ function App() {
         });
       }
     }
-
-    return true;
   };
 
   const sidebarProps = { 

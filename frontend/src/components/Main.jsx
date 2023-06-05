@@ -81,13 +81,13 @@ export function MainInput({
 }) {
   return (
     <>
-      {currentChat && (
+      {currentTopic && currentChat && (
         <div className="send-message">
           <input 
           id="messageInput"
           type="text"
           placeholder="Send a message."
-          onKeyDown={async (event) => handleMessage(event, currentTopic)} />
+          onKeyDown={async (event) => handleMessage(event, currentChat)} />
         </div>
       )}
     </>

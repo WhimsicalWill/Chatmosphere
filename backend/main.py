@@ -31,7 +31,7 @@ class ChatApplication:
 
     def setup_database(self):
         self.db = SQLAlchemy(self.app)
-        self.chat_id = -1
+        self.chat_id = 0
         self.user_id = -1
     
     def get_next_chat_id(self):

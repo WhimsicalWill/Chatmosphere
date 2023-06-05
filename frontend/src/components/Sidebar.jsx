@@ -71,6 +71,8 @@ export function SidebarContent({
       className="topic" 
       onClick={() => {
           setEditingNewTopic(true);
+          setCurrentTopic('Brainstorm');
+          setCurrentChat(brainstormId);
         }
       }
     >
