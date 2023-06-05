@@ -3,24 +3,22 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 
 export function MainChat({ 
-  brainstormId,
   currentTopic,
   currentChat,
   topics,
   addChatUnderTopic,
   chatEndRef,
-  brainstormActive,
   userId,
 }) {
   
   // TODO: remember to be careful about IDs for currentTopic/Chat, as 0 might eval to false
-  const shouldRenderChat = brainstormActive || (currentTopic && currentChat);
-  let chatToRender = [];
+  const shouldRenderChat = currentTopic && currentChat;
+  let messagesToRender = [];
   let chatHeaderText = "";
 
   if (shouldRenderChat) {
-    chatToRender = brainstormActive ? topics["Brainstorm"][brainstormId] : topics[currentTopic][currentChat];
-    chatHeaderText = brainstormActive ? "AI Helper" : topics[currentTopic][currentChat].name;
+    messagesToRender = topics[currentTopic][currentChat].messages;
+    chatHeaderText = topics[currentTopic][currentChat].name;
   }
 
   const instructionOverview = (
@@ -46,7 +44,7 @@ export function MainChat({
             <h1 className="chat-header-text">{chatHeaderText}</h1>
           </div> 
           {
-            chatToRender.messages.map((message, index) => (
+            messagesToRender.map((message, index) => (
             <div
               key={index}
               className={`chat-message ${message.userId === userId ? 'user' : 'bot'}`}
@@ -77,15 +75,19 @@ export function MainChat({
 }
 
 export function MainInput({ 
+  currentTopic,
   currentChat,
-  brainstormActive,
-  handleNewMessage,
+  handleMessage,
 }) {
   return (
     <>
-      {!brainstormActive && currentChat && (
+      {currentChat && (
         <div className="send-message">
-          <input id="messageInput" type="text" placeholder="Send a message." onKeyDown={async (event) => handleNewMessage(event)} />
+          <input 
+          id="messageInput"
+          type="text"
+          placeholder="Send a message."
+          onKeyDown={async (event) => handleMessage(event, currentTopic)} />
         </div>
       )}
     </>

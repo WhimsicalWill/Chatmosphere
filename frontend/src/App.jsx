@@ -10,7 +10,6 @@ function App() {
   const brainstormId = -1;
 
   // state variables cause the component to re-render when they are updated
-  const [brainstormActive, setBrainstormActive] = useState(false);
   const [currentTopic, setCurrentTopic] = useState(null);
   const [currentChat, setCurrentChat] = useState(null);
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
@@ -19,7 +18,7 @@ function App() {
   const [topics, setTopics] = useState({
     "Brainstorm": {
       // each message formatted as { message: "Hello!", user: true, matchInfo: null, messageId: 0 },
-      [brainstormId]: { name: "Brainstorm", messages: [] },
+      [brainstormId]: { name: "AI Helper", messages: [] },
       //... more chats
     },
     //... more topics
@@ -51,42 +50,6 @@ function App() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [topics]);
-
-  // TODO: remove duplicated brainstorm logic (in this and sendMessage)
-  const submitNewTopicName = async (event) => {
-    if (event.key === 'Enter') {
-
-        // return early if socket is not setup yet
-        if (!socketRef.current) {
-         console.log('Socket not setup yet');
-         return;
-        }
-
-        event.preventDefault(); // Prevent form submission
-        const message = event.target.value;
-        event.target.value = '';
-        if (message) {
-          setBrainstormActive(true);
-          // TODO: might have to pass null in place of the botResponse.matchInfo
-          socketRef.current.emit('new_message', { 
-            chatId: brainstormId,
-            message: message,
-            userId: userId.current,
-            matchInfo: null,
-          });
-          const botResponses = await ApiManager.getResponse(message, userId.current);
-          for (const botResponse of botResponses) {
-            socketRef.current.emit('new_message', { 
-              chatId: brainstormId,
-              message: botResponse.text,
-              userId: botId,
-              matchInfo: botResponse.matchInfo,
-            });
-          }
-        }
-        setEditingNewTopic(false);
-    }
-  };
 
   const addChatUnderTopic = async (matchInfo, messageId) => {
     const brainstormChat = topics["Brainstorm"][brainstormId];
@@ -190,9 +153,6 @@ function App() {
     } else {
       setCurrentChat(null); // No chats left
     }
-
-    // If brainstorm is currently active, deactivate it
-    setBrainstormActive(false);
   };
 
   const handleBackClick = () => {
@@ -201,46 +161,57 @@ function App() {
     setCurrentChat(null);
   };
 
-  const handleNewMessage = async (event) => {
-    if (event.key === 'Enter') {
-      
-      // return early if socket is not setup yet
-      if (!socketRef.current) {
-        console.log('Socket not setup yet');
-        return;
-      }
+  const submitNewTopicName = async (event) => {
+    const messageSent = await handleMessage(event, brainstormId);
+    console.log('messageSent', messageSent);
+    if (!messageSent) return;
+    setEditingNewTopic(false);
+    setCurrentTopic('Brainstorm');
+    setCurrentChat(brainstormId);
+  }
 
-      event.preventDefault(); // Prevent form submission
-      const message = event.target.value;
-      event.target.value = '';
-      // TODO: this if else can be made more readable
-      if (message && currentTopic !== 'Brainstorm') {
-        // { username: userId, room: chatId }
+  const handleMessage = async (event, chatId) => {
+    if (event.key !== 'Enter') {
+      console.log('Key is not enter');
+      return false;
+    }
+    
+    // return early if socket is not setup yet
+    if (!socketRef.current) {
+      console.log('Socket not setup yet');
+      return false;
+    }
+
+    // get message and clear input
+    event.preventDefault(); // Prevent form submission
+    const message = event.target.value;
+    event.target.value = '';
+    
+    if (!message) {
+      console.log('Message is empty');
+      return false;
+    }
+
+    socketRef.current.emit('new_message', { 
+      chatId: chatId,
+      message: message,
+      userId: userId.current,
+      matchInfo: null,
+    });
+
+    if (chatId === brainstormId) {
+      const botResponses = await ApiManager.getResponse(message, userId.current);
+      for (const botResponse of botResponses) {
         socketRef.current.emit('new_message', { 
-          chatId: currentChat,
-          message: message,
-          userId: userId.current,
-          matchInfo: null,
+          chatId: chatId,
+          message: botResponse.text,
+          userId: botId,
+          matchInfo: botResponse.matchInfo,
         });
-      }
-      else if (message) {
-        socketRef.current.emit('new_message', { 
-          chatId: currentChat,
-          message: message,
-          userId: userId.current,
-          matchInfo: null,
-        });
-        const botResponses = await ApiManager.getResponse(message, userId.current);
-        for (const botResponse of botResponses) {
-          socketRef.current.emit('new_message', { 
-            chatId: currentChat,
-            message: botResponse.text,
-            userId: botId,
-            matchInfo: botResponse.matchInfo,
-          });
-        }
       }
     }
+
+    return true;
   };
 
   const sidebarProps = { 
@@ -248,6 +219,7 @@ function App() {
     topics, 
     currentTopic, 
     currentChat, 
+    setCurrentTopic,
     setCurrentChat, 
     deleteChat,
     deleteTopic,
@@ -255,8 +227,7 @@ function App() {
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
-    brainstormActive,
-    setBrainstormActive,
+    brainstormId,
   };
 
   const mainProps = {
@@ -266,12 +237,11 @@ function App() {
     topics,
     addChatUnderTopic,
     chatEndRef,
-    brainstormActive,
     currentTab,
-    handleNewMessage,
+    handleMessage,
     userId: userId.current,
   }
-  
+
 
   return (
     <div className="container">

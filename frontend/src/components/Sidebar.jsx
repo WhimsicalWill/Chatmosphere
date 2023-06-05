@@ -47,6 +47,7 @@ export function SidebarContent({
   topics, 
   currentTopic, 
   currentChat, 
+  setCurrentTopic, 
   setCurrentChat, 
   deleteChat, 
   deleteTopic,
@@ -54,8 +55,7 @@ export function SidebarContent({
   submitNewTopicName,
   isEditingNewTopic,
   setEditingNewTopic,
-  brainstormActive,
-  setBrainstormActive,
+  brainstormId,
 }) {
   // Declare some tricky sections as variables
   const editingNewTopicSection = isEditingNewTopic ?
@@ -71,7 +71,6 @@ export function SidebarContent({
       className="topic" 
       onClick={() => {
           setEditingNewTopic(true);
-          setBrainstormActive(true);
         }
       }
     >
@@ -85,7 +84,7 @@ export function SidebarContent({
         <li
           key={index}
           onClick={() => handleTopicClick(topicName)}
-          className={`topic ${currentTopic === topicName && !brainstormActive ? "active-topic" : ""}`}
+          className={`topic ${currentTopic === topicName ? "active-topic" : ""}`}
         >
           <Topic className='topic-icon' /> {topicName}
           <DeleteIcon 
@@ -114,7 +113,7 @@ export function SidebarContent({
             <li
               key={index}
               onClick={() => setCurrentChat(chatId)}
-              className={`chat ${currentChat === chatId && !brainstormActive ? "active-chat" : ""}`}
+              className={`chat ${currentChat === chatId ? "active-chat" : ""}`}
             >
               {/* TODO: Find a better icon for topic */}
               <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].name}
