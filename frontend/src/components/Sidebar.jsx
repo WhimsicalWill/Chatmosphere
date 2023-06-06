@@ -55,7 +55,7 @@ export function SidebarContent({
   submitNewTopicName,
   isEditingNewTopic,
   setEditingNewTopic,
-  brainstormId,
+  brainstormID,
 }) {
 
   // Declare some tricky sections as variables
@@ -73,7 +73,7 @@ export function SidebarContent({
       onClick={() => {
           setEditingNewTopic(true);
           setCurrentTopic('Brainstorm');
-          setCurrentChat(brainstormId);
+          setCurrentChat(brainstormID);
         }
       }
     >
@@ -104,21 +104,21 @@ export function SidebarContent({
 
   const chatListSection =
     <ul className="chat-list">
-      {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatId, index) => (
+      {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatID, index) => (
         <li
           key={index}
           onClick={() => {
-            setCurrentChat(chatId);
+            setCurrentChat(chatID);
             setEditingNewTopic(false);
           }}
-          className={`chat ${currentChat === chatId ? "active-chat" : ""}`}
+          className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
         >
-          <ChatBubble className='chat-icon' /> {topics[currentTopic][chatId].name}
+          <ChatBubble className='chat-icon' /> {topics[currentTopic][chatID].name}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {
               event.stopPropagation(); // prevent the sidebar click event from firing
-              deleteChat(currentTopic, chatId);
+              deleteChat(currentTopic, chatID);
             }}
           />
         </li>

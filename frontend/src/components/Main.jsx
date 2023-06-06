@@ -8,7 +8,7 @@ export function MainChat({
   topics,
   addChatUnderTopic,
   chatEndRef,
-  userId,
+  userID,
 }) {
   
   const shouldRenderChat = currentTopic && currentChat;
@@ -46,7 +46,7 @@ export function MainChat({
             messagesToRender.map((message, index) => (
             <div
               key={index}
-              className={`chat-message ${message.userId === userId ? 'user' : 'bot'}`}
+              className={`chat-message ${message.userID === userID ? 'user' : 'bot'}`}
             >
               {message.message}
               {message.matchInfo && 
@@ -55,7 +55,7 @@ export function MainChat({
                 variant="contained"
                 color="primary"
                 startIcon={<AddIcon />}
-                onClick={() => addChatUnderTopic(message.matchInfo, message.messageId)}
+                onClick={() => addChatUnderTopic(message.matchInfo, message.messageID)}
                 >
                 {message.matchInfo.chatName}
                 </Button>

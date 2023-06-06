@@ -32,7 +32,7 @@ class ChatApplication:
         self.db = SQLAlchemy(self.app)
         self.chat_id = 0
         self.user_id = -1
-        self.User, self.Conversation = setup_models(self.db)
+        self.User, self.Topic, self.ChatMetadata, self.Chat = setup_models(self.db)
     
     def get_next_chat_id(self):
         self.chat_id += 1
@@ -43,15 +43,7 @@ class ChatApplication:
         return self.user_id
 
     def setup_endpoints(self):
-        CreateChatResource, NextChatIdResource, NextUserIdResource, UserResource, \
-        ConversationResource, BotResponseResource = setup_endpoints(self, socketio)
-
-        self.api.add_resource(CreateChatResource, '/create-chat')
-        self.api.add_resource(NextChatIdResource, '/next-chat-id')
-        self.api.add_resource(NextUserIdResource, '/next-user-id')
-        self.api.add_resource(UserResource, '/user/<int:user_id>')
-        self.api.add_resource(ConversationResource, '/conversation/<int:conversation_id>')
-        self.api.add_resource(BotResponseResource, '/bot-response')
+        setup_endpoints(self, self.api, socketio)
 
     def setup_conversation_handler(self):
         self.matcher = ConversationMatcher(k=2)
@@ -63,7 +55,7 @@ class ChatApplication:
 
     def run(self):
         with self.app.app_context():
-            self.db.create_all()  # Creates the database tables
+            self.db.create_all()
         socketio.run(self.app, debug=True)
         print("Backend started")
 

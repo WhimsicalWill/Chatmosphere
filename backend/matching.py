@@ -10,6 +10,7 @@ from langchain import PromptTemplate, FewShotPromptTemplate
 from dotenv import load_dotenv
 
 
+# TODO: convert from snake_case to camelCase where appropriate
 class ConversationMatcher:
     """
     A class that searches a vector database for the most
@@ -51,7 +52,7 @@ class ConversationMatcher:
         self.index.add(self.embeddings)
         print("Done.")
 
-    def get_similar_conversations(self, query, user_id):
+    def getSimilarConversations(self, query, user_id):
         print("Getting similar conversations...")
         query_embedding = get_embedding(query, engine=self.engine)
         query_embedding = np.array([query_embedding]).astype('float32')
@@ -66,8 +67,8 @@ class ConversationMatcher:
                 continue
             res.append({
                 "chatName": self.conversations[idx],
-                "topicId": int(idx), # make sure these properties exist or are computed
-                "userId": int(1 - user_id) # TODO: make this scale to > 2 users
+                "topicID": int(idx), # make sure these properties exist or are computed
+                "userID": int(1 - user_id) # TODO: make this scale to > 2 users
             })
             if len(res) == self.k:
                 break
@@ -135,7 +136,7 @@ class ConversationSegway:
         )
         print("Set up few shot prompt")
 
-    def get_response(self, query, convs):
+    def getResponse(self, query, convs):
         print("Generating response...")
         print("Query:", query)
         print("Conversations:", convs)

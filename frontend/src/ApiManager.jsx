@@ -1,12 +1,16 @@
-import axiosInstance from './axiosInstance';
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:5000', // This is the default port for Flask apps
+});
 
 class ApiManager {
-  static async getResponse(message, userId) {
+  static async getResponse(message, userID) {
     try {
       const response = await axiosInstance.get('/bot-response', {
         params: { 
           topic: message,
-          userId: userId,
+          userID: userID,
         }
       });
 
@@ -31,12 +35,12 @@ class ApiManager {
   }
 
   // Add function to create a new chat
-  static async getNextChatId() {
+  static async getNextChatID() {
     try {
       // modify the api call to feed in the two users
       const response = await axiosInstance.get('/next-chat-id');
       console.log(response.data);
-      return response.data.nextChatId;
+      return response.data.nextChatID;
     } catch (error) {
       console.error(error);
       return null; // return null in the case of an error
@@ -44,29 +48,29 @@ class ApiManager {
   }
 
   // Add function to create a new chat
-  static async getNextUserId() {
+  static async getNextUserID() {
     try {
       // modify the api call to feed in the two users
       const response = await axiosInstance.get('/next-user-id');
       console.log(response.data);
-      return response.data.nextUserId;
+      return response.data.nextUserID;
     } catch (error) {
       console.error(error);
       return null; // return null in the case of an error
     }
   }
 
-  static async createChatAndGetId(otherUserId, topicId, chatName) {
-    console.log('Creating match with', otherUserId, topicId, chatName);
+  static async createChatAndGetID(otherUserID, topicID, chatName) {
+    console.log('Creating match with', otherUserID, topicID, chatName);
     try {
       const response = await axiosInstance.post('/create-chat', {
-        otherUserId: otherUserId,
-        topicId: topicId,
+        otherUserID: otherUserID,
+        topicID: topicID,
         chatName: chatName,
       });
 
-      const chatId = response.data.chatId;
-      return chatId;
+      const chatID = response.data.chatID;
+      return chatID;
     } catch (error) {
       console.error('Failed to create a new chat:', error);
       return null;

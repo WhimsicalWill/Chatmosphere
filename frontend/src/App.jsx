@@ -9,7 +9,7 @@ import { setupSocket } from './Socket';
 // convMatches, segwayResponse
 
 function App() {
-  const botId = -1;
+  const botID = -1;
 
   // state variables cause the component to re-render when they are updated
   const [currentTopic, setCurrentTopic] = useState(null);
@@ -20,62 +20,62 @@ function App() {
 
   // ref variables are persistent and changes to them do not cause the component to re-render
   // TODO: add user-authentication and retrieve the user's id
-  const userId = useRef(null);
-  const brainstormId = useRef(null);
+  const userID = useRef(null);
+  const brainstormID = useRef(null);
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
   // This effect fetches the user id
   useEffect(() => {
     (async () => {
-      userId.current = await ApiManager.getNextUserId();
-      brainstormId.current = await ApiManager.getNextChatId();
+      userID.current = await ApiManager.getNextUserID();
+      brainstormID.current = await ApiManager.getNextChatID();
     })();
   }, []);
 
   // This effect sets up the socket
   useEffect(() => {
-    // Check if userId.current is a numeric value
-    if (typeof userId.current === 'number' && typeof brainstormId.current === 'number') {
+    // Check if userID.current is a numeric value
+    if (typeof userID.current === 'number' && typeof brainstormID.current === 'number') {
       setTopics({
         "Brainstorm": {
-          [brainstormId.current]: { name: "AI Helper", messages: [] },
+          [brainstormID.current]: { name: "AI Helper", messages: [] },
           //... more chats
         },
         //... more topics
       });
-      const cleanup = setupSocket({ socketRef, brainstormId: brainstormId.current, userId: userId.current, setTopics });
+      const cleanup = setupSocket({ socketRef, brainstormID: brainstormID.current, userID: userID.current, setTopics });
       return () => cleanup;
     }
-  }, [userId.current, brainstormId.current]);
+  }, [userID.current, brainstormID.current]);
 
   // This effect will run whenever the current topic changes
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [topics]);
 
-  const addChatUnderTopic = async (matchInfo, messageId) => {
-    const brainstormChat = topics["Brainstorm"][brainstormId.current];
+  const addChatUnderTopic = async (matchInfo, messageID) => {
+    const brainstormChat = topics["Brainstorm"][brainstormID.current];
 
     console.log('brainstormChat', brainstormChat);
     let topicName = null;
 
-    // Retrieve the nearest user message above this messageId to use as the topic name
-    for (let j = messageId - 1; j >= 0; j--) {
-      if (Number(brainstormChat.messages[j].userId) === Number(userId.current)) {
+    // Retrieve the nearest user message above this messageID to use as the topic name
+    for (let j = messageID - 1; j >= 0; j--) {
+      if (Number(brainstormChat.messages[j].userID) === Number(userID.current)) {
         topicName = brainstormChat.messages[j].message;
         break;
       }
     }
 
     // Call backend to create a new chat (with a chat id)
-    const chatId = await ApiManager.createChatAndGetId(matchInfo.userId, matchInfo.topicId, topicName);
-    if (chatId == null) {
+    const chatID = await ApiManager.createChatAndGetID(matchInfo.userID, matchInfo.topicID, topicName);
+    if (chatID == null) {
       console.error('Failed to create a new chat');
       return;
     }
-    // call socketRef.current.join to join a room with the chatId
-    socketRef.current.emit('chat-join', { username: userId.current, room: chatId });
+    // call socketRef.current.join to join a room with the chatID
+    socketRef.current.emit('chat-join', { username: userID.current, room: chatID });
 
     if (!topicName) {
       console.error('Failed to find a user message to use as the topic name');
@@ -91,8 +91,8 @@ function App() {
       if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
 
       // Use matchInfo.text as the chat title
-      if (!updatedTopics[topicName][chatId]) 
-        updatedTopics[topicName][chatId] = { name: chatName, messages: [] }
+      if (!updatedTopics[topicName][chatID]) 
+        updatedTopics[topicName][chatID] = { name: chatName, messages: [] }
 
       console.log('updatedTopics', topics);
 
@@ -101,7 +101,7 @@ function App() {
   };
 
   const deleteTopic = (name) => {
-    // TODO: socketRef.current leave room by chatId
+    // TODO: socketRef.current leave room by chatID
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       delete updatedTopics[name];
@@ -117,19 +117,19 @@ function App() {
     });
   };
 
-  // changed chatName to chatId
-  const deleteChat = (topicName, chatId) => {
-    // TODO: socketRef.current leave room by chatId
+  // changed chatName to chatID
+  const deleteChat = (topicName, chatID) => {
+    // TODO: socketRef.current leave room by chatID
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       if (!updatedTopics[topicName]) return updatedTopics; // handle error here
 
       const updatedChats = { ...updatedTopics[topicName] };
-      delete updatedChats[chatId];
+      delete updatedChats[chatID];
 
       updatedTopics[topicName] = updatedChats;
 
-      if (currentChat === chatId) {
+      if (currentChat === chatID) {
         const remainingChats = Object.keys(updatedChats);
         if (remainingChats.length > 0) {
           setCurrentChat(remainingChats[0]); // Select the first remaining chat
@@ -162,14 +162,14 @@ function App() {
   };
 
   const submitNewTopicName = (event) => {
-    const messageSent = handleMessage(event, brainstormId.current);
+    const messageSent = handleMessage(event, brainstormID.current);
     if (!messageSent) return;
     setEditingNewTopic(false);
     setCurrentTopic('Brainstorm');
-    setCurrentChat(brainstormId.current);
+    setCurrentChat(brainstormID.current);
   }
 
-  const handleMessage = (event, chatId) => {
+  const handleMessage = (event, chatID) => {
     if (event.key !== 'Enter') {
       return false;
     }
@@ -189,25 +189,25 @@ function App() {
       return false;
     }
 
-    handleMessageHelper(event, chatId, message);
+    handleMessageHelper(event, chatID, message);
     return true;
   };
 
-  const handleMessageHelper = async (event, chatId, message) => {
+  const handleMessageHelper = async (event, chatID, message) => {
     socketRef.current.emit('new-message', { 
-      chatId: chatId,
+      chatID: chatID,
       message: message,
-      userId: userId.current,
+      userID: userID.current,
       matchInfo: null,
     });
 
-    if (chatId === brainstormId.current) {
-      const botResponses = await ApiManager.getResponse(message, userId.current);
+    if (chatID === brainstormID.current) {
+      const botResponses = await ApiManager.getResponse(message, userID.current);
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
-          chatId: chatId,
+          chatID: chatID,
           message: botResponse.text,
-          userId: botId,
+          userID: botID,
           matchInfo: botResponse.matchInfo,
         });
       }
@@ -227,11 +227,11 @@ function App() {
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
-    brainstormId: brainstormId.current,
+    brainstormID: brainstormID.current,
   };
 
   const mainProps = {
-    brainstormId: brainstormId.current,
+    brainstormID: brainstormID.current,
     currentTopic,
     currentChat,
     topics,
@@ -239,7 +239,7 @@ function App() {
     chatEndRef,
     currentTab,
     handleMessage,
-    userId: userId.current,
+    userID: userID.current,
   }
 
 
