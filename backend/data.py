@@ -1,5 +1,6 @@
 # Define User and Conversation database models here
-def setup_models(db):
+def setupModels(db):
+
     class User(db.Model):
         __tablename__ = 'users'
 
@@ -14,7 +15,9 @@ def setup_models(db):
 
         id = db.Column(db.Integer, primary_key=True)
         userID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-        title = db.Column(db.String(64), nullable=False)
+        title = db.Column(db.String(512), nullable=False)
+
+        user = db.relationship('User', backref=db.backref('topics', lazy=True))
 
 
     class ChatMetadata(db.Model):
@@ -36,7 +39,6 @@ def setup_models(db):
         senderID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         text = db.Column(db.String(1024), nullable=False)
 
-        # added relationship to ChatMetadata with backref
         chatmetadata = db.relationship('ChatMetadata', backref=db.backref('chats', lazy=True))
 
     return User, Topic, ChatMetadata, Chat

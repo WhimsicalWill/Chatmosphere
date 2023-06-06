@@ -3,24 +3,6 @@ from flask import request
 
 def setupEndpoints(chatApp, api, socketio):
 
-    class CreateChatResource(Resource):
-        def post(self):
-            data = request.get_json()
-            otherUserID = data.get('otherUserID')
-            topicID = int(data.get('topicID'))
-            chatName = data.get('chatName')
-            topicName = chatApp.matcher.conversations[topicID]
-
-            print('Creating new chat...')
-            newChatID = chatApp.getNextChatID()
-            chatInfo = {'chatID': newChatID,
-                         'chatName': chatName,
-                         'topicName': topicName}
-            socketio.emit('new-chat', chatInfo, room=f'userID_{otherUserID}')
-
-            return chatInfo, 200
-
-
     class NextChatIDResource(Resource):
         def get(self):
             nextID = chatApp.getNextChatID()  # Retrieve the next chat id
@@ -120,6 +102,7 @@ def setupEndpoints(chatApp, api, socketio):
                     'userMatchedID': chatMetadata.userMatchedID}
 
         def post(self):
+            print('Creating new chat...')
             parser = reqparse.RequestParser()  
             parser.add_argument('topicID', required=True, help="Topic id cannot be blank!")
             parser.add_argument('userCreatorID', required=True, help="User creator id cannot be blank!")
@@ -134,7 +117,19 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.add(newMetadata)
             chatApp.db.session.commit()
 
-            return {'message': 'Chat metadata was created'}, 201
+            # How can I get the chatID that was created by the database?
+
+            chatInfoCreator = {'chatID': newMetadata.id,
+                               'chatName': f"Chat with {args['userMatchedID']}",
+                               'topicName': topicName}
+
+            chatInfoMatched = {'chatID': newMetadata.id,
+                               'chatName': f"Chat with {args['userMatchedID']}",
+                               'topicName': topicName}
+
+            socketio.emit('new-chat', chatInfoMatched, room=f"userID_{args['userMatchedID']}")
+
+            return chatInfoCreator, 200
 
         def delete(self, chatID):
             metadata = chatApp.ChatMetadata.query.get(chatID)
@@ -193,19 +188,6 @@ def setupEndpoints(chatApp, api, socketio):
             else:
                 return {'error': 'No topic provided'}, 400
 
-        # TODO: actually use the database instead of mock data
-        def post(self):
-            topic = request.args.get('topic')
-            if topic:
-                # newConversation = Conversation(topic=topic)
-                # self.chatApp.db.session.add(newConversation)
-                # self.chatApp.db.session.commit()
-                chatApp.matcher.addConversations([topic])
-                return {'message': 'New conversation added'}
-            else:
-                return {'error': 'No topic provided'}, 400
-
-    api.add_resource(CreateChatResource, '/create-chat')
     api.add_resource(NextChatIDResource, '/next-chat-id')
     api.add_resource(NextUserIDResource, '/next-user-id')
     api.add_resource(UserResource, '/users/<int:userID>')

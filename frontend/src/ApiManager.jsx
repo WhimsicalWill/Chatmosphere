@@ -5,17 +5,23 @@ const axiosInstance = axios.create({
 });
 
 class ApiManager {
-  static async getResponse(message, userID) {
+  static async submitTopicAndGetResponse(message, userID) {
     try {
-      const response = await axiosInstance.get('/bot-response', {
+      const botResponse = await axiosInstance.get('/bot-response', {
         params: { 
           topic: message,
           userID: userID,
         }
       });
 
-      const convMatches = response.data.convMatches;
-      const segwayResponses = response.data.segwayResponses.split('\n');
+      // submit a POST request to the TopicResource
+      await axiosInstance.post('/topics', { // replace '/topics' with your actual TopicResource route
+        userID: userID,
+        title: message,
+      });
+
+      const convMatches = botResponse.data.convMatches;
+      const segwayResponses = botResponse.data.segwayResponses.split('\n');
 
       console.log('segwayResponses', segwayResponses);
 
@@ -33,6 +39,9 @@ class ApiManager {
       return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
     }
   }
+
+  // TODO: will need to change these functions since we are
+  // now using a database to track users and chats
 
   // Add function to create a new chat
   static async getNextChatID() {
@@ -60,13 +69,16 @@ class ApiManager {
     }
   }
 
-  static async createChatAndGetID(otherUserID, topicID, chatName) {
-    console.log('Creating match with', otherUserID, topicID, chatName);
+  // TODO: make sure that the arguments are passed correctly
+  // the creator is the person whose topic was in the DB first
+  static async createChatAndGetID(userCreatorID, userMatchedID, creatorTopicID, matchedTopicID) {
+    console.log('Creating match with', userCreatorID);
     try {
-      const response = await axiosInstance.post('/create-chat', {
-        otherUserID: otherUserID,
-        topicID: topicID,
-        chatName: chatName,
+      const response = await axiosInstance.post('/chatmetadata', {
+        userCreatorID: userCreatorID,
+        userMatchedID: userMatchedID,
+        creatorTopicID: creatorTopicID,
+        matchedTopicID: matchedTopicID,
       });
 
       const chatID = response.data.chatID;

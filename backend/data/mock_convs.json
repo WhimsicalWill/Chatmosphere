@@ -2,503 +2,503 @@
     "conversations": [
         {
             "id": 1,
-            "topic": "What are some hidden gem restaurants in Pittsburgh?",
-            "user_id": 1
+            "title": "What are some hidden gem restaurants in Pittsburgh?",
+            "userID": 1
         },
         {
             "id": 2,
-            "topic": "Which restaurant has the best ambiance in Pittsburgh?",
-            "user_id": 1
+            "title": "Which restaurant has the best ambiance in Pittsburgh?",
+            "userID": 1
         },
         {
             "id": 3,
-            "topic": "What are the biggest challenges in space exploration today?",
-            "user_id": 1
+            "title": "What are the biggest challenges in space exploration today?",
+            "userID": 1
         },
         {
             "id": 4,
-            "topic": "What do you think about the future of private companies in space exploration?",
-            "user_id": 1
+            "title": "What do you think about the future of private companies in space exploration?",
+            "userID": 1
         },
         {
             "id": 5,
-            "topic": "How has COVID-19 changed the future of remote work?",
-            "user_id": 0
+            "title": "How has COVID-19 changed the future of remote work?",
+            "userID": 0
         },
         {
             "id": 6,
-            "topic": "What are the best strategies for learning a new language?",
-            "user_id": 1
+            "title": "What are the best strategies for learning a new language?",
+            "userID": 1
         },
         {
             "id": 7,
-            "topic": "What are the most important considerations when starting a small business?",
-            "user_id": 1
+            "title": "What are the most important considerations when starting a small business?",
+            "userID": 1
         },
         {
             "id": 8,
-            "topic": "What are the most effective methods for teaching math to children?",
-            "user_id": 0
+            "title": "What are the most effective methods for teaching math to children?",
+            "userID": 0
         },
         {
             "id": 9,
-            "topic": "What are the pros and cons of renewable energy sources?",
-            "user_id": 1
+            "title": "What are the pros and cons of renewable energy sources?",
+            "userID": 1
         },
         {
             "id": 10,
-            "topic": "How can we improve mental health awareness?",
-            "user_id": 1
+            "title": "How can we improve mental health awareness?",
+            "userID": 1
         },
         {
             "id": 11,
-            "topic": "What are your favorite books and why?",
-            "user_id": 0
+            "title": "What are your favorite books and why?",
+            "userID": 0
         },
         {
             "id": 12,
-            "topic": "How is artificial intelligence impacting our daily lives?",
-            "user_id": 1
+            "title": "How is artificial intelligence impacting our daily lives?",
+            "userID": 1
         },
         {
             "id": 13,
-            "topic": "What are the benefits and drawbacks of social media?",
-            "user_id": 1
+            "title": "What are the benefits and drawbacks of social media?",
+            "userID": 1
         },
         {
             "id": 14,
-            "topic": "What are the best practices for maintaining a healthy lifestyle?",
-            "user_id": 0
+            "title": "What are the best practices for maintaining a healthy lifestyle?",
+            "userID": 0
         },
         {
             "id": 15,
-            "topic": "How does climate change impact biodiversity?",
-            "user_id": 1
+            "title": "How does climate change impact biodiversity?",
+            "userID": 1
         },
         {
             "id": 16,
-            "topic": "What are the best techniques for improving productivity?",
-            "user_id": 1
+            "title": "What are the best techniques for improving productivity?",
+            "userID": 1
         },
         {
             "id": 17,
-            "topic": "What do you think about the future of cryptocurrency?",
-            "user_id": 1
+            "title": "What do you think about the future of cryptocurrency?",
+            "userID": 1
         },
         {
             "id": 18,
-            "topic": "How do video games influence society and culture?",
-            "user_id": 1
+            "title": "How do video games influence society and culture?",
+            "userID": 1
         },
         {
             "id": 19,
-            "topic": "What are your thoughts on universal basic income?",
-            "user_id": 1
+            "title": "What are your thoughts on universal basic income?",
+            "userID": 1
         },
         {
             "id": 20,
-            "topic": "How can we foster a more inclusive and diverse society?",
-            "user_id": 0
+            "title": "How can we foster a more inclusive and diverse society?",
+            "userID": 0
         },
         {
             "id": 21,
-            "topic": "What are the most promising advancements in renewable energy technology?",
-            "user_id": 1
+            "title": "What are the most promising advancements in renewable energy technology?",
+            "userID": 1
         },
         {
             "id": 22,
-            "topic": "Which emerging technologies do you think will reshape the next decade?",
-            "user_id": 0
+            "title": "Which emerging technologies do you think will reshape the next decade?",
+            "userID": 0
         },
         {
             "id": 23,
-            "topic": "What are some underrated tourist attractions in Rome?",
-            "user_id": 1
+            "title": "What are some underrated tourist attractions in Rome?",
+            "userID": 1
         },
         {
             "id": 24,
-            "topic": "How can we promote sustainable farming practices?",
-            "user_id": 1
+            "title": "How can we promote sustainable farming practices?",
+            "userID": 1
         },
         {
             "id": 25,
-            "topic": "What are the most memorable pieces of art you have seen, and why did they impact you?",
-            "user_id": 0
+            "title": "What are the most memorable pieces of art you have seen, and why did they impact you?",
+            "userID": 0
         },
         {
             "id": 26,
-            "topic": "How do you think virtual reality will change entertainment in the future?",
-            "user_id": 0
+            "title": "How do you think virtual reality will change entertainment in the future?",
+            "userID": 0
         },
         {
             "id": 27,
-            "topic": "What are some interesting applications of blockchain technology outside of cryptocurrency?",
-            "user_id": 1
+            "title": "What are some interesting applications of blockchain technology outside of cryptocurrency?",
+            "userID": 1
         },
         {
             "id": 28,
-            "topic": "What are the best strategies for maintaining work-life balance?",
-            "user_id": 1
+            "title": "What are the best strategies for maintaining work-life balance?",
+            "userID": 1
         },
         {
             "id": 29,
-            "topic": "What are the most fascinating historical events you've learned about?",
-            "user_id": 1
+            "title": "What are the most fascinating historical events you've learned about?",
+            "userID": 1
         },
         {
             "id": 30,
-            "topic": "How can we improve education in developing countries?",
-            "user_id": 1
+            "title": "How can we improve education in developing countries?",
+            "userID": 1
         },
         {
             "id": 31,
-            "topic": "What are some of your favorite underrated films, and why?",
-            "user_id": 0
+            "title": "What are some of your favorite underrated films, and why?",
+            "userID": 0
         },
         {
             "id": 32,
-            "topic": "How has the rise of streaming services changed the film and television industry?",
-            "user_id": 1
+            "title": "How has the rise of streaming services changed the film and television industry?",
+            "userID": 1
         },
         {
             "id": 33,
-            "topic": "What are the most effective ways to combat climate change at an individual level?",
-            "user_id": 1
+            "title": "What are the most effective ways to combat climate change at an individual level?",
+            "userID": 1
         },
         {
             "id": 34,
-            "topic": "What are some unique ways to stay active and fit?",
-            "user_id": 0
+            "title": "What are some unique ways to stay active and fit?",
+            "userID": 0
         },
         {
             "id": 35,
-            "topic": "What are the most important ethical considerations with gene editing technologies like CRISPR?",
-            "user_id": 0
+            "title": "What are the most important ethical considerations with gene editing technologies like CRISPR?",
+            "userID": 0
         },
         {
             "id": 36,
-            "topic": "What are your favorite podcasts, and why?",
-            "user_id": 1
+            "title": "What are your favorite podcasts, and why?",
+            "userID": 1
         },
         {
             "id": 37,
-            "topic": "How has the internet changed the way we consume news?",
-            "user_id": 1
+            "title": "How has the internet changed the way we consume news?",
+            "userID": 1
         },
         {
             "id": 38,
-            "topic": "What are the benefits and drawbacks of electric vehicles?",
-            "user_id": 1
+            "title": "What are the benefits and drawbacks of electric vehicles?",
+            "userID": 1
         },
         {
             "id": 39,
-            "topic": "How can urban planning be used to create more sustainable cities?",
-            "user_id": 1
+            "title": "How can urban planning be used to create more sustainable cities?",
+            "userID": 1
         },
         {
             "id": 40,
-            "topic": "What are the most significant challenges facing the global economy?",
-            "user_id": 1
+            "title": "What are the most significant challenges facing the global economy?",
+            "userID": 1
         },
         {
             "id": 41,
-            "topic": "What are some interesting trends in contemporary architecture?",
-            "user_id": 0
+            "title": "What are some interesting trends in contemporary architecture?",
+            "userID": 0
         },
         {
             "id": 42,
-            "topic": "What are the most effective methods for learning to play a musical instrument?",
-            "user_id": 1
+            "title": "What are the most effective methods for learning to play a musical instrument?",
+            "userID": 1
         },
         {
             "id": 43,
-            "topic": "What are the key factors that contribute to a successful relationship?",
-            "user_id": 1
+            "title": "What are the key factors that contribute to a successful relationship?",
+            "userID": 1
         },
         {
             "id": 44,
-            "topic": "How does meditation impact mental and physical health?",
-            "user_id": 1
+            "title": "How does meditation impact mental and physical health?",
+            "userID": 1
         },
         {
             "id": 45,
-            "topic": "What are the best strategies for managing stress?",
-            "user_id": 1
+            "title": "What are the best strategies for managing stress?",
+            "userID": 1
         },
         {
             "id": 46,
-            "topic": "How can we encourage more people to participate in the democratic process?",
-            "user_id": 0
+            "title": "How can we encourage more people to participate in the democratic process?",
+            "userID": 0
         },
         {
             "id": 47,
-            "topic": "What are some of the best dishes you've tried from international cuisines?",
-            "user_id": 0
+            "title": "What are some of the best dishes you've tried from international cuisines?",
+            "userID": 0
         },
         {
             "id": 48,
-            "topic": "What are the most profound scientific theories that changed our perception of the universe?",
-            "user_id": 1
+            "title": "What are the most profound scientific theories that changed our perception of the universe?",
+            "userID": 1
         },
         {
             "id": 49,
-            "topic": "What are the major contributions of ancient civilizations to modern society?",
-            "user_id": 1
+            "title": "What are the major contributions of ancient civilizations to modern society?",
+            "userID": 1
         },
         {
             "id": 50,
-            "topic": "How can we promote reading habits among children and teenagers?",
-            "user_id": 1
+            "title": "How can we promote reading habits among children and teenagers?",
+            "userID": 1
         },
         {
             "id": 51,
-            "topic": "What are the most inspiring biographies or memoirs you have read?",
-            "user_id": 1
+            "title": "What are the most inspiring biographies or memoirs you have read?",
+            "userID": 1
         },
         {
             "id": 52,
-            "topic": "What are some of the challenges and opportunities of digital nomad life?",
-            "user_id": 1
+            "title": "What are some of the challenges and opportunities of digital nomad life?",
+            "userID": 1
         },
         {
             "id": 53,
-            "topic": "What is the significance of preserving indigenous languages and cultures?",
-            "user_id": 1
+            "title": "What is the significance of preserving indigenous languages and cultures?",
+            "userID": 1
         },
         {
             "id": 54,
-            "topic": "What are some of the best practices for effective team management in a virtual workspace?",
-            "user_id": 0
+            "title": "What are some of the best practices for effective team management in a virtual workspace?",
+            "userID": 0
         },
         {
             "id": 55,
-            "topic": "How can we make the transition to a zero-waste lifestyle?",
-            "user_id": 0
+            "title": "How can we make the transition to a zero-waste lifestyle?",
+            "userID": 0
         },
         {
             "id": 56,
-            "topic": "How can mindfulness improve our overall well-being and productivity?",
-            "user_id": 0
+            "title": "How can mindfulness improve our overall well-being and productivity?",
+            "userID": 0
         },
         {
             "id": 57,
-            "topic": "What are the challenges and benefits of homeschooling?",
-            "user_id": 1
+            "title": "What are the challenges and benefits of homeschooling?",
+            "userID": 1
         },
         {
             "id": 58,
-            "topic": "What are some ways to engage in creative writing?",
-            "user_id": 1
+            "title": "What are some ways to engage in creative writing?",
+            "userID": 1
         },
         {
             "id": 59,
-            "topic": "What is the potential of quantum computing and what challenges does it face?",
-            "user_id": 1
+            "title": "What is the potential of quantum computing and what challenges does it face?",
+            "userID": 1
         },
         {
             "id": 60,
-            "topic": "What are the best practices for personal financial management?",
-            "user_id": 1
+            "title": "What are the best practices for personal financial management?",
+            "userID": 1
         },
         {
             "id": 61,
-            "topic": "What is the role of the arts in society and education?",
-            "user_id": 0
+            "title": "What is the role of the arts in society and education?",
+            "userID": 0
         },
         {
             "id": 62,
-            "topic": "How can we combat misinformation and fake news on the internet?",
-            "user_id": 1
+            "title": "How can we combat misinformation and fake news on the internet?",
+            "userID": 1
         },
         {
             "id": 63,
-            "topic": "What are some successful wildlife conservation efforts?",
-            "user_id": 0
+            "title": "What are some successful wildlife conservation efforts?",
+            "userID": 0
         },
         {
             "id": 64,
-            "topic": "What are the latest trends in fashion and why do they matter?",
-            "user_id": 1
+            "title": "What are the latest trends in fashion and why do they matter?",
+            "userID": 1
         },
         {
             "id": 65,
-            "topic": "What is the impact of music on mental health?",
-            "user_id": 0
+            "title": "What is the impact of music on mental health?",
+            "userID": 0
         },
         {
             "id": 66,
-            "topic": "What are the best practices for home gardening and composting?",
-            "user_id": 0
+            "title": "What are the best practices for home gardening and composting?",
+            "userID": 0
         },
         {
             "id": 67,
-            "topic": "What are the potential benefits and risks of nanotechnology?",
-            "user_id": 0
+            "title": "What are the potential benefits and risks of nanotechnology?",
+            "userID": 0
         },
         {
             "id": 68,
-            "topic": "What are the societal implications of a Mars colonization?",
-            "user_id": 1
+            "title": "What are the societal implications of a Mars colonization?",
+            "userID": 1
         },
         {
             "id": 69,
-            "topic": "How can we encourage more diversity in STEM fields?",
-            "user_id": 1
+            "title": "How can we encourage more diversity in STEM fields?",
+            "userID": 1
         },
         {
             "id": 70,
-            "topic": "What are the cultural and historical significance of national parks?",
-            "user_id": 0
+            "title": "What are the cultural and historical significance of national parks?",
+            "userID": 0
         },
         {
             "id": 71,
-            "topic": "What are some emerging trends in the tech startup scene?",
-            "user_id": 0
+            "title": "What are some emerging trends in the tech startup scene?",
+            "userID": 0
         },
         {
             "id": 72,
-            "topic": "What is the importance of play in child development?",
-            "user_id": 1
+            "title": "What is the importance of play in child development?",
+            "userID": 1
         },
         {
             "id": 73,
-            "topic": "How can we use technology to improve accessibility for people with disabilities?",
-            "user_id": 0
+            "title": "How can we use technology to improve accessibility for people with disabilities?",
+            "userID": 0
         },
         {
             "id": 74,
-            "topic": "What are the impacts of fast fashion on our society and environment?",
-            "user_id": 1
+            "title": "What are the impacts of fast fashion on our society and environment?",
+            "userID": 1
         },
         {
             "id": 75,
-            "topic": "What are some overlooked periods in history that deserve more attention?",
-            "user_id": 1
+            "title": "What are some overlooked periods in history that deserve more attention?",
+            "userID": 1
         },
         {
             "id": 76,
-            "topic": "What is the importance of critical thinking in our daily lives?",
-            "user_id": 0
+            "title": "What is the importance of critical thinking in our daily lives?",
+            "userID": 0
         },
         {
             "id": 77,
-            "topic": "What are the potential impacts of virtual reality and augmented reality in our future?",
-            "user_id": 1
+            "title": "What are the potential impacts of virtual reality and augmented reality in our future?",
+            "userID": 1
         },
         {
             "id": 78,
-            "topic": "What are the best methods to learn coding for beginners?",
-            "user_id": 1
+            "title": "What are the best methods to learn coding for beginners?",
+            "userID": 1
         },
         {
             "id": 79,
-            "topic": "What are some essential life skills that schools should teach but often don't?",
-            "user_id": 1
+            "title": "What are some essential life skills that schools should teach but often don't?",
+            "userID": 1
         },
         {
             "id": 80,
-            "topic": "What are your favorite examples of architectural design and why do you like them?",
-            "user_id": 1
+            "title": "What are your favorite examples of architectural design and why do you like them?",
+            "userID": 1
         },
         {
             "id": 81,
-            "topic": "What are some ethical considerations in genetic engineering?",
-            "user_id": 0
+            "title": "What are some ethical considerations in genetic engineering?",
+            "userID": 0
         },
         {
             "id": 82,
-            "topic": "What are some effective ways of promoting mental health in the workplace?",
-            "user_id": 0
+            "title": "What are some effective ways of promoting mental health in the workplace?",
+            "userID": 0
         },
         {
             "id": 83,
-            "topic": "How can we promote sustainable agriculture practices to feed the growing global population?",
-            "user_id": 1
+            "title": "How can we promote sustainable agriculture practices to feed the growing global population?",
+            "userID": 1
         },
         {
             "id": 84,
-            "topic": "What are some examples of impactful social entrepreneurship?",
-            "user_id": 1
+            "title": "What are some examples of impactful social entrepreneurship?",
+            "userID": 1
         },
         {
             "id": 85,
-            "topic": "What are the potential implications of the rise of autonomous vehicles?",
-            "user_id": 1
+            "title": "What are the potential implications of the rise of autonomous vehicles?",
+            "userID": 1
         },
         {
             "id": 86,
-            "topic": "What role does music play in cultural expression and identity?",
-            "user_id": 1
+            "title": "What role does music play in cultural expression and identity?",
+            "userID": 1
         },
         {
             "id": 87,
-            "topic": "How is climate change affecting marine life and what can be done about it?",
-            "user_id": 1
+            "title": "How is climate change affecting marine life and what can be done about it?",
+            "userID": 1
         },
         {
             "id": 88,
-            "topic": "What are some of the most promising advancements in renewable energy technology?",
-            "user_id": 0
+            "title": "What are some of the most promising advancements in renewable energy technology?",
+            "userID": 0
         },
         {
             "id": 89,
-            "topic": "What are some of the best practices for digital security and privacy?",
-            "user_id": 1
+            "title": "What are some of the best practices for digital security and privacy?",
+            "userID": 1
         },
         {
             "id": 90,
-            "topic": "How does urban design influence community and personal well-being?",
-            "user_id": 0
+            "title": "How does urban design influence community and personal well-being?",
+            "userID": 0
         },
         {
             "id": 91,
-            "topic": "What role does philosophy play in the 21st century?",
-            "user_id": 1
+            "title": "What role does philosophy play in the 21st century?",
+            "userID": 1
         },
         {
             "id": 92,
-            "topic": "What are some significant developments in space travel technology?",
-            "user_id": 1
+            "title": "What are some significant developments in space travel technology?",
+            "userID": 1
         },
         {
             "id": 93,
-            "topic": "What are some practical ways to promote biodiversity in urban areas?",
-            "user_id": 1
+            "title": "What are some practical ways to promote biodiversity in urban areas?",
+            "userID": 1
         },
         {
             "id": 94,
-            "topic": "What are the effects of long-term space travel on the human body?",
-            "user_id": 0
+            "title": "What are the effects of long-term space travel on the human body?",
+            "userID": 0
         },
         {
             "id": 95,
-            "topic": "How has the internet changed the way we consume and appreciate art?",
-            "user_id": 0
+            "title": "How has the internet changed the way we consume and appreciate art?",
+            "userID": 0
         },
         {
             "id": 96,
-            "topic": "What are the implications of drone technology in various sectors?",
-            "user_id": 0
+            "title": "What are the implications of drone technology in various sectors?",
+            "userID": 0
         },
         {
             "id": 97,
-            "topic": "What are some challenges and opportunities in rural education?",
-            "user_id": 0
+            "title": "What are some challenges and opportunities in rural education?",
+            "userID": 0
         },
         {
             "id": 98,
-            "topic": "What is the role of artificial intelligence in healthcare?",
-            "user_id": 0
+            "title": "What is the role of artificial intelligence in healthcare?",
+            "userID": 0
         },
         {
             "id": 99,
-            "topic": "How has social media influenced politics?",
-            "user_id": 0
+            "title": "How has social media influenced politics?",
+            "userID": 0
         },
         {
             "id": 100,
-            "topic": "What is the impact of automation on job markets?",
-            "user_id": 0
+            "title": "What is the impact of automation on job markets?",
+            "userID": 0
         }
     ]
 }

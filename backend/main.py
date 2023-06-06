@@ -9,53 +9,56 @@ from flask_cors import CORS
 
 from matching import ConversationMatcher, ConversationSegway
 from events import socketio
-from data import setup_models
-from endpoints import setup_endpoints
+from data import setupModels
+from endpoints import setupEndpoints
 
 class ChatApplication:
     def __init__(self):
         self.app = Flask(__name__)
-        self.configure_app()
-        self.setup_database()
-        self.setup_conversation_handler()
-        self.setup_endpoints()
+        self.configureApp()
+        self.setupDatabase()
+        self.setupEndpoints()
+        self.setupConversationHandler()
 
-    def configure_app(self):
+    def configureApp(self):
         CORS(self.app, resources={r"/*": {"origins": "*"}})
         self.api = Api(self.app)
-        self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
-        os.makedirs(self.db_dir, exist_ok=True)
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.db_dir, 'test.db')
+        # TODO: move the data.db path to a config file
+        self.dbPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        os.makedirs(self.dbPath, exist_ok=True)
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(self.dbPath, 'test.db')
         socketio.init_app(self.app, cors_allowed_origins="*")
 
-    def setup_database(self):
+    def setupDatabase(self):
         self.db = SQLAlchemy(self.app)
-        self.chat_id = 0
-        self.user_id = -1
-        self.User, self.Topic, self.ChatMetadata, self.Chat = setup_models(self.db)
+        self.chatID = 0
+        self.userID = -1
+        self.User, self.Topic, self.ChatMetadata, self.Chat = setupModels(self.db)
     
-    def get_next_chat_id(self):
-        self.chat_id += 1
-        return self.chat_id
+    def getNextChatID(self):
+        self.chatID += 1
+        return self.chatID
 
-    def get_next_user_id(self):
-        self.user_id += 1
-        return self.user_id
+    def getNextUserID(self):
+        self.userID += 1
+        return self.userID
 
-    def setup_endpoints(self):
-        setup_endpoints(self, self.api, socketio)
+    def setupEndpoints(self):
+        setupEndpoints(self, self.api, socketio)
 
-    def setup_conversation_handler(self):
+    def setupConversationHandler(self):
         self.matcher = ConversationMatcher(k=2)
-        with open(os.path.join(self.db_dir, 'mock_convs.json')) as f:
-            data = json.load(f)  # TODO: Load from actual SQL database
-        convs = [(conv['user_id'], conv['topic']) for conv in data['conversations']]
-        self.matcher.add_conversations(convs)
+        
+        with self.app.app_context():
+            self.db.create_all()
+            topics = self.Topic.query.all()  # grab all topics from the database
+
+        topicTuples = [(topic.userID, topic.title) for topic in topics]
+        print(topicTuples)
+        self.matcher.addConversations(topicTuples)
         self.segway = ConversationSegway()
 
     def run(self):
-        with self.app.app_context():
-            self.db.create_all()
         socketio.run(self.app, debug=True)
         print("Backend started")
 

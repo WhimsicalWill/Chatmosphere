@@ -5,8 +5,6 @@ import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Si
 import { MainChat, MainInput } from './components/Main';
 import { setupSocket } from './Socket';
 
-// changed in backend:
-// convMatches, segwayResponse
 
 function App() {
   const botID = -1;
@@ -202,7 +200,7 @@ function App() {
     });
 
     if (chatID === brainstormID.current) {
-      const botResponses = await ApiManager.getResponse(message, userID.current);
+      const botResponses = await ApiManager.submitTopicAndGetResponse(message, userID.current);
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
           chatID: chatID,

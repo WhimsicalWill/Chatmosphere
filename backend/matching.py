@@ -32,21 +32,23 @@ class ConversationMatcher:
 
     # TODO: add better pipeline for incrementally adding conversations
     # this is currently only called once
-    def add_conversations(self, conversations):
-        for topic_id, conv in enumerate(conversations):
-            user_id, topic = conv
+    def addConversations(self, topicTuples):
+        for topic_id, title in enumerate(topicTuples):
+            user_id, topic = title
             self.conversations.append(topic)
             if user_id not in self.user_topic_ids:
                 self.user_topic_ids[user_id] = set()
             self.user_topic_ids[user_id].add(topic_id)
-        self.build_index()
+        self.buildIndex()
 
-    def build_index(self):
+    def buildIndex(self):
         embeddings = [get_embedding(conv, engine=self.engine) for conv in self.conversations]
         self.embeddings = np.array(embeddings).astype('float32')
         d = self.embeddings.shape[1]
+
         # TODO: optimize; re-indexing after every add is probably not the best way to do this
         # TODO: also, look into vector quantization: https://github.com/facebookresearch/faiss/blob/f809cf0d512eb69b3c675be53d287b9cc79c0f3e/tutorial/python/3-IVFPQ.py
+
         print("Creating Flat L2 index...")
         self.index = faiss.IndexFlatL2(d)
         self.index.add(self.embeddings)
