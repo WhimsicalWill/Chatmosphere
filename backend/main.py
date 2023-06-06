@@ -21,7 +21,6 @@ class ChatApplication:
         self.setup_endpoints()
 
     def configure_app(self):
-        # CORS(self.app)
         CORS(self.app, resources={r"/*": {"origins": "*"}})
         self.api = Api(self.app)
         self.db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')

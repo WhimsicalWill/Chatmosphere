@@ -17,8 +17,8 @@ export const setupSocket = ({
 }) => {
 
   socketRef.current = io('http://localhost:5000');
-  socketRef.current.emit('user_join', { username: userId, room: userId });
-  socketRef.current.emit('chat_join', { username: userId, room: brainstormId });
+  socketRef.current.emit('user-join', { username: userId, room: userId });
+  socketRef.current.emit('chat-join', { username: userId, room: brainstormId });
   console.log('Connected to backend and joined rooms')
 
   // handle receiving a message for a specific chat
@@ -56,7 +56,7 @@ export const setupSocket = ({
   });
 
   // handle another user creating a new chat with this user
-  socketRef.current.on('new_chat', (chatInfo) => {
+  socketRef.current.on('new-chat', (chatInfo) => {
     console.log('New chat created:', chatInfo);
 
     const { chatId, chatName, topicName } = chatInfo;
@@ -66,7 +66,7 @@ export const setupSocket = ({
       return;
     }
 
-    socketRef.current.emit('chat_join', { username: userId, room: chatId });
+    socketRef.current.emit('chat-join', { username: userId, room: chatId });
     
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };

@@ -1,6 +1,6 @@
-import numpy as np
 import os
 
+import numpy as np
 import faiss
 import openai
 from openai.embeddings_utils import get_embedding

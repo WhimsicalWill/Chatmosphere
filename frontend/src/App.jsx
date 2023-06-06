@@ -5,6 +5,9 @@ import { SidebarHeader, SidebarTabHeader, SidebarContent } from './components/Si
 import { MainChat, MainInput } from './components/Main';
 import { setupSocket } from './Socket';
 
+// changed in backend:
+// convMatches, segwayResponse
+
 function App() {
   const botId = -1;
 
@@ -72,7 +75,7 @@ function App() {
       return;
     }
     // call socketRef.current.join to join a room with the chatId
-    socketRef.current.emit('chat_join', { username: userId.current, room: chatId });
+    socketRef.current.emit('chat-join', { username: userId.current, room: chatId });
 
     if (!topicName) {
       console.error('Failed to find a user message to use as the topic name');
@@ -191,7 +194,7 @@ function App() {
   };
 
   const handleMessageHelper = async (event, chatId, message) => {
-    socketRef.current.emit('new_message', { 
+    socketRef.current.emit('new-message', { 
       chatId: chatId,
       message: message,
       userId: userId.current,
@@ -201,7 +204,7 @@ function App() {
     if (chatId === brainstormId.current) {
       const botResponses = await ApiManager.getResponse(message, userId.current);
       for (const botResponse of botResponses) {
-        socketRef.current.emit('new_message', { 
+        socketRef.current.emit('new-message', { 
           chatId: chatId,
           message: botResponse.text,
           userId: botId,

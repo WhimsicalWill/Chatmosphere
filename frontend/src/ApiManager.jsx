@@ -1,15 +1,6 @@
 import axiosInstance from './axiosInstance';
 
-// Sample bot responses
-const responses = ["Hey!", "How can I assist you?", "Nice to meet you!"];
-
 class ApiManager {
-  static getRandomResponse(message) {
-    const randomIndex = Math.floor(Math.random() * responses.length);
-    const randomResponse = responses[randomIndex];
-    return randomResponse;
-  }
-
   static async getResponse(message, userId) {
     try {
       const response = await axiosInstance.get('/bot-response', {
@@ -19,8 +10,8 @@ class ApiManager {
         }
       });
 
-      const convMatches = response.data.conv_matches;
-      const segwayResponses = response.data.segway_response.split('\n');
+      const convMatches = response.data.convMatches;
+      const segwayResponses = response.data.segwayResponses.split('\n');
 
       console.log('segwayResponses', segwayResponses);
 
