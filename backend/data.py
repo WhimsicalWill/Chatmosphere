@@ -24,7 +24,8 @@ def setupModels(db):
         __tablename__ = 'chatmetadata'
 
         id = db.Column(db.Integer, primary_key=True)  # changed from chat_id to id
-        topicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
+        creatorTopicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
+        matchedTopicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
         userCreatorID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         userMatchedID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         # lastMessage = db.Column(db.String(256), nullable=True)

@@ -26,13 +26,33 @@ function App() {
   // This effect fetches the user id
   useEffect(() => {
     (async () => {
-      userID.current = await ApiManager.getNextUserID();
-      brainstormID.current = await ApiManager.getNextChatID();
+      const [nextUserID, nextChatID] = await Promise.all([
+        ApiManager.getNextUserID(),
+        // ApiManager.getNextChatID()
+      ]);
+      userID.current = nextUserID
+      // brainstormID.current = nextChatID;
+      
+      // call the API endpoint TopicResource to get a list of all topics
+      ApiManager.getTopicsAndChats(userID.current, setTopics);
+
+      // TODO: could add another ref/state for isLoading here
+
+      // instead of initializing the IDs as above
+      // we should try to enter/get them into the database
+      // since we don't have OAuth yet, we should definitely keep the 
+      // userID and getNextUserID. We can probably get rid of the chatID
     })();
   }, []);
 
   // This effect sets up the socket
   useEffect(() => {
+
+    // List of places where I would have to refactor for topicID:
+    // initial set topics
+    // the useEffect above (to get the brainstormTopicID)
+
+
     // Check if userID.current is a numeric value
     if (typeof userID.current === 'number' && typeof brainstormID.current === 'number') {
       setTopics({
@@ -66,13 +86,16 @@ function App() {
       }
     }
 
+    // TODO: create new topic here
+    // Then, we will have to pass the two topicIDs to the backend
+
     // Call backend to create a new chat (with a chat id)
     const chatID = await ApiManager.createChatAndGetID(matchInfo.userID, matchInfo.topicID, topicName);
     if (chatID == null) {
       console.error('Failed to create a new chat');
       return;
     }
-    // call socketRef.current.join to join a room with the chatID
+    // join a room with the chatID
     socketRef.current.emit('chat-join', { username: userID.current, room: chatID });
 
     if (!topicName) {

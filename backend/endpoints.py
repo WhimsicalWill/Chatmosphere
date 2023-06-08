@@ -19,7 +19,7 @@ def setupEndpoints(chatApp, api, socketio):
         def get(self, userID):
             user = chatApp.User.query.get(userID)
             if user:
-                return {'username': user.username}
+                return {'username': user.username}, 200
             else:
                 return {'error': 'chatApp.User not found'}, 404
 
@@ -53,33 +53,42 @@ def setupEndpoints(chatApp, api, socketio):
             return {'message': f'chatApp.User {user.username} was deleted'}, 200
 
 
-    class TopicResource(Resource):
+    class UserTopicResource(Resource):
         def get(self, userID):
             topics = chatApp.Topic.query.filter_by(userID=userID).all()
             if not topics:
                 return {'error': 'No topics found for this user'}, 404
 
-            return [{'id': topic.id, 'userID': topic.userID} for topic in topics]
+            return [{'id': topic.id, 'title': topic.title} for topic in topics], 200
 
-        def post(self):
+        def post(self, userID):
             # POST method to create new topic for user
             parser = reqparse.RequestParser()  
-            parser.add_argument('userID', required=True, help="userID cannot be blank!")
             parser.add_argument('title', required=True, help="title cannot be blank!")
             args = parser.parse_args()
 
-            user = chatApp.User.query.get(args['userID'])
-            if not user:
-                return {'error': 'User not found'}, 404
+            # user = chatApp.User.query.get(userID)
+            # if not user:
+            #     return {'error': 'User not found'}, 404
 
             newTopic = chatApp.Topic(
-                userID=args['userID'], 
+                userID=userID, 
                 title=args['title'], 
             )
             chatApp.db.session.add(newTopic)
             chatApp.db.session.commit()
 
-            return {'message': f'Topic was created for user {user.username}'}, 201
+
+            return {'id': newTopic.id}, 201
+
+
+    class TopicResource(Resource):
+        def get(self, topicID):
+            topic = chatApp.Topic.query.get(topicID)
+            if not topic:
+                return {'error': 'Topic not found'}, 404
+
+            return {'id': topic.id, 'title': topic.title}, 200
 
         def delete(self, topicID):
             # DELETE method to delete topic
@@ -92,6 +101,37 @@ def setupEndpoints(chatApp, api, socketio):
             return {'message': f'Topic {topic.id} was deleted'}, 200
 
 
+    class CreateChatResource(Resource):
+        def post(self):
+            print('Creating new chat...')
+            parser = reqparse.RequestParser()  
+            parser.add_argument('creatorTopicID', type=int, required=True, help="Creator topic id cannot be blank!")
+            parser.add_argument('matchedTopicID', type=int, required=True, help="Matched topic id cannot be blank!")
+            parser.add_argument('userCreatorID', type=int, required=True, help="User creator id cannot be blank!")
+            parser.add_argument('userMatchedID', type=int, required=True, help="User matched id cannot be blank!")
+            args = parser.parse_args()
+
+            newMetadata = chatApp.ChatMetadata(
+                creatorTopicID=args['creatorTopicID'],
+                matchedTopicID=args['matchedTopicID'],
+                userCreatorID=args['userCreatorID'],
+                userMatchedID=args['userMatchedID']
+            )
+            chatApp.db.session.add(newMetadata)
+            chatApp.db.session.commit()
+
+            chatInfo = {'chatID': newMetadata.id,
+                        'creatorTopicID': newMetadata.matchedTopicID,
+                        'matchedTopicID': newMetadata.matchedTopicID,
+                        'userCreatorID': newMetadata.userCreatorID,
+                        'userMatchedID': newMetadata.userMatchedID,
+            }
+
+            socketio.emit('new-chat', chatInfo, room=f"userID_{newMetadata.userMatchedID}")
+
+            return chatInfo, 201
+
+
     class ChatMetadataResource(Resource):
         def get(self, chatID):
             chatMetadata = chatApp.ChatMetadata.query.get(chatID)
@@ -99,37 +139,7 @@ def setupEndpoints(chatApp, api, socketio):
                 return {'error': 'Chat metadata not found'}, 404
 
             return {'topicID': chatMetadata.topicID, 'userCreatorID': chatMetadata.userCreatorID,
-                    'userMatchedID': chatMetadata.userMatchedID}
-
-        def post(self):
-            print('Creating new chat...')
-            parser = reqparse.RequestParser()  
-            parser.add_argument('topicID', required=True, help="Topic id cannot be blank!")
-            parser.add_argument('userCreatorID', required=True, help="User creator id cannot be blank!")
-            parser.add_argument('userMatchedID', required=True, help="User matched id cannot be blank!")
-            args = parser.parse_args()
-
-            newMetadata = chatApp.ChatMetadata(
-                topicID=args['topicID'], 
-                userCreatorID=args['userCreatorID'], 
-                userMatchedID=args['userMatchedID']
-            )
-            chatApp.db.session.add(newMetadata)
-            chatApp.db.session.commit()
-
-            # How can I get the chatID that was created by the database?
-
-            chatInfoCreator = {'chatID': newMetadata.id,
-                               'chatName': f"Chat with {args['userMatchedID']}",
-                               'topicName': topicName}
-
-            chatInfoMatched = {'chatID': newMetadata.id,
-                               'chatName': f"Chat with {args['userMatchedID']}",
-                               'topicName': topicName}
-
-            socketio.emit('new-chat', chatInfoMatched, room=f"userID_{args['userMatchedID']}")
-
-            return chatInfoCreator, 200
+                    'userMatchedID': chatMetadata.userMatchedID}, 200
 
         def delete(self, chatID):
             metadata = chatApp.ChatMetadata.query.get(chatID)
@@ -141,15 +151,7 @@ def setupEndpoints(chatApp, api, socketio):
             return {'message': 'Chat metadata was deleted'}, 200
 
 
-    class ChatResource(Resource):
-        def get(self, chatID):
-            chats = chatApp.Chat.query.filter_by(chatID=chatID).all()
-            if not chats:
-                return {'error': 'No chats found for this metadata'}, 404
-
-            return [{'id': chat.id, 'timestamp': chat.timestamp, 'senderID': chat.senderID,
-                    'text': chat.text} for chat in chats]
-
+    class NewMessageResource(Resource):
         def post(self):
             parser = reqparse.RequestParser()  
             parser.add_argument('chatID', required=True, help="Chat id cannot be blank!")
@@ -165,7 +167,17 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.add(newChat)
             chatApp.db.session.commit()
 
-            return {'message': 'Chat message was created'}, 201
+            return {'id': newChat.id}, 201
+
+
+    class ChatMessagesResource(Resource):
+        def get(self, chatID):
+            chats = chatApp.Chat.query.filter_by(chatID=chatID).all()
+            if not chats:
+                return {'error': 'No chats found for this metadata'}, 404
+
+            return [{'id': chat.id, 'timestamp': chat.timestamp, 'senderID': chat.senderID,
+                    'text': chat.text} for chat in chats], 200
 
         def delete(self, chatID):
             chat = chatApp.Chat.query.get(chatID)
@@ -190,8 +202,12 @@ def setupEndpoints(chatApp, api, socketio):
 
     api.add_resource(NextChatIDResource, '/next-chat-id')
     api.add_resource(NextUserIDResource, '/next-user-id')
+    # TODO: get rid of the NextID resources above
     api.add_resource(UserResource, '/users/<int:userID>')
-    api.add_resource(TopicResource, '/topics/<int:userID>')
+    api.add_resource(UserTopicResource, '/user-topics/<int:userID>')
+    api.add_resource(TopicResource, '/topics/<int:topicID>')
+    api.add_resource(CreateChatResource, '/create-chat')
     api.add_resource(ChatMetadataResource, '/chatmetadata/<int:chatID>')
-    api.add_resource(ChatResource, '/chats/<int:chatID>')
+    api.add_resource(ChatMessagesResource, '/chats/<int:chatID>')
+    api.add_resource(NewMessageResource, '/new-message')
     api.add_resource(BotResponseResource, '/bot-response')

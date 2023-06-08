@@ -20,5 +20,6 @@ if __name__ == '__main__':
     chatApp = ChatApplication()
     dataPath = 'data/mock_convs.json'
     with chatApp.app.app_context():
+        chatApp.db.drop_all() # This deletes all existing data
         chatApp.db.create_all()
         initDatabase(chatApp, dataPath)
