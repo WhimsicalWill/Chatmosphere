@@ -40,6 +40,25 @@ class ApiManager {
     }
   }
 
+static getBrainstormTopicAndChat(topics) {
+  const brainstormTopicID = Object.keys(topics).find(
+    topicID => topics[topicID].title === 'Brainstorm'
+  );
+
+  // the topic has a title as a child element, all other children are chats
+  if (!brainstormTopicID || Object.keys(topics[brainstormTopicID]).length < 2) {
+    console.error('Error finding brainstorm topic/chat');
+    return [null, null];
+  }
+
+  // find the child element that is not the title
+  const brainstormChatID = Object.keys(topics[brainstormTopicID]).find(
+    key => key !== 'title'
+  ) || null;
+  console.log('returning:', [brainstormTopicID, brainstormChatID]);
+  return [brainstormTopicID, brainstormChatID];
+}
+
   // TODO: will need to change these functions since we are
   // now using a database to track users and chats
 
@@ -102,7 +121,7 @@ class ApiManager {
       const topics = {};
 
       const chatPromises = topicInfo.map((topic) => {
-        return ApiManager.getChatsByTopicID(topic.id);
+        return ApiManager.getChatsByTopicID(topic.id, userID);
       });
 
       // This allows all of our API calls to resolve in parallel
@@ -120,6 +139,8 @@ class ApiManager {
 
       console.log('set up topics:', topics);
       setTopics(topics);
+      const result = ApiManager.getBrainstormTopicAndChat(topics);
+      return result;
     } catch (error) {
       console.error(error);
     }
@@ -178,10 +199,20 @@ class ApiManager {
     return null;
   }
 
-  static async getChatsByTopicID(userID) {
+  static async getChatsByTopicID(topicID, userID) {
     try {
+      const topicChats = {};
+      const response = await axiosInstance.get(`/chatmetadata/${topicID}`);
+      response.data.forEach(chatResponse => {
+        topicChats[chatResponse.chatID] = { 
+          name: `Chat ${chatResponse.chatID}`, 
+          otherUserID: userID == chatResponse.userCreatorID ? chatResponse.userMatchedID : chatResponse.userCreatorID,
+          messages: []
+        };
+      });
+      return topicChats;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 }

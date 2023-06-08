@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask import request
+from sqlalchemy import or_
 
 def setupEndpoints(chatApp, api, socketio):
 
@@ -132,23 +133,28 @@ def setupEndpoints(chatApp, api, socketio):
             return chatInfo, 201
 
 
-    class ChatMetadataResource(Resource):
-        def get(self, chatID):
-            chatMetadata = chatApp.ChatMetadata.query.get(chatID)
-            if not chatMetadata:
+    class TopicChatMetadataResource(Resource):
+        def get(self, topicID):
+            chatMetadataList = chatApp.ChatMetadata.query.filter(
+                or_(chatApp.ChatMetadata.creatorTopicID == topicID,
+                    chatApp.ChatMetadata.matchedTopicID == topicID
+                )
+            ).all()
+
+            if not chatMetadataList:
                 return {'error': 'Chat metadata not found'}, 404
 
-            return {'topicID': chatMetadata.topicID, 'userCreatorID': chatMetadata.userCreatorID,
-                    'userMatchedID': chatMetadata.userMatchedID}, 200
+            chatInfoList = []
+            for chatMetadata in chatMetadataList:
+                chatInfo = {'chatID': chatMetadata.id,
+                            'creatorTopicID': chatMetadata.creatorTopicID,
+                            'matchedTopicID': chatMetadata.matchedTopicID,
+                            'userCreatorID': chatMetadata.userCreatorID,
+                            'userMatchedID': chatMetadata.userMatchedID,
+                }
+                chatInfoList.append(chatInfo)
 
-        def delete(self, chatID):
-            metadata = chatApp.ChatMetadata.query.get(chatID)
-            if not metadata:
-                return {'error': 'Chat metadata not found'}, 404
-
-            chatApp.db.session.delete(metadata)
-            chatApp.db.session.commit()
-            return {'message': 'Chat metadata was deleted'}, 200
+            return chatInfoList, 200
 
 
     class NewMessageResource(Resource):
@@ -207,7 +213,7 @@ def setupEndpoints(chatApp, api, socketio):
     api.add_resource(UserTopicResource, '/user-topics/<int:userID>')
     api.add_resource(TopicResource, '/topics/<int:topicID>')
     api.add_resource(CreateChatResource, '/create-chat')
-    api.add_resource(ChatMetadataResource, '/chatmetadata/<int:chatID>')
+    api.add_resource(TopicChatMetadataResource, '/chatmetadata/<int:topicID>')
     api.add_resource(ChatMessagesResource, '/chats/<int:chatID>')
     api.add_resource(NewMessageResource, '/new-message')
     api.add_resource(BotResponseResource, '/bot-response')

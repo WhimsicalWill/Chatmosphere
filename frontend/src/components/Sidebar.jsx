@@ -55,7 +55,8 @@ export function SidebarContent({
   submitNewTopicName,
   isEditingNewTopic,
   setEditingNewTopic,
-  brainstormID,
+  brainstormTopicID,
+  brainstormChatID,
 }) {
 
   // Declare some tricky sections as variables
@@ -72,8 +73,8 @@ export function SidebarContent({
       className="topic" 
       onClick={() => {
           setEditingNewTopic(true);
-          setCurrentTopic('Brainstorm');
-          setCurrentChat(brainstormID);
+          setCurrentTopic(brainstormTopicID);
+          setCurrentChat(brainstormChatID);
         }
       }
     >
@@ -83,18 +84,18 @@ export function SidebarContent({
 
   const topicListSection = 
     <ul className="topic-list">
-      {topics && Object.keys(topics).filter(t => t !== 'Brainstorm').map((topicName, index) => (
+      {topics && Object.keys(topics).filter(t => t !== brainstormTopicID).map((topicID, index) => (
         <li
           key={index}
-          onClick={() => handleTopicClick(topicName)}
-          className={`topic ${currentTopic === topicName ? "active-topic" : ""}`}
+          onClick={() => handleTopicClick(topicID)}
+          className={`topic ${currentTopic === topicID ? "active-topic" : ""}`}
         >
-          <Topic className='topic-icon' /> {topicName}
+          <Topic className='topic-icon' /> {topics[topicID].title}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {
               event.stopPropagation(); // prevent the sidebar click event from firing
-              deleteTopic(topicName);
+              deleteTopic(topicID);
             }}
           />
         </li>
@@ -102,9 +103,15 @@ export function SidebarContent({
     </ul>
   ;
 
-  const chatListSection =
-    <ul className="chat-list">
-      {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatID, index) => (
+const chatListSection = (
+  <ul className="chat-list">
+    {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatID, index) => {
+      // TODO: maybe refactor how we are storing the title and chats of each topic
+      if (chatID === 'title') {
+        return null; // Skip over the child that represents the title
+      }
+
+      return (
         <li
           key={index}
           onClick={() => {
@@ -122,9 +129,10 @@ export function SidebarContent({
             }}
           />
         </li>
-      ))}
-    </ul>
-  ;
+      );
+    })}
+  </ul>
+);
 
   return (
     <>

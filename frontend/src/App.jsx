@@ -19,53 +19,30 @@ function App() {
   // ref variables are persistent and changes to them do not cause the component to re-render
   // TODO: add user-authentication and retrieve the user's id
   const userID = useRef(null);
-  const brainstormID = useRef(null);
+  const brainstormTopicID = useRef(null);
+  const brainstormChatID = useRef(null);
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
   // This effect fetches the user id
   useEffect(() => {
     (async () => {
-      const [nextUserID, nextChatID] = await Promise.all([
-        ApiManager.getNextUserID(),
-        // ApiManager.getNextChatID()
-      ]);
-      userID.current = nextUserID
-      // brainstormID.current = nextChatID;
-      
-      // call the API endpoint TopicResource to get a list of all topics
-      ApiManager.getTopicsAndChats(userID.current, setTopics);
-
+      userID.current = await ApiManager.getNextUserID();
+      console.log('userID', userID.current);
+      [brainstormTopicID.current, brainstormChatID.current] = await ApiManager.getTopicsAndChats(userID.current, setTopics);
       // TODO: could add another ref/state for isLoading here
-
-      // instead of initializing the IDs as above
-      // we should try to enter/get them into the database
-      // since we don't have OAuth yet, we should definitely keep the 
-      // userID and getNextUserID. We can probably get rid of the chatID
     })();
   }, []);
 
   // This effect sets up the socket
   useEffect(() => {
-
-    // List of places where I would have to refactor for topicID:
-    // initial set topics
-    // the useEffect above (to get the brainstormTopicID)
-
-
     // Check if userID.current is a numeric value
-    if (typeof userID.current === 'number' && typeof brainstormID.current === 'number') {
-      setTopics({
-        "Brainstorm": {
-          [brainstormID.current]: { name: "AI Helper", messages: [] },
-          //... more chats
-        },
-        //... more topics
-      });
-      const cleanup = setupSocket({ socketRef, brainstormID: brainstormID.current, userID: userID.current, setTopics });
+    
+    if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'number') {
+      const cleanup = setupSocket({ socketRef, brainstormID: brainstormChatID.current, userID: userID.current, setTopics });
       return () => cleanup;
     }
-  }, [userID.current, brainstormID.current]);
+  }, [userID.current, brainstormChatID.current]);
 
   // This effect will run whenever the current topic changes
   useEffect(() => {
@@ -73,7 +50,7 @@ function App() {
   }, [topics]);
 
   const addChatUnderTopic = async (matchInfo, messageID) => {
-    const brainstormChat = topics["Brainstorm"][brainstormID.current];
+    const brainstormChat = topics[brainstormTopicID.current][brainstormChatID.current];
 
     console.log('brainstormChat', brainstormChat);
     let topicName = null;
@@ -162,13 +139,13 @@ function App() {
     });
   };
 
-  const handleTopicClick = (topicName) => {
-    setCurrentTopic(topicName);
+  const handleTopicClick = (topicID) => {
+    setCurrentTopic(topicID);
     setCurrentTab('Active Chats');
     setEditingNewTopic(false)
     
     // Set the first chat of the selected topic as the current chat
-    const availableChats = Object.keys(topics[topicName]);
+    const availableChats = Object.keys(topics[topicID]);
     if (availableChats.length > 0) {
       setCurrentChat(availableChats[0]);
     } else {
@@ -183,11 +160,11 @@ function App() {
   };
 
   const submitNewTopicName = (event) => {
-    const messageSent = handleMessage(event, brainstormID.current);
+    const messageSent = handleMessage(event, brainstormChatID.current);
     if (!messageSent) return;
     setEditingNewTopic(false);
-    setCurrentTopic('Brainstorm');
-    setCurrentChat(brainstormID.current);
+    setCurrentTopic(brainstormTopicID.current);
+    setCurrentChat(brainstormChatID.current);
   }
 
   const handleMessage = (event, chatID) => {
@@ -210,11 +187,11 @@ function App() {
       return false;
     }
 
-    handleMessageHelper(event, chatID, message);
+    handleMessageHelper(chatID, message);
     return true;
   };
 
-  const handleMessageHelper = async (event, chatID, message) => {
+  const handleMessageHelper = async (chatID, message) => {
     socketRef.current.emit('new-message', { 
       chatID: chatID,
       message: message,
@@ -222,7 +199,7 @@ function App() {
       matchInfo: null,
     });
 
-    if (chatID === brainstormID.current) {
+    if (chatID === brainstormChatID.current) {
       const botResponses = await ApiManager.submitTopicAndGetResponse(message, userID.current);
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
@@ -248,18 +225,20 @@ function App() {
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
-    brainstormID: brainstormID.current,
+    brainstormTopicID: brainstormTopicID.current,
+    brainstormChatID: brainstormChatID.current,
   };
 
   const mainProps = {
-    brainstormID: brainstormID.current,
     currentTopic,
     currentChat,
+    currentTab,
     topics,
     addChatUnderTopic,
     chatEndRef,
     currentTab,
     handleMessage,
+    handleBackClick,
     userID: userID.current,
   }
 
@@ -268,7 +247,7 @@ function App() {
     <div className="container">
       <div className="sidebar">
         <SidebarHeader />
-        <SidebarTabHeader currentTab={currentTab} handleBackClick={handleBackClick} />
+        <SidebarTabHeader {...sidebarProps} />
         <SidebarContent {...sidebarProps} />
       </div>
       <div className="main">
