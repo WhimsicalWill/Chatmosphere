@@ -1,8 +1,8 @@
 import io from 'socket.io-client';
 
-const findParentTopic = (topics, chatId) => {
+const findParentTopic = (topics, chatID) => {
   for (let topicName in topics) {
-    if (topics[topicName][chatId]) {
+    if (topics[topicName][chatID]) {
       return topicName;
     }
   }
@@ -11,43 +11,43 @@ const findParentTopic = (topics, chatId) => {
 
 export const setupSocket = ({
   socketRef,
-  brainstormId,
-  userId, 
+  brainstormChatID,
+  userID, 
   setTopics, 
 }) => {
 
   socketRef.current = io('http://localhost:5000');
-  socketRef.current.emit('user-join', { username: userId, room: userId });
-  socketRef.current.emit('chat-join', { username: userId, room: brainstormId });
-  console.log('Connected to backend and joined rooms')
+  socketRef.current.emit('user-join', { userID: userID.current, room: userID });
+  socketRef.current.emit('chat-join', { userID: userID.current, room: brainstormChatID.current });
+  console.log('Connected to backend and joined room', brainstormChatID.current);
 
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
     console.log('Received message:', response);
 
-    const { chatId, message, userId, matchInfo } = response;
+    const { chatID, message, senderID, matchInfo } = response;
     
     // update the topic object to include the new message
     setTopics(prevTopics => {
-      const topicName = findParentTopic(prevTopics, chatId);
+      const topicID = findParentTopic(prevTopics, chatID);
 
-      if (!topicName) {
-        console.error('No topic or chat name found for given chatId');
+      if (!topicID) {
+        console.error('No topic found for given chatID');
         return;
       }
 
-      if (!prevTopics[topicName] || !prevTopics[topicName][chatId]) return prevTopics;
+      if (!prevTopics[topicID] || !prevTopics[topicID][chatID]) return prevTopics;
 
-      const messageId = prevTopics[topicName][chatId].messages.length;
+      const messageID = prevTopics[topicID][chatID].messages.length;
       const updatedChat = {
-        ...prevTopics[topicName][chatId],
-        messages: [...prevTopics[topicName][chatId].messages, { message, userId, matchInfo, messageId }],
+        ...prevTopics[topicID][chatID],
+        messages: [...prevTopics[topicID][chatID].messages, { message, senderID, matchInfo, messageID }],
       };
       const updatedTopics = {
         ...prevTopics,
-        [topicName]: {
-          ...prevTopics[topicName],
-          [chatId]: updatedChat,
+        [topicID]: {
+          ...prevTopics[topicID],
+          [chatID]: updatedChat,
         },
       };
 
@@ -56,24 +56,25 @@ export const setupSocket = ({
   });
 
   // handle another user creating a new chat with this user
+  // TODO: need to refactor this to handle the new chatInfo object
   socketRef.current.on('new-chat', (chatInfo) => {
     console.log('New chat created:', chatInfo);
 
-    const { chatId, chatName, topicName } = chatInfo;
+    const { chatID, chatName, topicName } = chatInfo;
 
-    if (!chatId) {
-      console.error('No chatId received');
+    if (!chatID) {
+      console.error('No chatID received');
       return;
     }
 
-    socketRef.current.emit('chat-join', { username: userId, room: chatId });
+    socketRef.current.emit('chat-join', { userID: userID, room: chatID });
     
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
 
       if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
-      if (!updatedTopics[topicName][chatId]) 
-        updatedTopics[topicName][chatId] = { name: chatName, messages: [] }
+      if (!updatedTopics[topicName][chatID]) 
+        updatedTopics[topicName][chatID] = { name: chatName, messages: [] }
 
       return updatedTopics;
     });

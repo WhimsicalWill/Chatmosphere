@@ -4,12 +4,6 @@ from sqlalchemy import or_
 
 def setupEndpoints(chatApp, api, socketio):
 
-    class NextChatIDResource(Resource):
-        def get(self):
-            nextID = chatApp.getNextChatID()  # Retrieve the next chat id
-            return {'nextChatID': nextID}, 200
-
-
     class NextUserIDResource(Resource):
         def get(self):
             nextID = chatApp.getNextUserID()  # Retrieve the next user id
@@ -78,7 +72,6 @@ def setupEndpoints(chatApp, api, socketio):
             )
             chatApp.db.session.add(newTopic)
             chatApp.db.session.commit()
-
 
             return {'id': newTopic.id}, 201
 
@@ -206,7 +199,6 @@ def setupEndpoints(chatApp, api, socketio):
             else:
                 return {'error': 'No topic provided'}, 400
 
-    api.add_resource(NextChatIDResource, '/next-chat-id')
     api.add_resource(NextUserIDResource, '/next-user-id')
     # TODO: get rid of the NextID resources above
     api.add_resource(UserResource, '/users/<int:userID>')

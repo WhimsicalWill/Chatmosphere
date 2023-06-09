@@ -73,8 +73,8 @@ export function SidebarContent({
       className="topic" 
       onClick={() => {
           setEditingNewTopic(true);
-          setCurrentTopic(brainstormTopicID);
-          setCurrentChat(brainstormChatID);
+          setCurrentTopic(brainstormTopicID.current);
+          setCurrentChat(brainstormChatID.current);
         }
       }
     >
@@ -82,9 +82,11 @@ export function SidebarContent({
     </div>
   ;
 
+  // console.log(Object.keys(topics))
+  // console.log(brainstormTopicID.current);
   const topicListSection = 
     <ul className="topic-list">
-      {topics && Object.keys(topics).filter(t => t !== brainstormTopicID).map((topicID, index) => (
+      {topics && Object.keys(topics).filter(t => t !== brainstormTopicID.current).map((topicID, index) => (
         <li
           key={index}
           onClick={() => handleTopicClick(topicID)}
@@ -108,7 +110,7 @@ const chatListSection = (
     {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatID, index) => {
       // TODO: maybe refactor how we are storing the title and chats of each topic
       if (chatID === 'title') {
-        return null; // Skip over the child that represents the title
+        return null; // skip the title
       }
 
       return (

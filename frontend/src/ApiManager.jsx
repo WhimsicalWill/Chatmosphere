@@ -14,64 +14,22 @@ class ApiManager {
         }
       });
 
-      // submit a POST request to the TopicResource
-      await axiosInstance.post('/topics', { // replace '/topics' with your actual TopicResource route
-        userID: userID,
+      // Add the new topic to the database
+      axiosInstance.post(`/user-topics/${userID}`, {
         title: message,
       });
 
       const convMatches = botResponse.data.convMatches;
       const segwayResponses = botResponse.data.segwayResponses.split('\n');
 
-      console.log('segwayResponses', segwayResponses);
-
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
         matchInfo: convMatches[i]
       }));
-
-      console.log("API response:", combined);
-
       return combined;
-
     } catch (error) {
       console.error(error);
       return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
-    }
-  }
-
-static getBrainstormTopicAndChat(topics) {
-  const brainstormTopicID = Object.keys(topics).find(
-    topicID => topics[topicID].title === 'Brainstorm'
-  );
-
-  // the topic has a title as a child element, all other children are chats
-  if (!brainstormTopicID || Object.keys(topics[brainstormTopicID]).length < 2) {
-    console.error('Error finding brainstorm topic/chat');
-    return [null, null];
-  }
-
-  // find the child element that is not the title
-  const brainstormChatID = Object.keys(topics[brainstormTopicID]).find(
-    key => key !== 'title'
-  ) || null;
-  console.log('returning:', [brainstormTopicID, brainstormChatID]);
-  return [brainstormTopicID, brainstormChatID];
-}
-
-  // TODO: will need to change these functions since we are
-  // now using a database to track users and chats
-
-  // Add function to create a new chat
-  static async getNextChatID() {
-    try {
-      // modify the api call to feed in the two users
-      const response = await axiosInstance.get('/next-chat-id');
-      console.log(response.data);
-      return response.data.nextChatID;
-    } catch (error) {
-      console.error(error);
-      return null; // return null in the case of an error
     }
   }
 
@@ -110,12 +68,16 @@ static getBrainstormTopicAndChat(topics) {
 
   static async getTopicsAndChats(userID, setTopics) {
     try {
-      const topicInfo = await ApiManager.getTopicsOrCreateBrainstorm(userID);
-      console.log('topicInfo', topicInfo);
+      let topicInfo = await ApiManager.getTopics(userID);
 
-      if (topicInfo == null) {
-        console.error('Failed to get topics');
-        return;
+      let brainstormTopic = topicInfo.find(topic => topic.title === 'Brainstorm');
+      let brainstormTopicID = brainstormTopic ? String(brainstormTopic.id) : null;
+
+      if (!brainstormTopic) {
+        console.log('Creating brainstorm topic/chat now');
+        const brainstormResponse = await ApiManager.createBrainstorm(userID);
+        brainstormTopicID = brainstormResponse.id;
+        topicInfo = topicInfo.concat(brainstormResponse);
       }
 
       const topics = {};
@@ -137,66 +99,22 @@ static getBrainstormTopicAndChat(topics) {
         })
         .catch((err) => console.log(err));
 
-      console.log('set up topics:', topics);
       setTopics(topics);
-      const result = ApiManager.getBrainstormTopicAndChat(topics);
-      return result;
+      const brainstormChatID = ApiManager.getBrainstormChat(topics, brainstormTopicID);
+      return [brainstormTopicID, brainstormChatID];
     } catch (error) {
       console.error(error);
     }
   }
 
-  static async getTopicsOrCreateBrainstorm(userID) {
+  static async getTopics(userID) {
     try {
-      // modify the api call to feed in the two users
       const response = await axiosInstance.get(`/user-topics/${userID}`);
       return response.data;
     } catch (error) {
-      // If the user has no topics, we need to create brainstorm topic and chat
-      if (error.response && error.response.status === 404) {
-        console.log('Creating brainstorm topic and chat');
-        const brainstormResponse = await ApiManager.createBrainstormChat(userID);
-        console.log('brainstormResponse', brainstormResponse);
-        return brainstormResponse
-      } else {
-        console.error(error);
-      }
-      return null;
+      console.error(error);
+      return [];
     }
-  }
-
-  static async createBrainstormChat(userID) {
-    try {
-      // Attempt to create the 'Brainstorm' topic
-      const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
-        title: 'Brainstorm'
-      });
-
-      console.log('topicResponse', topicResponse);
-
-      if (topicResponse.status === 201) {
-        // TODO: just call ApiManager.createChatandGetID here
-        // If successful, create the 'Brainstorm' chat under this topic
-        const chatResponse = await axiosInstance.post('/create-chat', {
-          creatorTopicID: topicResponse.data.id,
-          matchedTopicID: -1,
-          userCreatorID: userID,
-          userMatchedID: -1,
-        });
-
-        console.log('chatResponse', chatResponse);
-
-        if (chatResponse.status === 201) {
-          // TODO: set the brainstormID.ref to the chatID
-          console.log(`Brainstorm topic and chat created for user ${userID}`);
-          return [{ id: topicResponse.data.id, title: 'Brainstorm' }];
-        }
-      }
-    } catch (creationError) {
-      // Log an appropriate error if the creation process fails
-      console.error('Error creating Brainstorm topic or chat: ', creationError);
-    }
-    return null;
   }
 
   static async getChatsByTopicID(topicID, userID) {
@@ -212,8 +130,50 @@ static getBrainstormTopicAndChat(topics) {
       });
       return topicChats;
     } catch (error) {
-      console.error(error);
+      if (error.response && error.response.status === 404) {
+        console.log(`No chats found for topic ${topicID}`);
+      } else {
+        console.error(error);
+      }
     }
+  }
+
+  static async createBrainstorm(userID) {
+    try {
+      // Attempt to create the 'Brainstorm' topic
+      const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
+        title: 'Brainstorm'
+      });
+
+      if (topicResponse.status === 201) {
+        // TODO: just call ApiManager.createChatandGetID here
+        // If successful, create the 'Brainstorm' chat under this topic
+        const chatResponse = await axiosInstance.post('/create-chat', {
+          creatorTopicID: topicResponse.data.id,
+          matchedTopicID: -1,
+          userCreatorID: userID,
+          userMatchedID: -1,
+        });
+
+        if (chatResponse.status === 201) {
+          // TODO: set the brainstormID.ref to the chatID
+          console.log(`Brainstorm topic and chat created for user ${userID}`);
+          return { id: String(topicResponse.data.id), title: 'Brainstorm' };
+        }
+      }
+    } catch (creationError) {
+      // Log an appropriate error if the creation process fails
+      console.error('Error creating Brainstorm topic or chat: ', creationError);
+    }
+    return null;
+  }
+
+  static getBrainstormChat(topics, brainstormTopicID) {
+    // find the child element that is not the title
+    const brainstormChatID = Object.keys(topics[brainstormTopicID]).find(
+      key => key !== 'title'
+    ) || null;
+    return brainstormChatID;
   }
 }
 

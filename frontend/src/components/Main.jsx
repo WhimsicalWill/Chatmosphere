@@ -46,7 +46,7 @@ export function MainChat({
             messagesToRender.map((message, index) => (
             <div
               key={index}
-              className={`chat-message ${message.userID === userID ? 'user' : 'bot'}`}
+              className={`chat-message ${message.senderID === userID.current ? 'user' : 'bot'}`}
             >
               {message.message}
               {message.matchInfo && 

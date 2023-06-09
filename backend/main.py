@@ -31,14 +31,9 @@ class ChatApplication:
 
     def setupDatabase(self):
         self.db = SQLAlchemy(self.app)
-        self.chatID = 0
-        self.userID = -1
+        self.userID = 0
         self.User, self.Topic, self.ChatMetadata, self.Chat = setupModels(self.db)
     
-    def getNextChatID(self):
-        self.chatID += 1
-        return self.chatID
-
     def getNextUserID(self):
         self.userID += 1
         return self.userID

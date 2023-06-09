@@ -28,7 +28,6 @@ function App() {
   useEffect(() => {
     (async () => {
       userID.current = await ApiManager.getNextUserID();
-      console.log('userID', userID.current);
       [brainstormTopicID.current, brainstormChatID.current] = await ApiManager.getTopicsAndChats(userID.current, setTopics);
       // TODO: could add another ref/state for isLoading here
     })();
@@ -36,10 +35,11 @@ function App() {
 
   // This effect sets up the socket
   useEffect(() => {
-    // Check if userID.current is a numeric value
-    
-    if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'number') {
-      const cleanup = setupSocket({ socketRef, brainstormID: brainstormChatID.current, userID: userID.current, setTopics });
+    // Hack to check if the promises have resolved
+    console.log('Trying to setup socket');
+    if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'string') {
+      const cleanup = setupSocket({ socketRef, brainstormChatID, userID, setTopics });
+      console.log('Socket setup');
       return () => cleanup;
     }
   }, [userID.current, brainstormChatID.current]);
@@ -73,7 +73,7 @@ function App() {
       return;
     }
     // join a room with the chatID
-    socketRef.current.emit('chat-join', { username: userID.current, room: chatID });
+    socketRef.current.emit('chat-join', { userID: userID.current, room: chatID });
 
     if (!topicName) {
       console.error('Failed to find a user message to use as the topic name');
@@ -192,10 +192,15 @@ function App() {
   };
 
   const handleMessageHelper = async (chatID, message) => {
+
+    // TODO: call the ChatMessage endpoint and add a new message to the database
+
+    console.log('Sending message:', message);
+    console.log(chatID, message);
     socketRef.current.emit('new-message', { 
       chatID: chatID,
       message: message,
-      userID: userID.current,
+      senderID: userID.current,
       matchInfo: null,
     });
 
@@ -205,7 +210,7 @@ function App() {
         socketRef.current.emit('new-message', { 
           chatID: chatID,
           message: botResponse.text,
-          userID: botID,
+          senderID: botID,
           matchInfo: botResponse.matchInfo,
         });
       }
@@ -225,8 +230,8 @@ function App() {
     submitNewTopicName,
     isEditingNewTopic,
     setEditingNewTopic,
-    brainstormTopicID: brainstormTopicID.current,
-    brainstormChatID: brainstormChatID.current,
+    brainstormTopicID,
+    brainstormChatID,
   };
 
   const mainProps = {
@@ -239,7 +244,7 @@ function App() {
     currentTab,
     handleMessage,
     handleBackClick,
-    userID: userID.current,
+    userID,
   }
 
 
