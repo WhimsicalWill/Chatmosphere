@@ -74,7 +74,7 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.commit()
 
             # add the topic to the matcher list
-            chatApp.matcher.addConversation((userID, args['title']))
+            chatApp.matcher.addConversation(userID, args['title'])
 
             return {'id': newTopic.id}, 201
 
@@ -124,6 +124,7 @@ def setupEndpoints(chatApp, api, socketio):
                         'userMatchedID': newMetadata.userMatchedID,
             }
 
+            print(f"Sending new chat info to userID_{newMetadata.userCreatorID}...")
             socketio.emit('new-chat', chatInfo, room=f"userID_{newMetadata.userCreatorID}")
 
             return chatInfo, 201

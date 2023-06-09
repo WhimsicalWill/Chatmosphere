@@ -38,7 +38,6 @@ def on_leave(data):
 
 @socketio.on("new-message")
 def handle_new_message(data):
-    print(f"New message received from user {data['senderID']}!")
-    print(f"Broadcasting message to chat {data['chatID']}...")
+    print(f"New message from user {data['senderID']} in chatID {data['chatID']}")
     room = "chatID_" + str(data['chatID'])
     send(data, room=room)

@@ -76,6 +76,11 @@ class ApiManager {
       if (!brainstormTopic) {
         console.log('Creating brainstorm topic/chat now');
         const brainstormResponse = await ApiManager.createBrainstorm(userID);
+
+        if (!brainstormResponse) {
+          return [null, null];
+        }
+
         brainstormTopicID = brainstormResponse.id;
         topicInfo = topicInfo.concat(brainstormResponse);
       }
@@ -90,6 +95,9 @@ class ApiManager {
       await Promise.all(chatPromises)
         .then((results) => {
           results.forEach((topicChats, i) => {
+
+            // TODO: potentially join chat rooms here
+            
             const topic = topicInfo[i];
             topics[topic.id] = {
               title: topic.title,

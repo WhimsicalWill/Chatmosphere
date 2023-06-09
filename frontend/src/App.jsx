@@ -39,7 +39,7 @@ function App() {
     // Hack to check if the promises have resolved
     console.log('Trying to setup socket');
     if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'string') {
-      const cleanup = setupSocket({ socketRef, brainstormChatID, userID, setTopics });
+      const cleanup = setupSocket({ socketRef, userID, topics, setTopics });
       console.log('Socket setup');
       return () => cleanup;
     }

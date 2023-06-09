@@ -14,12 +14,12 @@ from dotenv import load_dotenv
 class ConversationMatcher:
     """
     A class that searches a vector database for the most
-    semantically similar conversations to a given query.
+    semantically similar topicNames to a given query.
     """
     def __init__(self, k=2, engine='text-embedding-ada-002'):
         self.k = k
         self.engine = engine
-        self.conversations = []
+        self.topicNames = []
         self.topicMap = {}
         self.embeddings = []
         self.index = None
@@ -34,14 +34,14 @@ class ConversationMatcher:
     def addConversations(self, topicTuples):
         for topicID, info in enumerate(topicTuples):
             userID, title = info
-            self.conversations.append(title)
+            self.topicNames.append(title)
             self.topicMap[topicID] = userID
             self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
 
     def addConversation(self, userID, title):
-        topicID = len(self.conversations)
-        self.conversations.append(title)
+        topicID = len(self.topicNames)
+        self.topicNames.append(title)
         self.topicMap[topicID] = userID
         self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
@@ -55,11 +55,11 @@ class ConversationMatcher:
 
         print("Creating Flat L2 index...")
         self.index = faiss.IndexFlatL2(d)
-        self.index.add(self.embeddings)
+        self.index.add(embeddings)
         print("Done.")
 
     def getSimilarConversations(self, query, userID):
-        print("Getting similar conversations...")
+        print("Getting similar topics...")
         query_embedding = get_embedding(query, engine=self.engine)
         query_embedding = np.array([query_embedding]).astype('float32')
         print("Searching index...")
@@ -71,10 +71,10 @@ class ConversationMatcher:
         for topicID, score in zip(I[0], D[0]):
             if self.topicMap[topicID] == userID:
                 continue
-            if self.conversations[topicID] == 'Brainstorm':
+            if self.topicNames[topicID] == 'Brainstorm':
                 continue
             res.append({
-                "topicName": self.conversations[topicID],
+                "topicName": self.topicNames[topicID],
                 "topicID": int(topicID), # make sure these properties exist or are computed
                 "userID": self.topicMap[topicID] # TODO: make this scale to > 2 users
             })
@@ -86,7 +86,7 @@ class ConversationMatcher:
 class ConversationSegway:
     """
     A class that uses a language model to generate engaging responses to a given query,
-    in the context of a series of conversations.
+    in the context of a series of topic names.
     """
     def __init__(self):
         self.configurePrompt()
@@ -127,7 +127,7 @@ class ConversationSegway:
         )
 
         # Define the prefix for the prompt, giving clear instructions on how to construct an engaging response
-        prompt_prefix = "Connect the user's query with each of the conversations below, crafting an intriguing line for each one." \
+        prompt_prefix = "Connect the user's query with each of the topics below, crafting an intriguing line for each one." \
                         "Keep the user's curiosity alive and drive their engagement." \
                         "Please make sure to put each sentence on its own line. Here are some examples:\n"
 
@@ -149,9 +149,9 @@ class ConversationSegway:
         print("Query:", query)
         print("Conversations:", convs)
         # TODO: add error handling
-        assert len(convs) == 2, "Must provide two conversations, not {}".format(len(convs))
+        assert len(convs) == 2, "Must provide two topics, not {}".format(len(convs))
 
-        # Assuming convs is a list of three conversations
+        # Assuming convs is a list of three topicNames
         input = {
             "query": query,
             "conv1": convs[0],

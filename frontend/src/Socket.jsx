@@ -11,15 +11,23 @@ const findParentTopic = (topics, chatID) => {
 
 export const setupSocket = ({
   socketRef,
-  brainstormChatID,
   userID, 
+  topics,
   setTopics, 
 }) => {
 
   socketRef.current = io('http://localhost:5000');
-  socketRef.current.emit('user-join', { userID: userID.current, room: userID });
-  socketRef.current.emit('chat-join', { userID: userID.current, room: brainstormChatID.current });
-  console.log('Connected to backend and joined room', brainstormChatID.current);
+  socketRef.current.emit('user-join', { userID: userID.current, room: userID.current });
+
+  // Iterate through all chats and join the rooms using chat-join
+  Object.keys(topics).forEach(topicID => {
+    const chats = topics[topicID];
+    Object.keys(chats).forEach(chatID => {
+      if (chatID === 'title') return;
+      socketRef.current.emit('chat-join', { userID: userID.current, room: chatID });
+      console.log('Joined room', chatID);
+    });
+  });
 
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
