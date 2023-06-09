@@ -56,25 +56,27 @@ export const setupSocket = ({
   });
 
   // handle another user creating a new chat with this user
-  // TODO: need to refactor this to handle the new chatInfo object
   socketRef.current.on('new-chat', (chatInfo) => {
     console.log('New chat created:', chatInfo);
 
-    const { chatID, chatName, topicName } = chatInfo;
+    const {
+      chatID,
+      creatorTopicID,
+      matchedTopicID,
+      userCreatorID,
+      userMatchedID,
+    } = chatInfo;
+    // TODO: add the otherUserID to the chatInfo locally
 
-    if (!chatID) {
-      console.error('No chatID received');
-      return;
-    }
-
-    socketRef.current.emit('chat-join', { userID: userID, room: chatID });
+    socketRef.current.emit('chat-join', { userID: userCreatorID, room: chatID });
     
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
 
-      if (!updatedTopics[topicName]) updatedTopics[topicName] = {};
-      if (!updatedTopics[topicName][chatID]) 
-        updatedTopics[topicName][chatID] = { name: chatName, messages: [] }
+      const chatName = `Chat ${chatID}`;
+      if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = {};
+      if (!updatedTopics[creatorTopicID][chatID]) 
+        updatedTopics[creatorTopicID][chatID] = { name: chatName, messages: [] }
 
       return updatedTopics;
     });

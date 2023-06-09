@@ -20,7 +20,7 @@ class ConversationMatcher:
         self.k = k
         self.engine = engine
         self.conversations = []
-        self.user_topic_ids = {}
+        self.topicMap = {}
         self.embeddings = None
         self.index = None
         self.init_api_key()
@@ -33,12 +33,10 @@ class ConversationMatcher:
     # TODO: add better pipeline for incrementally adding conversations
     # this is currently only called once
     def addConversations(self, topicTuples):
-        for topic_id, title in enumerate(topicTuples):
-            user_id, topic = title
-            self.conversations.append(topic)
-            if user_id not in self.user_topic_ids:
-                self.user_topic_ids[user_id] = set()
-            self.user_topic_ids[user_id].add(topic_id)
+        for topicID, info in enumerate(topicTuples):
+            userID, title = info
+            self.conversations.append(title)
+            self.topicMap[topicID] = userID
         self.buildIndex()
 
     def buildIndex(self):
@@ -54,7 +52,7 @@ class ConversationMatcher:
         self.index.add(self.embeddings)
         print("Done.")
 
-    def getSimilarConversations(self, query, user_id):
+    def getSimilarConversations(self, query, userID):
         print("Getting similar conversations...")
         query_embedding = get_embedding(query, engine=self.engine)
         query_embedding = np.array([query_embedding]).astype('float32')
@@ -64,13 +62,13 @@ class ConversationMatcher:
         D, I = self.index.search(query_embedding, 5*self.k)
         print("Done.")
         res = []
-        for idx, score in zip(I[0], D[0]):
-            if user_id in self.user_topic_ids and idx in self.user_topic_ids[user_id]:
+        for topicID, score in zip(I[0], D[0]):
+            if self.topicMap[topicID] == userID:
                 continue
             res.append({
-                "chatName": self.conversations[idx],
-                "topicID": int(idx), # make sure these properties exist or are computed
-                "userID": int(1 - user_id) # TODO: make this scale to > 2 users
+                "chatName": self.conversations[topicID],
+                "topicID": int(topicID), # make sure these properties exist or are computed
+                "userID": self.topicMap[topicID] # TODO: make this scale to > 2 users
             })
             if len(res) == self.k:
                 break

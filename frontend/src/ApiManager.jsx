@@ -5,18 +5,13 @@ const axiosInstance = axios.create({
 });
 
 class ApiManager {
-  static async submitTopicAndGetResponse(message, userID) {
+  static async submitTopicAndGetResponse(message, userID, topicIDMap) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
         params: { 
           topic: message,
           userID: userID,
         }
-      });
-
-      // Add the new topic to the database
-      axiosInstance.post(`/user-topics/${userID}`, {
-        title: message,
       });
 
       const convMatches = botResponse.data.convMatches;
@@ -26,6 +21,10 @@ class ApiManager {
         text: segwayResponse,
         matchInfo: convMatches[i]
       }));
+
+      // Add the new topic to the database and to our local map
+      await ApiManager.addTopic(userID, message, topicIDMap);
+
       return combined;
     } catch (error) {
       console.error(error);
@@ -48,14 +47,15 @@ class ApiManager {
 
   // TODO: make sure that the arguments are passed correctly
   // the creator is the person whose topic was in the DB first
-  static async createChatAndGetID(userCreatorID, userMatchedID, creatorTopicID, matchedTopicID) {
+  static async createChatAndGetID(creatorTopicID, matchedTopicID, userCreatorID, userMatchedID) {
     console.log('Creating match with', userCreatorID);
+    
     try {
-      const response = await axiosInstance.post('/chatmetadata', {
-        userCreatorID: userCreatorID,
-        userMatchedID: userMatchedID,
+      const response = await axiosInstance.post('/create-chat', {
         creatorTopicID: creatorTopicID,
         matchedTopicID: matchedTopicID,
+        userCreatorID: userCreatorID,
+        userMatchedID: userMatchedID,
       });
 
       const chatID = response.data.chatID;
@@ -174,6 +174,18 @@ class ApiManager {
       key => key !== 'title'
     ) || null;
     return brainstormChatID;
+  }
+
+  // TODO: throw error when user enters a repeat topic
+  static async addTopic(userID, topicName, topicIDMap) {
+    try {
+      const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
+        title: topicName,
+      });
+      topicIDMap[topicName] = topicResponse.data.id;
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 

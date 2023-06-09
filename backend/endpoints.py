@@ -121,7 +121,7 @@ def setupEndpoints(chatApp, api, socketio):
                         'userMatchedID': newMetadata.userMatchedID,
             }
 
-            socketio.emit('new-chat', chatInfo, room=f"userID_{newMetadata.userMatchedID}")
+            socketio.emit('new-chat', chatInfo, room=f"userID_{newMetadata.userCreatorID}")
 
             return chatInfo, 201
 
