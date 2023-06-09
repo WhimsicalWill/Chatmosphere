@@ -73,6 +73,9 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.add(newTopic)
             chatApp.db.session.commit()
 
+            # add the topic to the matcher list
+            chatApp.matcher.addConversation((userID, args['title']))
+
             return {'id': newTopic.id}, 201
 
 

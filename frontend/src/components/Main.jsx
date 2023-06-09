@@ -57,7 +57,7 @@ export function MainChat({
                 startIcon={<AddIcon />}
                 onClick={() => addChatUnderTopic(message.matchInfo, message.messageID)}
                 >
-                {message.matchInfo.chatName}
+                {message.matchInfo.topicName}
                 </Button>
               </div>
               }

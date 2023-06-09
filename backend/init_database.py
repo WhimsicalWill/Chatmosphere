@@ -10,7 +10,7 @@ def loadData(dataPath):
 def initDatabase(chatApp, dataPath):
     data = loadData(dataPath)
     for conv in data:
-        topic = chatApp.Topic(title=conv['title'], userID=conv['userID'])
+        topic = chatApp.Topic(userID=conv['userID'], title=conv['title'])
         chatApp.db.session.add(topic)
     chatApp.db.session.commit()
     print(f"Database initialized with data from {dataPath}")

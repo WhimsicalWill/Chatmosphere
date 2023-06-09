@@ -178,6 +178,7 @@ class ApiManager {
 
   // TODO: throw error when user enters a repeat topic
   static async addTopic(userID, topicName, topicIDMap) {
+    console.log('Adding topic', topicName);
     try {
       const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
         title: topicName,

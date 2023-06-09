@@ -49,7 +49,6 @@ class ChatApplication:
             topics = self.Topic.query.all()  # grab all topics from the database
 
         topicTuples = [(topic.userID, topic.title) for topic in topics]
-        print(topicTuples)
         self.matcher.addConversations(topicTuples)
         self.segway = ConversationSegway()
 

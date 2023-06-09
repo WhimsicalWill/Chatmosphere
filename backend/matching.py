@@ -21,28 +21,34 @@ class ConversationMatcher:
         self.engine = engine
         self.conversations = []
         self.topicMap = {}
-        self.embeddings = None
+        self.embeddings = []
         self.index = None
-        self.init_api_key()
+        self.initApiKey()
 
-    def init_api_key(self):
+    def initApiKey(self):
         # Loads and sets the api key using the OpenAI library
         load_dotenv()  
         openai.api_key = os.getenv('OPENAI_API_KEY')
 
-    # TODO: add better pipeline for incrementally adding conversations
     # this is currently only called once
     def addConversations(self, topicTuples):
         for topicID, info in enumerate(topicTuples):
             userID, title = info
             self.conversations.append(title)
             self.topicMap[topicID] = userID
+            self.embeddings.append(get_embedding(title, engine=self.engine))
+        self.buildIndex()
+
+    def addConversation(self, userID, title):
+        topicID = len(self.conversations)
+        self.conversations.append(title)
+        self.topicMap[topicID] = userID
+        self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
 
     def buildIndex(self):
-        embeddings = [get_embedding(conv, engine=self.engine) for conv in self.conversations]
-        self.embeddings = np.array(embeddings).astype('float32')
-        d = self.embeddings.shape[1]
+        embeddings = np.array(self.embeddings).astype('float32')
+        d = embeddings.shape[1]
 
         # TODO: optimize; re-indexing after every add is probably not the best way to do this
         # TODO: also, look into vector quantization: https://github.com/facebookresearch/faiss/blob/f809cf0d512eb69b3c675be53d287b9cc79c0f3e/tutorial/python/3-IVFPQ.py
@@ -65,8 +71,10 @@ class ConversationMatcher:
         for topicID, score in zip(I[0], D[0]):
             if self.topicMap[topicID] == userID:
                 continue
+            if self.conversations[topicID] == 'Brainstorm':
+                continue
             res.append({
-                "chatName": self.conversations[topicID],
+                "topicName": self.conversations[topicID],
                 "topicID": int(topicID), # make sure these properties exist or are computed
                 "userID": self.topicMap[topicID] # TODO: make this scale to > 2 users
             })
@@ -81,11 +89,11 @@ class ConversationSegway:
     in the context of a series of conversations.
     """
     def __init__(self):
-        self.configure_prompt()
+        self.configurePrompt()
         self.llm = OpenAI(model_name="text-davinci-003")
         self.chain = LLMChain(llm=self.llm, prompt=self.few_shot_prompt)
 
-    def configure_prompt(self):
+    def configurePrompt(self):
         # Prepare example prompts and responses for training
         example_1 = {
             "query": "How will technology shape the future?",

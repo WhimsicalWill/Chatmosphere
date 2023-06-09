@@ -160,20 +160,11 @@ function App() {
   };
 
   const submitNewTopicName = async (event) => {
-    const messageCopy = event.target.value;
     const messageSent = handleMessage(event, brainstormChatID.current);
     if (!messageSent) return;
-
     setEditingNewTopic(false);
     setCurrentTopic(brainstormTopicID.current);
     setCurrentChat(brainstormChatID.current);
-
-    // add the messageCopy as a topic in the database
-    const topicID = await ApiManager.addTopic(userID.current, messageCopy);
-
-    // somehow add this message to the chat message
-    const messages = topics[brainstormTopicID.current][brainstormChatID.current].messages;
-
   }
 
   const handleMessage = (event, chatID) => {
