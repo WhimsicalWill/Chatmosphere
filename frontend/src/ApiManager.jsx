@@ -14,12 +14,12 @@ class ApiManager {
         }
       });
 
-      const convMatches = botResponse.data.convMatches;
+      const topicMatches = botResponse.data.topicMatches;
       const segwayResponses = botResponse.data.segwayResponses.split('\n');
 
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
-        matchInfo: convMatches[i]
+        matchInfo: topicMatches[i]
       }));
 
       // Add the new topic to the database and to our local map

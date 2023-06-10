@@ -197,9 +197,9 @@ def setupEndpoints(chatApp, api, socketio):
             topic = request.args.get('topic')
             userID = int(request.args.get('userID'))
             if topic:
-                convMatches = chatApp.matcher.getSimilarTopics(topic, userID)
-                segwayResponses = chatApp.segway.getResponse(topic, convMatches)
-                return {'convMatches': convMatches, 'segwayResponses': segwayResponses}, 200
+                topicMatches = chatApp.matcher.getSimilarTopics(topic, userID)
+                segwayResponses = chatApp.segway.getResponse(topic, topicMatches)
+                return {'topicMatches': topicMatches, 'segwayResponses': segwayResponses}, 200
             else:
                 return {'error': 'No topic provided'}, 400
 

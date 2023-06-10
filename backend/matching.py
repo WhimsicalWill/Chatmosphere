@@ -31,7 +31,8 @@ class TopicMatcher:
 
     # this is currently only called once
     def addTopics(self, topicTuples):
-        for topicID, info in enumerate(topicTuples):
+        for idx, info in enumerate(topicTuples):
+            topicID = idx + 1  # SQL IDs start at 1
             userID, title = info
             self.topicNames.append(title)
             self.topicMap[topicID] = userID
@@ -39,9 +40,9 @@ class TopicMatcher:
         self.buildIndex()
 
     def addTopic(self, userID, title):
-        topicID = len(self.topicNames)
+        numTopics = len(self.topicNames)
         self.topicNames.append(title)
-        self.topicMap[topicID] = userID
+        self.topicMap[numTopics + 1] = userID
         self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
 
@@ -67,13 +68,14 @@ class TopicMatcher:
         D, I = self.index.search(query_embedding, 5*self.k)
         print("Done.")
         res = []
-        for topicID, score in zip(I[0], D[0]):
+        for idx, score in zip(I[0], D[0]):
+            topicID = idx + 1  # SQL IDs start at 1
             if self.topicMap[topicID] == userID:
                 continue
-            if self.topicNames[topicID] == 'Brainstorm':
+            if self.topicNames[idx] == 'Brainstorm':
                 continue
             res.append({
-                "topicName": self.topicNames[topicID],
+                "topicName": self.topicNames[idx],
                 "topicID": int(topicID), # make sure these properties exist or are computed
                 "userID": self.topicMap[topicID] # TODO: make this scale to > 2 users
             })

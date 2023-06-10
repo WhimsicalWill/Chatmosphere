@@ -32,8 +32,6 @@ export const setupSocket = ({
 
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
-    console.log('Received message:', response);
-
     const { chatID, message, senderID, matchInfo } = response;
     
     // update the topic object to include the new message
@@ -91,7 +89,7 @@ export const setupSocket = ({
 
         return updatedTopics;
       });
-    });
+    }).catch(err => console.error(err));
   });
 
   // Return a cleanup function

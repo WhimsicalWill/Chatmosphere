@@ -18,7 +18,6 @@ class ChatApplication:
         self.configureApp()
         self.setupDatabase()
         self.setupEndpoints()
-        self.setupTopicHelpers()
 
     def configureApp(self):
         CORS(self.app, resources={r"/*": {"origins": "*"}})
@@ -53,6 +52,7 @@ class ChatApplication:
         self.segway = TopicSegway()
 
     def run(self):
+        self.setupTopicHelpers()
         socketio.run(self.app, debug=True)
         print("Backend started")
 

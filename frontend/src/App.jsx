@@ -51,9 +51,9 @@ function App() {
   }, [topics]);
 
   const addChatUnderTopic = async (matchInfo, messageID) => {
+    console.log(matchInfo);
     const brainstormChat = topics[brainstormTopicID.current][brainstormChatID.current];
 
-    console.log('addChatUnderTopic matchInfo', matchInfo);
     let topicName = null;
 
     // Retrieve the nearest user message above this messageID to use as the topic name
@@ -69,7 +69,6 @@ function App() {
       return;
     }
 
-    console.log(topicIDMap);
     const matchedTopicID = topicIDMap.current[topicName];
 
     // Call backend to create a new chat (with a chat id)
@@ -96,6 +95,10 @@ function App() {
       updatedTopics[matchedTopicID][chatID] = { name: chatName, messages: [] }
       return updatedTopics;
     });
+    setCurrentTab('Active Chats');
+    setCurrentTopic(matchedTopicID);
+    setCurrentChat(chatID);
+    console.log('Created new chat with ID:', chatID);
   };
 
   // TODO: fix bugs in deleteTopic and deleteChat

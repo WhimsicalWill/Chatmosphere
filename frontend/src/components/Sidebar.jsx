@@ -11,7 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export function SidebarHeader() {
   return (
-    <a href="https://github.com/WhimsicalWill/Chatmos" target="_blank" rel="noopener noreferrer">
+    <a href="https://github.com/WhimsicalWill/Chatmosphere" target="_blank" rel="noopener noreferrer">
       <div className="sidebar-header">
         <Forum className='header-icon' />
         <h2>Chatmos</h2>
