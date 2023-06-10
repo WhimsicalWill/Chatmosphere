@@ -86,6 +86,7 @@ function App() {
     }
     // join a room with the chatID
     socketRef.current.emit('chat-join', { userID: userID.current, room: chatID });
+    const chatName = await ApiManager.getTopic(matchInfo.topicID);
 
     // Add a new topic if it doesn't already exist and add a new chat under that topic
     setTopics(prevTopics => {
@@ -93,7 +94,6 @@ function App() {
       if (!updatedTopics[matchedTopicID]) {
         updatedTopics[matchedTopicID] = { title: topicName, chats: {} };
       }
-      const chatName = `Chat ${chatID}`
       updatedTopics[matchedTopicID].chats[chatID] = { name: chatName, messages: [] }
       return updatedTopics;
     });

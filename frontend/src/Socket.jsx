@@ -76,16 +76,13 @@ export const setupSocket = ({
       userCreatorID,
       userMatchedID,
     } = chatInfo;
-    // TODO: add the otherUserID to the chatInfo locally
 
     socketRef.current.emit('chat-join', { userID: userCreatorID, room: chatID });
 
-    // use a GET request to get the topic name (remember this user is the creator)
-    ApiManager.getTopic(creatorTopicID).then(creatorTopicName => {
+    Promise.all([ApiManager.getTopic(matchedTopicID), ApiManager.getTopic(creatorTopicID)]).then(([chatName, creatorTopicName]) => {
       setTopics(prevTopics => {
         const updatedTopics = { ...prevTopics };
 
-        const chatName = `Chat ${chatID}`;
         if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = { title: creatorTopicName, chats: {} };
         if (!updatedTopics[creatorTopicID].chats[chatID]) 
           updatedTopics[creatorTopicID].chats[chatID] = { name: chatName, messages: [] }
