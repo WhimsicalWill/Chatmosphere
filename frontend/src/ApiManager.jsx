@@ -195,8 +195,6 @@ class ApiManager {
         title: topicName,
       });
       topicIDMap[topicName] = topicResponse.data.id;
-
-      console.log('topicIDMap', topicIDMap);
       
       // add the topic to the user's local info
       setTopics(prevTopics => {

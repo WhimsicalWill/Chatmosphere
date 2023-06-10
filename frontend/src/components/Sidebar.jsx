@@ -14,7 +14,7 @@ export function SidebarHeader() {
     <a href="https://github.com/WhimsicalWill/Chatmosphere" target="_blank" rel="noopener noreferrer">
       <div className="sidebar-header">
         <Forum className='header-icon' />
-        <h2>Chatmos</h2>
+        <h2>Chatmosphere</h2>
         {/* Invisible 'dummy' icon to balance the visible icon */}
         <Forum className='header-icon' style={{ visibility: "hidden" }} />
       </div>

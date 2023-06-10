@@ -12,10 +12,26 @@ from dotenv import load_dotenv
 
 class TopicMatcher:
     """
-    A class that searches a vector database for the most
-    semantically similar topicNames to a given query.
+    A class that searches a vector database for the topics that are most
+    semantically similar to the given query.
+
+    Attributes:
+        k (int): Number of similar topics to find.
+        engine (str): The name of the embedding engine to use.
+        topicNames (list): List of topic names.
+        topicMap (dict): Mapping from topic ID to user ID.
+        embeddings (list): List of embeddings for each topic.
+        index (faiss.Index): Index for searching embeddings.
     """
+
     def __init__(self, k=2, engine='text-embedding-ada-002'):
+        """
+        The constructor for TopicMatcher class.
+
+        Parameters:
+           k (int): Number of similar topics to find. Default is 2.
+           engine (str): The name of the embedding engine to use. Default is 'text-embedding-ada-002'.
+        """
         self.k = k
         self.engine = engine
         self.topicNames = []
@@ -25,12 +41,17 @@ class TopicMatcher:
         self.initApiKey()
 
     def initApiKey(self):
-        # Loads and sets the api key using the OpenAI library
+        """Loads the OpenAI API key from the .env file"""
         load_dotenv()  
         openai.api_key = os.getenv('OPENAI_API_KEY')
 
-    # this is currently only called once
     def addTopics(self, topicTuples):
+        """
+        Adds a list of topics to the matcher.
+
+        Parameters:
+           topicTuples (list): A list of tuples where each tuple contains a user ID and a topic title.
+        """
         for idx, info in enumerate(topicTuples):
             topicID = idx + 1  # SQL IDs start at 1
             userID, title = info
@@ -40,6 +61,13 @@ class TopicMatcher:
         self.buildIndex()
 
     def addTopic(self, userID, title):
+        """
+        Adds a single topic to the matcher.
+
+        Parameters:
+           userID (str): The user ID associated with the topic.
+           title (str): The title of the topic.
+        """
         numTopics = len(self.topicNames)
         self.topicNames.append(title)
         self.topicMap[numTopics + 1] = userID
@@ -47,26 +75,28 @@ class TopicMatcher:
         self.buildIndex()
 
     def buildIndex(self):
+        """
+        Builds the FAISS index from the current list of embeddings.
+        """
         embeddings = np.array(self.embeddings).astype('float32')
         d = embeddings.shape[1]
-
-        # TODO: optimize; re-indexing after every add is probably not the best way to do this
-        # TODO: also, look into vector quantization: https://github.com/facebookresearch/faiss/blob/f809cf0d512eb69b3c675be53d287b9cc79c0f3e/tutorial/python/3-IVFPQ.py
-
-        print("Creating Flat L2 index...")
         self.index = faiss.IndexFlatL2(d)
         self.index.add(embeddings)
-        print("Done.")
 
     def getSimilarTopics(self, query, userID):
-        print("Getting similar topics...")
+        """
+        Retrieves the most similar topics to the provided query.
+
+        Parameters:
+           query (str): The query to find similar topics for.
+           userID (str): The ID of the user making the query.
+
+        Returns:
+           list: A list of dictionaries, each containing the topic name, topic ID, and user ID for a similar topic.
+        """
         query_embedding = get_embedding(query, engine=self.engine)
         query_embedding = np.array([query_embedding]).astype('float32')
-        print("Searching index...")
-        # Find 3x the desired results to give room to avoid self-matches
-        # TODO: this needs better error handling (i.e. retry w/ 4*self.k)
         D, I = self.index.search(query_embedding, 5*self.k)
-        print("Done.")
         res = []
         for idx, score in zip(I[0], D[0]):
             topicID = idx + 1  # SQL IDs start at 1
@@ -88,14 +118,27 @@ class TopicSegway:
     """
     A class that uses a language model to generate engaging responses to a given query,
     in the context of a series of topic names.
+
+    Attributes:
+        llm (OpenAI): Language model to generate responses.
+        chain (LLMChain): LLMChain instance to help structure and generate responses.
+        few_shot_prompt (FewShotPromptTemplate): Few-shot prompt to guide the language model.
     """
+
     def __init__(self):
+        """
+        The constructor for TopicSegway class.
+        """
         self.configurePrompt()
         self.llm = OpenAI(model_name="text-davinci-003")
         self.chain = LLMChain(llm=self.llm, prompt=self.few_shot_prompt)
 
     def configurePrompt(self):
-        # Prepare example prompts and responses for training
+        """
+        Configures the few-shot prompt to be used by the language model.
+
+        Sets up the few-shot prompt with examples and structure.
+        """
         example_1 = {
             "query": "How will technology shape the future?",
             "topic1": "How is artificial intelligence impacting our daily lives?",
@@ -146,9 +189,18 @@ class TopicSegway:
         print("Set up few shot prompt")
 
     def getResponse(self, query, topics):
-        print("Generating response...")
-        print("Query:", query)
-        # TODO: add error handling
+        """
+        Generates a response to a given query in the context of a series of topic names.
+
+        Parameters:
+           query (str): The query to generate a response for.
+           topics (list): A list of topic dictionaries with the keys 'topicName', 'topicID', and 'userID'.
+
+        Returns:
+           str: The generated response to the query.
+        """
+        print(f"Generating response for query {query}")
+
         assert len(topics) == 2, "Must provide two topics, not {}".format(len(topics))
 
         # Assuming topics is a list of three topicNames

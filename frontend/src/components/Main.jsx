@@ -22,7 +22,7 @@ export function MainChat({
 
   const instructionOverview = (
     <div className="instruction-text">
-      <h2>Welcome to Chatmos</h2>
+      <h2>Welcome to Chatmosphere</h2>
       <p>Here are some tips to get you started:</p>
       <ul>
         <li>Select a topic from the sidebar to start a chat.</li>
