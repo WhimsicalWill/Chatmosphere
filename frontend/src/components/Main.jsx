@@ -16,8 +16,8 @@ export function MainChat({
   let chatHeaderText = "";
 
   if (shouldRenderChat) {
-    messagesToRender = topics[currentTopic][currentChat].messages;
-    chatHeaderText = topics[currentTopic][currentChat].name;
+    messagesToRender = topics[currentTopic].chats[currentChat].messages;
+    chatHeaderText = topics[currentTopic].chats[currentChat].name;
   }
 
   const instructionOverview = (

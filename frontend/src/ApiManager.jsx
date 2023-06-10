@@ -99,14 +99,15 @@ class ApiManager {
             const topic = topicInfo[i];
             topics[topic.id] = {
               title: topic.title,
-              ...topicChats,
+              chats: { ...topicChats },
             };
           });
         })
         .catch((err) => console.log(err));
 
       setTopics(topics);
-      const brainstormChatID = ApiManager.getBrainstormChat(topics, brainstormTopicID);
+      const brainstormChatID = Object.keys(topics[brainstormTopicID].chats)[0];
+
       return [brainstormTopicID, brainstormChatID];
     } catch (error) {
       console.error(error);
@@ -140,7 +141,7 @@ class ApiManager {
       response.data.forEach(chatResponse => {
         topicChats[chatResponse.chatID] = { 
           name: `Chat ${chatResponse.chatID}`, 
-          otherUserID: userID == chatResponse.userCreatorID ? chatResponse.userMatchedID : chatResponse.userCreatorID,
+          otherUserID: userID === chatResponse.userCreatorID ? chatResponse.userMatchedID : chatResponse.userCreatorID,
           messages: []
         };
       });
@@ -184,14 +185,6 @@ class ApiManager {
     return null;
   }
 
-  static getBrainstormChat(topics, brainstormTopicID) {
-    // find the child element that is not the title
-    const brainstormChatID = Object.keys(topics[brainstormTopicID]).find(
-      key => key !== 'title'
-    ) || null;
-    return brainstormChatID;
-  }
-
   // TODO: throw error when user enters a repeat topic
   static async addTopic(userID, topicName, setTopics, topicIDMap) {
     console.log('Adding topic', topicName);
@@ -208,7 +201,12 @@ class ApiManager {
       // add the topic to the user's local info
       setTopics(prevTopics => {
         const updatedTopics = { ...prevTopics };
-        if (!updatedTopics[topicResponse.data.id]) updatedTopics[topicResponse.data.id] = { title: topicName };
+        if (!updatedTopics[topicResponse.data.id]) {
+          updatedTopics[topicResponse.data.id] = {
+            title: topicName,
+            chats: {},
+          };
+        }
         return updatedTopics;
       });
     } catch (error) {

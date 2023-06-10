@@ -82,8 +82,6 @@ export function SidebarContent({
     </div>
   ;
 
-  // console.log(Object.keys(topics))
-  // console.log(brainstormTopicID.current);
   const topicListSection = 
     <ul className="topic-list">
       {topics && Object.keys(topics).filter(t => t !== brainstormTopicID.current).map((topicID, index) => (
@@ -107,11 +105,7 @@ export function SidebarContent({
 
 const chatListSection = (
   <ul className="chat-list">
-    {topics && currentTopic && Object.keys(topics[currentTopic]).map((chatID, index) => {
-      // TODO: maybe refactor how we are storing the title and chats of each topic
-      if (chatID === 'title') {
-        return null; // skip the title
-      }
+    {topics && currentTopic && Object.keys(topics[currentTopic].chats).map((chatID, index) => {
 
       return (
         <li
@@ -122,7 +116,7 @@ const chatListSection = (
           }}
           className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
         >
-          <ChatBubble className='chat-icon' /> {topics[currentTopic][chatID].name}
+          <ChatBubble className='chat-icon' /> {topics[currentTopic].chats[chatID].name}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {

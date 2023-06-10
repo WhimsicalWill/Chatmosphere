@@ -52,7 +52,7 @@ function App() {
 
   const addChatUnderTopic = async (matchInfo, messageID) => {
     console.log(matchInfo);
-    const brainstormChat = topics[brainstormTopicID.current][brainstormChatID.current];
+    const brainstormChat = topics[brainstormTopicID.current].chats[brainstormChatID.current];
 
     let topicName = null;
 
@@ -90,9 +90,11 @@ function App() {
     // Add a new topic if it doesn't already exist and add a new chat under that topic
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
-      if (!updatedTopics[matchedTopicID]) updatedTopics[matchedTopicID] = { title: topicName };
+      if (!updatedTopics[matchedTopicID]) {
+        updatedTopics[matchedTopicID] = { title: topicName, chats: {} };
+      }
       const chatName = `Chat ${chatID}`
-      updatedTopics[matchedTopicID][chatID] = { name: chatName, messages: [] }
+      updatedTopics[matchedTopicID].chats[chatID] = { name: chatName, messages: [] }
       return updatedTopics;
     });
     setCurrentTab('Active Chats');
@@ -102,12 +104,12 @@ function App() {
   };
 
   // TODO: fix bugs in deleteTopic and deleteChat
-  const deleteTopic = (name) => {
+  const deleteTopic = (topicID) => {
     // TODO: socketRef.current leave room by chatID
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
-      delete updatedTopics[name];
-      if (currentTopic === name) {
+      delete updatedTopics[topicID];
+      if (currentTopic === topicID) {
         const remainingTopics = Object.keys(updatedTopics);
         if (remainingTopics.length > 0) {
           setCurrentTopic(remainingTopics[0]); // Select the first remaining topic
@@ -120,16 +122,16 @@ function App() {
   };
 
   // changed chatName to chatID
-  const deleteChat = (topicName, chatID) => {
+  const deleteChat = (topicID, chatID) => {
     // TODO: socketRef.current leave room by chatID
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
-      if (!updatedTopics[topicName]) return updatedTopics; // handle error here
+      if (!updatedTopics[topicID]) return updatedTopics; // handle error here
 
-      const updatedChats = { ...updatedTopics[topicName] };
+      const updatedChats = { ...updatedTopics[topicID].chats };
       delete updatedChats[chatID];
 
-      updatedTopics[topicName] = updatedChats;
+      updatedTopics[topicID].chats = updatedChats;
 
       if (currentChat === chatID) {
         const remainingChats = Object.keys(updatedChats);
@@ -149,13 +151,10 @@ function App() {
     setEditingNewTopic(false)
     
     // Set the first chat of the selected topic as the current chat
-    const availableChats = Object.keys(topics[topicID]);
+    const availableChats = Object.keys(topics[topicID].chats);
     
-    if (availableChats.length > 1) {
-      const chatToFocus = availableChats.find(
-        key => key !== 'title'
-      ) || null;
-      setCurrentChat(chatToFocus);
+    if (availableChats.length > 0) {
+      setCurrentChat(availableChats[0]);
     } else {
       setCurrentChat(null); // No chats left
     }
