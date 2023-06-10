@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
 
-from matching import ConversationMatcher, ConversationSegway
+from matching import TopicMatcher, TopicSegway
 from events import socketio
 from data import setupModels
 from endpoints import setupEndpoints
@@ -18,7 +18,7 @@ class ChatApplication:
         self.configureApp()
         self.setupDatabase()
         self.setupEndpoints()
-        self.setupConversationHandler()
+        self.setupTopicHelpers()
 
     def configureApp(self):
         CORS(self.app, resources={r"/*": {"origins": "*"}})
@@ -41,16 +41,16 @@ class ChatApplication:
     def setupEndpoints(self):
         setupEndpoints(self, self.api, socketio)
 
-    def setupConversationHandler(self):
-        self.matcher = ConversationMatcher(k=2)
+    def setupTopicHelpers(self):
+        self.matcher = TopicMatcher(k=2)
         
         with self.app.app_context():
             self.db.create_all()
             topics = self.Topic.query.all()  # grab all topics from the database
 
         topicTuples = [(topic.userID, topic.title) for topic in topics]
-        self.matcher.addConversations(topicTuples)
-        self.segway = ConversationSegway()
+        self.matcher.addTopics(topicTuples)
+        self.segway = TopicSegway()
 
     def run(self):
         socketio.run(self.app, debug=True)

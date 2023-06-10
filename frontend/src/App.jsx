@@ -69,6 +69,7 @@ function App() {
       return;
     }
 
+    console.log(topicIDMap);
     const matchedTopicID = topicIDMap.current[topicName];
 
     // Call backend to create a new chat (with a chat id)
@@ -93,11 +94,11 @@ function App() {
       if (!updatedTopics[matchedTopicID]) updatedTopics[matchedTopicID] = { title: topicName };
       const chatName = `Chat ${chatID}`
       updatedTopics[matchedTopicID][chatID] = { name: chatName, messages: [] }
-      console.log('updatedTopics', updatedTopics);
       return updatedTopics;
     });
   };
 
+  // TODO: fix bugs in deleteTopic and deleteChat
   const deleteTopic = (name) => {
     // TODO: socketRef.current leave room by chatID
     setTopics(prevTopics => {
@@ -146,8 +147,12 @@ function App() {
     
     // Set the first chat of the selected topic as the current chat
     const availableChats = Object.keys(topics[topicID]);
-    if (availableChats.length > 0) {
-      setCurrentChat(availableChats[0]);
+    
+    if (availableChats.length > 1) {
+      const chatToFocus = availableChats.find(
+        key => key !== 'title'
+      ) || null;
+      setCurrentChat(chatToFocus);
     } else {
       setCurrentChat(null); // No chats left
     }
@@ -195,8 +200,6 @@ function App() {
 
     // TODO: call the ChatMessage endpoint and add a new message to the database
 
-    console.log('Sending message:', message);
-    console.log(chatID, message);
     socketRef.current.emit('new-message', { 
       chatID: chatID,
       message: message,
@@ -205,7 +208,7 @@ function App() {
     });
 
     if (chatID === brainstormChatID.current) {
-      const botResponses = await ApiManager.submitTopicAndGetResponse(message, userID.current, topicIDMap.current);
+      const botResponses = await ApiManager.submitTopicAndGetResponse(message, userID.current, setTopics, topicIDMap.current);
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
           chatID: chatID,

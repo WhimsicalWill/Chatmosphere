@@ -74,7 +74,7 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.commit()
 
             # add the topic to the matcher list
-            chatApp.matcher.addConversation(userID, args['title'])
+            chatApp.matcher.addTopic(userID, args['title'])
 
             return {'id': newTopic.id}, 201
 
@@ -85,7 +85,7 @@ def setupEndpoints(chatApp, api, socketio):
             if not topic:
                 return {'error': 'Topic not found'}, 404
 
-            return {'id': topic.id, 'title': topic.title}, 200
+            return {'title': topic.title}, 200
 
         def delete(self, topicID):
             # DELETE method to delete topic
@@ -118,7 +118,7 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.commit()
 
             chatInfo = {'chatID': newMetadata.id,
-                        'creatorTopicID': newMetadata.matchedTopicID,
+                        'creatorTopicID': newMetadata.creatorTopicID,
                         'matchedTopicID': newMetadata.matchedTopicID,
                         'userCreatorID': newMetadata.userCreatorID,
                         'userMatchedID': newMetadata.userMatchedID,
@@ -197,7 +197,7 @@ def setupEndpoints(chatApp, api, socketio):
             topic = request.args.get('topic')
             userID = int(request.args.get('userID'))
             if topic:
-                convMatches = chatApp.matcher.getSimilarConversations(topic, userID)
+                convMatches = chatApp.matcher.getSimilarTopics(topic, userID)
                 segwayResponses = chatApp.segway.getResponse(topic, convMatches)
                 return {'convMatches': convMatches, 'segwayResponses': segwayResponses}, 200
             else:

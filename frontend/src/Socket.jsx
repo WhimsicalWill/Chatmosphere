@@ -1,4 +1,5 @@
 import io from 'socket.io-client';
+import ApiManager from './ApiManager';
 
 const findParentTopic = (topics, chatID) => {
   for (let topicName in topics) {
@@ -77,16 +78,19 @@ export const setupSocket = ({
     // TODO: add the otherUserID to the chatInfo locally
 
     socketRef.current.emit('chat-join', { userID: userCreatorID, room: chatID });
-    
-    setTopics(prevTopics => {
-      const updatedTopics = { ...prevTopics };
 
-      const chatName = `Chat ${chatID}`;
-      if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = {};
-      if (!updatedTopics[creatorTopicID][chatID]) 
-        updatedTopics[creatorTopicID][chatID] = { name: chatName, messages: [] }
+    // use a GET request to get the topic name (remember this user is the creator)
+    ApiManager.getTopic(creatorTopicID).then(creatorTopicName => {
+      setTopics(prevTopics => {
+        const updatedTopics = { ...prevTopics };
 
-      return updatedTopics;
+        const chatName = `Chat ${chatID}`;
+        if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = { title: creatorTopicName };
+        if (!updatedTopics[creatorTopicID][chatID]) 
+          updatedTopics[creatorTopicID][chatID] = { name: chatName, messages: [] }
+
+        return updatedTopics;
+      });
     });
   });
 

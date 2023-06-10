@@ -10,8 +10,7 @@ from langchain import PromptTemplate, FewShotPromptTemplate
 from dotenv import load_dotenv
 
 
-# TODO: convert from snake_case to camelCase where appropriate
-class ConversationMatcher:
+class TopicMatcher:
     """
     A class that searches a vector database for the most
     semantically similar topicNames to a given query.
@@ -31,7 +30,7 @@ class ConversationMatcher:
         openai.api_key = os.getenv('OPENAI_API_KEY')
 
     # this is currently only called once
-    def addConversations(self, topicTuples):
+    def addTopics(self, topicTuples):
         for topicID, info in enumerate(topicTuples):
             userID, title = info
             self.topicNames.append(title)
@@ -39,7 +38,7 @@ class ConversationMatcher:
             self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
 
-    def addConversation(self, userID, title):
+    def addTopic(self, userID, title):
         topicID = len(self.topicNames)
         self.topicNames.append(title)
         self.topicMap[topicID] = userID
@@ -58,7 +57,7 @@ class ConversationMatcher:
         self.index.add(embeddings)
         print("Done.")
 
-    def getSimilarConversations(self, query, userID):
+    def getSimilarTopics(self, query, userID):
         print("Getting similar topics...")
         query_embedding = get_embedding(query, engine=self.engine)
         query_embedding = np.array([query_embedding]).astype('float32')
@@ -83,7 +82,7 @@ class ConversationMatcher:
         return res
 
 
-class ConversationSegway:
+class TopicSegway:
     """
     A class that uses a language model to generate engaging responses to a given query,
     in the context of a series of topic names.
@@ -97,16 +96,16 @@ class ConversationSegway:
         # Prepare example prompts and responses for training
         example_1 = {
             "query": "How will technology shape the future?",
-            "conv1": "How is artificial intelligence impacting our daily lives?",
-            "conv2": "What do you think about the future of cryptocurrency?",
+            "topic1": "How is artificial intelligence impacting our daily lives?",
+            "topic2": "What do you think about the future of cryptocurrency?",
             "answer": "If you're curious about the future of technology, you might want to explore how AI is changing our day-to-day life.\n" \
                     "Additionally, the evolving realm of cryptocurrency might pique your interest.\n"
         }
 
         example_2 = {
             "query": "What are the impacts of climate change?",
-            "conv1": "How does climate change affect wildlife?",
-            "conv2": "What are the economic consequences of climate change?",
+            "topic1": "How does climate change affect wildlife?",
+            "topic2": "What are the economic consequences of climate change?",
             "answer": "If you're interested in the impacts of climate change, you might want to look into its effects on wildlife.\n" \
                     "You could also delve into the economic repercussions of climate change.\n"
         } 
@@ -115,14 +114,14 @@ class ConversationSegway:
 
         template = """
         Query: {query}\n
-        Conversation 1: {conv1}\n
-        Conversation 2: {conv2}\n
+        Toipic 1: {topic1}\n
+        Topic 2: {topic2}\n
         Answer: {answer}\n
         """
 
         # Define the structure of the prompt with input variables and template
         example_prompt = PromptTemplate(
-            input_variables=["query", "conv1", "conv2", "answer"], 
+            input_variables=["query", "topic1", "topic2", "answer"], 
             template=template,
         )
 
@@ -136,26 +135,25 @@ class ConversationSegway:
             examples=examples,
             example_prompt=example_prompt,
             prefix=prompt_prefix,
-            suffix="Query: {query}\nConversation 1: {conv1}\n" \
-                "Conversation 2: {conv2}\n" \
+            suffix="Query: {query}\nTopic 1: {topic1}\n" \
+                "Topic 2: {topic2}\n" \
                 "Answer:",
-            input_variables=["query", "conv1", "conv2"],
+            input_variables=["query", "topic1", "topic2"],
             example_separator="\n",
         )
         print("Set up few shot prompt")
 
-    def getResponse(self, query, convs):
+    def getResponse(self, query, topics):
         print("Generating response...")
         print("Query:", query)
-        print("Conversations:", convs)
         # TODO: add error handling
-        assert len(convs) == 2, "Must provide two topics, not {}".format(len(convs))
+        assert len(topics) == 2, "Must provide two topics, not {}".format(len(topics))
 
-        # Assuming convs is a list of three topicNames
+        # Assuming topics is a list of three topicNames
         input = {
             "query": query,
-            "conv1": convs[0],
-            "conv2": convs[1],
+            "topic1": topics[0]['topicName'],
+            "topic2": topics[1]['topicName'],
         }
 
         print("Input:", input)

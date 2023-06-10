@@ -5,7 +5,7 @@ const axiosInstance = axios.create({
 });
 
 class ApiManager {
-  static async submitTopicAndGetResponse(message, userID, topicIDMap) {
+  static async submitTopicAndGetResponse(message, userID, setTopics, topicIDMap) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
         params: { 
@@ -23,7 +23,7 @@ class ApiManager {
       }));
 
       // Add the new topic to the database and to our local map
-      await ApiManager.addTopic(userID, message, topicIDMap);
+      await ApiManager.addTopic(userID, message, setTopics, topicIDMap);
 
       return combined;
     } catch (error) {
@@ -48,8 +48,6 @@ class ApiManager {
   // TODO: make sure that the arguments are passed correctly
   // the creator is the person whose topic was in the DB first
   static async createChatAndGetID(creatorTopicID, matchedTopicID, userCreatorID, userMatchedID) {
-    console.log('Creating match with', userCreatorID);
-    
     try {
       const response = await axiosInstance.post('/create-chat', {
         creatorTopicID: creatorTopicID,
@@ -112,6 +110,16 @@ class ApiManager {
       return [brainstormTopicID, brainstormChatID];
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  static async getTopic(topicID) {
+    try {
+      const response = await axiosInstance.get(`/topics/${topicID}`);
+      return response.data.title;
+    } catch (error) {
+      console.error(error);
+      return [];
     }
   }
 
@@ -185,13 +193,24 @@ class ApiManager {
   }
 
   // TODO: throw error when user enters a repeat topic
-  static async addTopic(userID, topicName, topicIDMap) {
+  static async addTopic(userID, topicName, setTopics, topicIDMap) {
     console.log('Adding topic', topicName);
+
+    // then, add the topic to the database
     try {
       const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
         title: topicName,
       });
       topicIDMap[topicName] = topicResponse.data.id;
+
+      console.log('topicIDMap', topicIDMap);
+      
+      // add the topic to the user's local info
+      setTopics(prevTopics => {
+        const updatedTopics = { ...prevTopics };
+        if (!updatedTopics[topicResponse.data.id]) updatedTopics[topicResponse.data.id] = { title: topicName };
+        return updatedTopics;
+      });
     } catch (error) {
       console.error(error);
     }
