@@ -73,7 +73,6 @@ class ApiManager {
   static async getTopicsAndChats(userID, setTopics) {
     try {
       let topicInfo = await ApiManager.getTopics(userID);
-
       let brainstormTopic = topicInfo.find(topic => topic.title === 'Brainstorm');
       let brainstormTopicID = brainstormTopic ? String(brainstormTopic.id) : null;
 
@@ -99,9 +98,6 @@ class ApiManager {
       await Promise.all(chatPromises)
         .then((results) => {
           results.forEach((topicChats, i) => {
-
-            // TODO: potentially join chat rooms here
-            
             const topic = topicInfo[i];
             topics[topic.id] = {
               title: topic.title,
@@ -113,7 +109,6 @@ class ApiManager {
 
       setTopics(topics);
       const brainstormChatID = Object.keys(topics[brainstormTopicID].chats)[0];
-
       return [brainstormTopicID, brainstormChatID];
     } catch (error) {
       console.error(error);
@@ -139,18 +134,44 @@ class ApiManager {
       return [];
     }
   }
-
   static async getChatsByTopicID(topicID, userID) {
     try {
       const topicChats = {};
       const response = await axiosInstance.get(`/chatmetadata/${topicID}`);
-      response.data.forEach(chatResponse => {
-        topicChats[chatResponse.chatID] = { 
-          name: `Chat ${chatResponse.chatID}`, 
-          otherUserID: userID === chatResponse.userCreatorID ? chatResponse.userMatchedID : chatResponse.userCreatorID,
-          messages: []
-        };
-      });
+      for (let chatResponse of response.data) {
+        if (chatResponse.matchedTopicID === -1) {
+          topicChats[chatResponse.chatID] = { 
+            name: "Brainstorm", 
+            otherUserID: -1,
+            messages: []
+          };
+          continue;
+        }
+
+        let otherUserID, otherTopicID;
+
+        if (userID === chatResponse.userCreatorID) {
+          otherTopicID = chatResponse.matchedTopicID;
+          otherUserID = chatResponse.userMatchedID;
+        } else {
+          otherTopicID = chatResponse.creatorTopicID;
+          otherUserID = chatResponse.userCreatorID;
+        }
+
+        // Get the name of the other user's topic to use as our chat name
+        try {
+          console.log("requesting chat name");
+          const topicResponse = await axiosInstance.get(`/topics/${otherTopicID}`);
+          topicChats[chatResponse.chatID] = { 
+            name: topicResponse.data.title, 
+            otherUserID: otherUserID,
+            messages: []
+          };
+        } catch (topicError) {
+          console.error(`Failed to get topic name for user ${otherTopicID}`, topicError);
+          continue; // Skip to next chat if we fail to get the topic name
+        }
+      }
       return topicChats;
     } catch (error) {
       if (error.response && error.response.status === 404) {

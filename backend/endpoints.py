@@ -85,7 +85,7 @@ def setupEndpoints(chatApp, api, socketio):
             if not topic:
                 return {'error': 'Topic not found'}, 404
 
-            return {'title': topic.title, 'userID': topic.userID }, 200
+            return {'title': topic.title, 'userID': topic.userID}, 200
 
         def delete(self, topicID):
             # DELETE method to delete topic

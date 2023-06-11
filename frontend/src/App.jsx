@@ -21,7 +21,6 @@ function App() {
   const userID = useRef(null);
   const brainstormTopicID = useRef(null);
   const brainstormChatID = useRef(null);
-  const topicIDMap = useRef({});
   const chatEndRef = useRef(null);
   const socketRef = useRef(null);
 
@@ -39,6 +38,7 @@ function App() {
     // Hack to check if the promises have resolved
     console.log('Trying to setup socket');
     if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'string') {
+      console.log('Setting up socket');
       const cleanup = setupSocket({ socketRef, userID, topics, setTopics });
       console.log('Socket setup');
       return () => cleanup;
@@ -51,20 +51,11 @@ function App() {
   }, [topics]);
 
   const addChatUnderTopic = async (botTopicInfo, messageNumber) => {
-    console.log(botTopicInfo);
     const brainstormChat = topics[brainstormTopicID.current].chats[brainstormChatID.current];
-
     let userTopicInfo = null;
-
-    console.log(topics);
-    console.log(brainstormTopicID.current, brainstormChatID.current);
-    console.log('messageNumber', messageNumber);
 
     // Retrieve the nearest user message above this messageID to use as the topic name
     for (let j = messageNumber - 1; j >= 0; j--) {
-      console.log(j, brainstormChat.messages[j]);
-      console.log(Number(brainstormChat.messages[j].senderID), Number(userID.current));
-      console.log(Number(brainstormChat.messages[j].senderID) === Number(userID.current));
       if (Number(brainstormChat.messages[j].senderID) === Number(userID.current)) {
         userTopicInfo = brainstormChat.messages[j].topicInfo;
         break;
@@ -76,15 +67,18 @@ function App() {
       return;
     }
 
-    console.log(botTopicInfo);
-    console.log(userTopicInfo);
+    // Check if chat between topics already exists
+    if (topics[userTopicInfo.topicID]?.chats[botTopicInfo.topicID]) {
+      console.error('Chat between these topics already exists');
+      return;
+    }
 
     // Call backend to create a new chat (and keep the new chat id)
     const chatID = await ApiManager.createChatAndGetID(
-      Number(botTopicInfo.topicID),
-      Number(userTopicInfo.topicID),
-      Number(botTopicInfo.userID),
-      Number(userTopicInfo.userID),
+      botTopicInfo.topicID,
+      userTopicInfo.topicID,
+      botTopicInfo.userID,
+      userTopicInfo.userID,
     );
 
     if (chatID == null) {
@@ -101,7 +95,12 @@ function App() {
       if (!updatedTopics[userTopicInfo.topicID]) {
         updatedTopics[userTopicInfo.topicID] = { title: userTopicInfo.topicName, chats: {} };
       }
-      updatedTopics[userTopicInfo.topicID].chats[chatID] = { name: botTopicInfo.topicName, messages: [] }
+      updatedTopics[userTopicInfo.topicID].chats[chatID] = { 
+        name: botTopicInfo.topicName,
+        userTopicID: userTopicInfo.topicID,
+        otherUserTopicID: botTopicInfo.topicID,
+        messages: [] 
+      }
       return updatedTopics;
     });
     setCurrentTab('Active Chats');
