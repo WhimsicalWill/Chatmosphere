@@ -4,6 +4,15 @@ const axiosInstance = axios.create({
   baseURL: 'http://localhost:5000', // This is the default port for Flask apps
 });
 
+const findParentTopic = (topics, chatID) => {
+  for (let topicName in topics) {
+    if (topics[topicName].chats[chatID]) {
+      return topicName;
+    }
+  }
+  return null;
+};
+
 class ApiManager {
   static async submitTopicAndGetResponse(message, userID, setTopics, topicIDMap) {
     try {
@@ -155,6 +164,51 @@ class ApiManager {
     }
   }
 
+  // Load messages when a user clicks on a chat
+  static async loadChatMessages(topics, setTopics, chatID) {
+    try {
+      const messageResponse = await axiosInstance.get(`/chats/${chatID}`);
+
+      if (messageResponse.status === 200) {
+        // Fetch all match infos
+        const matchInfoPromises = messageResponse.data.map(async message => {
+          if (message.matchedTopicID !== null) {
+            const topicResponse = await axiosInstance.get(`/topics/${message.matchedTopicID}`);
+            if (topicResponse.status === 200) {
+              return {
+                topicName: topicResponse.data.title,
+                topicID: message.matchedTopicID,
+                userID: topicResponse.data.userID
+              };
+            } else {
+              console.error('Failed to load matched topic:', topicResponse);
+            }
+          }
+          return null;
+        });
+
+        const matchInfos = await Promise.all(matchInfoPromises);
+
+        // Update messages with match info
+        const messages = messageResponse.data.map((message, i) => {
+          return {
+            ...message,
+            matchInfo: matchInfos[i]
+          };
+        });
+
+        const topicID = findParentTopic(topics, chatID);
+        setTopics(prevTopics => {
+          const updatedTopics = {...prevTopics};
+          updatedTopics[topicID].chats[chatID].messages = messages;
+          return updatedTopics;
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load messages for the chat:', error);
+    }
+  }
+
   static async createBrainstorm(userID) {
     try {
       // Attempt to create the 'Brainstorm' topic
@@ -209,6 +263,22 @@ class ApiManager {
       });
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  static async addUser(username) {
+    try {
+      const response = await axiosInstance.post('/users', {
+        username: username
+      });
+
+      if (response.status === 201) {
+        console.log('New user added to the database');
+        return response.data.id; // return the ID of the new user
+      }
+    } catch (error) {
+      console.error('Failed to add a new user to the database:', error);
+      return null;
     }
   }
 }

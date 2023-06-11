@@ -1,6 +1,4 @@
 import os
-import json
-import os
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +6,7 @@ from flask_restful import Api
 from flask_cors import CORS
 
 from matching import TopicMatcher, TopicSegway
-from events import socketio
+from events import socketio, initEventHandler
 from data import setupModels
 from endpoints import setupEndpoints
 
@@ -17,7 +15,8 @@ class ChatApplication:
         self.app = Flask(__name__)
         self.configureApp()
         self.setupDatabase()
-        self.setupEndpoints()
+        setupEndpoints(self, self.api, socketio)
+        initEventHandler(self)
 
     def configureApp(self):
         CORS(self.app, resources={r"/*": {"origins": "*"}})
@@ -31,14 +30,11 @@ class ChatApplication:
     def setupDatabase(self):
         self.db = SQLAlchemy(self.app)
         self.userID = 0
-        self.User, self.Topic, self.ChatMetadata, self.Chat = setupModels(self.db)
+        self.User, self.Topic, self.ChatMetadata, self.ChatMessage = setupModels(self.db)
     
     def getNextUserID(self):
         self.userID += 1
         return self.userID
-
-    def setupEndpoints(self):
-        setupEndpoints(self, self.api, socketio)
 
     def setupTopicHelpers(self):
         self.matcher = TopicMatcher(k=2)

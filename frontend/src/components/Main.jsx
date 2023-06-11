@@ -48,14 +48,14 @@ export function MainChat({
               key={index}
               className={`chat-message ${message.senderID === userID.current ? 'user' : 'bot'}`}
             >
-              {message.message}
+              {message.text}
               {message.matchInfo && 
               <div className="topic-match">
                 <Button
                 variant="contained"
                 color="primary"
                 startIcon={<AddIcon />}
-                onClick={() => addChatUnderTopic(message.matchInfo, message.messageID)}
+                onClick={() => addChatUnderTopic(message.matchInfo, message.id)}
                 >
                 {message.matchInfo.topicName}
                 </Button>

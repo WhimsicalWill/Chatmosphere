@@ -52,6 +52,7 @@ export function SidebarContent({
   deleteChat, 
   deleteTopic,
   handleTopicClick,
+  handleChatClick,
   submitNewTopicName,
   isEditingNewTopic,
   setEditingNewTopic,
@@ -112,8 +113,7 @@ const chatListSection = (
           <li
             key={index}
             onClick={() => {
-              setCurrentChat(chatID);
-              setEditingNewTopic(false);
+              handleChatClick(chatID);
             }}
             className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
           >

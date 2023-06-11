@@ -160,6 +160,13 @@ function App() {
     }
   };
 
+  const handleChatClick = (chatID) => {
+    // TODO: I don't think we need the line below, but not sure
+    // setEditingNewTopic(false);
+    setCurrentTopic(chatID);
+    ApiManager.loadChatMessages(topics, setTopics, chatID);
+  };
+
   const handleBackClick = () => {
     setCurrentTab('Topics');
     setCurrentTopic(null);
@@ -187,34 +194,34 @@ function App() {
 
     // get message and clear input
     event.preventDefault(); // Prevent form submission
-    const message = event.target.value;
+    const text = event.target.value;
     event.target.value = '';
     
-    if (!message) {
+    if (!text) {
       return false;
     }
 
-    handleMessageHelper(chatID, message);
+    handleMessageHelper(chatID, text);
     return true;
   };
 
-  const handleMessageHelper = async (chatID, message) => {
+  const handleMessageHelper = async (chatID, text) => {
 
     // TODO: call the ChatMessage endpoint and add a new message to the database
 
     socketRef.current.emit('new-message', { 
       chatID: chatID,
-      message: message,
+      text: text,
       senderID: userID.current,
       matchInfo: null,
     });
 
     if (chatID === brainstormChatID.current) {
-      const botResponses = await ApiManager.submitTopicAndGetResponse(message, userID.current, setTopics, topicIDMap.current);
+      const botResponses = await ApiManager.submitTopicAndGetResponse(text, userID.current, setTopics, topicIDMap.current);
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
           chatID: chatID,
-          message: botResponse.text,
+          text: botResponse.text,
           senderID: botID,
           matchInfo: botResponse.matchInfo,
         });
@@ -232,6 +239,7 @@ function App() {
     deleteChat,
     deleteTopic,
     handleTopicClick,
+    handleChatClick,
     handleBackClick,
     submitNewTopicName,
     isEditingNewTopic,

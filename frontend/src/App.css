@@ -168,6 +168,7 @@ body {
   width: 90%;
   margin-bottom: 10px;
   transition: border 0.3s ease;
+  text-align: center;
 }
 
 .new-topic-input:focus {

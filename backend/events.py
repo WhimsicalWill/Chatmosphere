@@ -1,6 +1,13 @@
 from flask_socketio import join_room, leave_room, send
-
 from extensions import socketio
+
+
+# Create a global variable to store the chatApp object
+chatApp = None
+
+def initEventHandler(app):
+    global chatApp
+    chatApp = app
 
 @socketio.on("connect")
 def handle_connect():
@@ -40,4 +47,20 @@ def on_leave(data):
 def handle_new_message(data):
     print(f"New message from user {data['senderID']} in chatID {data['chatID']}")
     room = "chatID_" + str(data['chatID'])
+    data['id'], data['timestamp'] = add_new_message(
+        data['chatID'], 
+        data['senderID'],
+        data['text']
+    )
     send(data, room=room)
+
+def add_new_message(chatID, senderID, text):
+    newMessage = chatApp.ChatMessage(
+        chatID=chatID,
+        senderID=senderID,
+        text=text
+    )
+    chatApp.db.session.add(newMessage)
+    chatApp.db.session.commit()
+
+    return newMessage.id, newMessage.timestamp

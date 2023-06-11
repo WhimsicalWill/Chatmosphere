@@ -34,7 +34,7 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.add(newUser)
             chatApp.db.session.commit()
 
-            return {'message': f'chatApp.User {args["username"]} was created'}, 201
+            return {'id': newUser.id }, 201
 
         def delete(self, userID):
             # DELETE method to delete user
@@ -117,11 +117,12 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.add(newMetadata)
             chatApp.db.session.commit()
 
-            chatInfo = {'chatID': newMetadata.id,
-                        'creatorTopicID': newMetadata.creatorTopicID,
-                        'matchedTopicID': newMetadata.matchedTopicID,
-                        'userCreatorID': newMetadata.userCreatorID,
-                        'userMatchedID': newMetadata.userMatchedID,
+            chatInfo = {
+                'chatID': newMetadata.id,
+                'creatorTopicID': newMetadata.creatorTopicID,
+                'matchedTopicID': newMetadata.matchedTopicID,
+                'userCreatorID': newMetadata.userCreatorID,
+                'userMatchedID': newMetadata.userMatchedID,
             }
 
             print(f"Sending new chat info to userID_{newMetadata.userCreatorID}...")
@@ -143,27 +144,45 @@ def setupEndpoints(chatApp, api, socketio):
 
             chatInfoList = []
             for chatMetadata in chatMetadataList:
-                chatInfo = {'chatID': chatMetadata.id,
-                            'creatorTopicID': chatMetadata.creatorTopicID,
-                            'matchedTopicID': chatMetadata.matchedTopicID,
-                            'userCreatorID': chatMetadata.userCreatorID,
-                            'userMatchedID': chatMetadata.userMatchedID,
+                chatInfo = {
+                    'chatID': chatMetadata.id,
+                    'creatorTopicID': chatMetadata.creatorTopicID,
+                    'matchedTopicID': chatMetadata.matchedTopicID,
+                    'userCreatorID': chatMetadata.userCreatorID,
+                    'userMatchedID': chatMetadata.userMatchedID,
                 }
                 chatInfoList.append(chatInfo)
 
             return chatInfoList, 200
 
 
-    class NewMessageResource(Resource):
-        def post(self):
+    class ChatMessagesResource(Resource):
+        def get(self, chatID):
+            messageList = chatApp.ChatMessage.query.filter_by(chatID=chatID).all()
+            if not messageList:
+                return {'error': 'No chats found for this metadata'}, 404
+            
+            messageInfoList = []
+            for message in messageList:
+                messageInfo = {
+                    'id': message.id,
+                    'senderID': message.senderID,
+                    'text': message.text,
+                    'timestamp': message.timestamp,
+                    'matchTopicID': message.matchedTopicID,
+                }
+                messageInfoList.append(messageInfo)
+
+            return messageInfoList
+
+        def post(self, chatID):
             parser = reqparse.RequestParser()  
-            parser.add_argument('chatID', required=True, help="Chat id cannot be blank!")
             parser.add_argument('senderID', required=True, help="Sender id cannot be blank!")
             parser.add_argument('text', required=True, help="Text cannot be blank!")
             args = parser.parse_args()
 
-            newChat = chatApp.Chat(
-                chatID=args['chatID'], 
+            newChat = chatApp.ChatMessage(
+                chatID=chatID, 
                 senderID=args['senderID'], 
                 text=args['text']
             )
@@ -172,18 +191,8 @@ def setupEndpoints(chatApp, api, socketio):
 
             return {'id': newChat.id}, 201
 
-
-    class ChatMessagesResource(Resource):
-        def get(self, chatID):
-            chats = chatApp.Chat.query.filter_by(chatID=chatID).all()
-            if not chats:
-                return {'error': 'No chats found for this metadata'}, 404
-
-            return [{'id': chat.id, 'timestamp': chat.timestamp, 'senderID': chat.senderID,
-                    'text': chat.text} for chat in chats], 200
-
         def delete(self, chatID):
-            chat = chatApp.Chat.query.get(chatID)
+            chat = chatApp.ChatMessage.query.filter_by(chatID=chatID).all()
             if not chat:
                 return {'error': 'Chat message not found'}, 404
 
@@ -211,5 +220,4 @@ def setupEndpoints(chatApp, api, socketio):
     api.add_resource(CreateChatResource, '/create-chat')
     api.add_resource(TopicChatMetadataResource, '/chatmetadata/<int:topicID>')
     api.add_resource(ChatMessagesResource, '/chats/<int:chatID>')
-    api.add_resource(NewMessageResource, '/new-message')
     api.add_resource(BotResponseResource, '/bot-response')

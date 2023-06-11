@@ -31,11 +31,12 @@ export const setupSocket = ({
 
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
-    const { chatID, message, senderID, matchInfo } = response;
+    // TODO: pass the timestamp from the backend
+    const { id, timestamp, chatID, text, senderID, matchInfo } = response;
 
     // update the topic object to include the new message
     setTopics(prevTopics => {
-      const topicID = findParentTopic(prevTopics, chatID);
+      const topicID = ApiManager.findParentTopic(prevTopics, chatID);
 
       if (!topicID) {
         console.error('No topic found for given chatID');
@@ -44,10 +45,9 @@ export const setupSocket = ({
 
       if (!prevTopics[topicID] || !prevTopics[topicID].chats || !prevTopics[topicID].chats[chatID]) return prevTopics;
 
-      const messageID = prevTopics[topicID].chats[chatID].messages.length;
       const updatedChat = {
         ...prevTopics[topicID].chats[chatID],
-        messages: [...prevTopics[topicID].chats[chatID].messages, { message, senderID, matchInfo, messageID }],
+        messages: [...prevTopics[topicID].chats[chatID].messages, { id, senderID, text, timestamp, matchInfo }],
       };
 
       const updatedTopics = {
