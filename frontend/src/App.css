@@ -125,7 +125,7 @@ body {
   margin-right: 20px;
 }
 
-.chat-message.bot {
+.chat-message.other-user {
   background-color: #a0a0ff;
   float: left;
   margin-left: 20px;

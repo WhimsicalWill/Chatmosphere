@@ -14,11 +14,11 @@ class ApiManager {
     return null;
   };
 
-  static async submitTopicAndGetResponse(message, userID, setTopics, topicIDMap) {
+  static async getBotResponse(text, userID) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
         params: { 
-          topic: message,
+          topic: text,
           userID: userID,
         }
       });
@@ -28,16 +28,13 @@ class ApiManager {
 
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
-        matchInfo: topicMatches[i]
+        topicInfo: topicMatches[i]
       }));
-
-      // Add the new topic to the database and to our local map
-      await ApiManager.addTopic(userID, message, setTopics, topicIDMap);
 
       return combined;
     } catch (error) {
       console.error(error);
-      return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
+      return [{ text: "An error occurred :(", topicInfo: null }]; // return an array with one element in the case of an error
     }
   }
 
@@ -173,13 +170,14 @@ class ApiManager {
 
       if (messageResponse.status === 200) {
         // Fetch all match infos
-        const matchInfoPromises = messageResponse.data.map(async message => {
-          if (message.matchedTopicID) {
-            const topicResponse = await axiosInstance.get(`/topics/${message.matchedTopicID}`);
+        const topicInfoPromises = messageResponse.data.map(async message => {
+          if (message.topicID) {
+            const topicResponse = await axiosInstance.get(`/topics/${message.topicID}`);
             if (topicResponse.status === 200) {
+              console.log(topicResponse);
               return {
                 topicName: topicResponse.data.title,
-                topicID: message.matchedTopicID,
+                topicID: message.topicID,
                 userID: topicResponse.data.userID
               };
             } else {
@@ -189,15 +187,15 @@ class ApiManager {
           return null;
         });
 
-        const matchInfos = await Promise.all(matchInfoPromises);
+        const topicInfos = await Promise.all(topicInfoPromises);
 
-        console.log('Match infos:', matchInfos);
+        console.log('Match infos:', topicInfos);
 
         // Update messages with match info
         const messages = messageResponse.data.map((message, i) => {
           return {
             ...message,
-            matchInfo: matchInfos[i],
+            topicInfo: topicInfos[i],
           };
         });
 
@@ -248,15 +246,14 @@ class ApiManager {
   }
 
   // TODO: throw error when user enters a repeat topic
-  static async addTopic(userID, topicName, setTopics, topicIDMap) {
+  static async addTopic(topicName, userID, setTopics) {
     console.log('Adding topic', topicName);
 
-    // then, add the topic to the database
+    // add the topic to the database
     try {
       const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
         title: topicName,
       });
-      topicIDMap[topicName] = topicResponse.data.id;
       
       // add the topic to the user's local info
       setTopics(prevTopics => {
@@ -269,6 +266,10 @@ class ApiManager {
         }
         return updatedTopics;
       });
+
+      // return a topicInfo object
+      return { topicName: topicName, topicID: topicResponse.data.id, userID: userID };
+
     } catch (error) {
       console.error(error);
     }

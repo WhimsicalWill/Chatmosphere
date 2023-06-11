@@ -50,59 +50,62 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [topics]);
 
-  const addChatUnderTopic = async (matchInfo, messageID) => {
-    console.log(matchInfo);
+  const addChatUnderTopic = async (botTopicInfo, messageNumber) => {
+    console.log(botTopicInfo);
     const brainstormChat = topics[brainstormTopicID.current].chats[brainstormChatID.current];
 
-    let topicName = null;
+    let userTopicInfo = null;
 
     console.log(topics);
     console.log(brainstormTopicID.current, brainstormChatID.current);
+    console.log('messageNumber', messageNumber);
 
     // Retrieve the nearest user message above this messageID to use as the topic name
-    for (let j = messageID - 1; j >= 0; j--) {
+    for (let j = messageNumber - 1; j >= 0; j--) {
       console.log(j, brainstormChat.messages[j]);
+      console.log(Number(brainstormChat.messages[j].senderID), Number(userID.current));
+      console.log(Number(brainstormChat.messages[j].senderID) === Number(userID.current));
       if (Number(brainstormChat.messages[j].senderID) === Number(userID.current)) {
-        topicName = brainstormChat.messages[j].text;
+        userTopicInfo = brainstormChat.messages[j].topicInfo;
         break;
       }
     }
 
-    if (!topicName) {
-      console.error('Failed to find a user message to use as the topic name');
+    if (!userTopicInfo) {
+      console.error('Failed to find topicInfo from user messages');
       return;
     }
 
-    const matchedTopicID = topicIDMap.current[topicName];
+    console.log(botTopicInfo);
+    console.log(userTopicInfo);
 
-    // Call backend to create a new chat (with a chat id)
-    // Note that the other user is the creator in this case
+    // Call backend to create a new chat (and keep the new chat id)
     const chatID = await ApiManager.createChatAndGetID(
-      matchInfo.topicID,
-      matchedTopicID,
-      matchInfo.userID,
-      userID.current,
+      Number(botTopicInfo.topicID),
+      Number(userTopicInfo.topicID),
+      Number(botTopicInfo.userID),
+      Number(userTopicInfo.userID),
     );
 
     if (chatID == null) {
       console.error('Failed to create a new chat');
       return;
     }
+
     // join a room with the chatID
     socketRef.current.emit('chat-join', { userID: userID.current, room: chatID });
-    const chatName = await ApiManager.getTopic(matchInfo.topicID);
 
     // Add a new topic if it doesn't already exist and add a new chat under that topic
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
-      if (!updatedTopics[matchedTopicID]) {
-        updatedTopics[matchedTopicID] = { title: topicName, chats: {} };
+      if (!updatedTopics[userTopicInfo.topicID]) {
+        updatedTopics[userTopicInfo.topicID] = { title: userTopicInfo.topicName, chats: {} };
       }
-      updatedTopics[matchedTopicID].chats[chatID] = { name: chatName, messages: [] }
+      updatedTopics[userTopicInfo.topicID].chats[chatID] = { name: botTopicInfo.topicName, messages: [] }
       return updatedTopics;
     });
     setCurrentTab('Active Chats');
-    setCurrentTopic(matchedTopicID);
+    setCurrentTopic(userTopicInfo.topicID);
     setCurrentChat(chatID);
     console.log('Created new chat with ID:', chatID);
   };
@@ -173,18 +176,14 @@ function App() {
   };
 
   const handleChatClick = (topicID, chatID) => {
-    // TODO: I don't think we need the line below, but not sure
-    // setEditingNewTopic(false);
     setCurrentChat(chatID);
 
-    // Get the current chat messages from the current topic
-    console.log(topics);
-    console.log(currentTopic, chatID);
-    const currentChatMessages = topics[topicID]?.chats[chatID]?.messages;
+    if (topics) {
+      const currentChatMessages = topics[topicID]?.chats[chatID]?.messages;
 
-    // Load chat messages only if they haven't been loaded yet
-    if (!currentChatMessages || Object.keys(currentChatMessages).length === 0) {
-      ApiManager.loadChatMessages(topics, setTopics, chatID);
+      if (!currentChatMessages || Object.keys(currentChatMessages).length === 0) {
+        ApiManager.loadChatMessages(topics, setTopics, chatID);
+      }
     }
   };
 
@@ -230,26 +229,30 @@ function App() {
   };
 
   const handleMessageHelper = async (chatID, text) => {
-
-    // TODO: call the ChatMessage endpoint and add a new message to the database
-
-    socketRef.current.emit('new-message', { 
-      chatID: chatID,
-      text: text,
-      senderID: userID.current,
-      matchInfo: null,
-    });
-
     if (chatID === brainstormChatID.current) {
-      const botResponses = await ApiManager.submitTopicAndGetResponse(text, userID.current, setTopics, topicIDMap.current);
+      const topicInfo = await ApiManager.addTopic(text, userID.current, setTopics);
+      const botResponses = await ApiManager.getBotResponse(text, userID.current);
+      socketRef.current.emit('new-message', { 
+        chatID: chatID,
+        text: text,
+        senderID: userID.current,
+        topicInfo: topicInfo,
+      });
       for (const botResponse of botResponses) {
         socketRef.current.emit('new-message', { 
           chatID: chatID,
           text: botResponse.text,
           senderID: botID,
-          matchInfo: botResponse.matchInfo,
+          topicInfo: botResponse.topicInfo,
         });
       }
+    } else {
+      socketRef.current.emit('new-message', { 
+        chatID: chatID,
+        text: text,
+        senderID: userID.current,
+        topicInfo: null,
+      });
     }
   };
 
