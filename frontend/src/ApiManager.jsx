@@ -4,16 +4,16 @@ const axiosInstance = axios.create({
   baseURL: 'http://localhost:5000', // This is the default port for Flask apps
 });
 
-const findParentTopic = (topics, chatID) => {
-  for (let topicName in topics) {
-    if (topics[topicName].chats[chatID]) {
-      return topicName;
-    }
-  }
-  return null;
-};
-
 class ApiManager {
+  static findParentTopic = (topics, chatID) => {
+    for (let topicName in topics) {
+      if (topics[topicName].chats[chatID]) {
+        return topicName;
+      }
+    }
+    return null;
+  };
+
   static async submitTopicAndGetResponse(message, userID, setTopics, topicIDMap) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
@@ -193,11 +193,11 @@ class ApiManager {
         const messages = messageResponse.data.map((message, i) => {
           return {
             ...message,
-            matchInfo: matchInfos[i]
+            matchInfo: matchInfos[i],
           };
         });
 
-        const topicID = findParentTopic(topics, chatID);
+        const topicID = ApiManager.findParentTopic(topics, chatID);
         setTopics(prevTopics => {
           const updatedTopics = {...prevTopics};
           updatedTopics[topicID].chats[chatID].messages = messages;

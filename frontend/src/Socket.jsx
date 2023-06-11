@@ -1,15 +1,6 @@
 import io from 'socket.io-client';
 import ApiManager from './ApiManager';
 
-const findParentTopic = (topics, chatID) => {
-  for (let topicName in topics) {
-    if (topics[topicName].chats[chatID]) {
-      return topicName;
-    }
-  }
-  return null;
-};
-
 export const setupSocket = ({
   socketRef,
   userID, 
@@ -32,7 +23,8 @@ export const setupSocket = ({
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
     // TODO: pass the timestamp from the backend
-    const { id, timestamp, chatID, text, senderID, matchInfo } = response;
+    const { messageNumber, isoString, chatID, text, senderID, matchInfo } = response;
+    const timestamp = new Date(isoString);
 
     // update the topic object to include the new message
     setTopics(prevTopics => {
@@ -47,7 +39,7 @@ export const setupSocket = ({
 
       const updatedChat = {
         ...prevTopics[topicID].chats[chatID],
-        messages: [...prevTopics[topicID].chats[chatID].messages, { id, senderID, text, timestamp, matchInfo }],
+        messages: [...prevTopics[topicID].chats[chatID].messages, { messageNumber, senderID, text, timestamp, matchInfo }],
       };
 
       const updatedTopics = {

@@ -47,20 +47,31 @@ def on_leave(data):
 def handle_new_message(data):
     print(f"New message from user {data['senderID']} in chatID {data['chatID']}")
     room = "chatID_" + str(data['chatID'])
-    data['id'], data['timestamp'] = add_new_message(
-        data['chatID'], 
-        data['senderID'],
-        data['text']
-    )
+    
+    # Query the latest message in the chat and increment the message number
+    # TODO: get rid of this hack and order by timestamp on client side
+    lastMessage = chatApp.ChatMessage.query.filter_by(chatID=data['chatID']) \
+        .order_by(chatApp.ChatMessage.messageNumber.desc()).first()
+
+    if lastMessage is None:
+        newMessageNumber = 0
+    else:
+        newMessageNumber = lastMessage.messageNumber + 1
+    
+    data['messageNumber'] = newMessageNumber
+
+    timestamp = add_new_message(data['chatID'], newMessageNumber, data['senderID'], data['text'])
+    data['isoString'] = timestamp.isoformat()  # Convert datetime to string
     send(data, room=room)
 
-def add_new_message(chatID, senderID, text):
+def add_new_message(chatID, messageNumber, senderID, text):
     newMessage = chatApp.ChatMessage(
         chatID=chatID,
+        messageNumber=messageNumber,
         senderID=senderID,
         text=text
     )
     chatApp.db.session.add(newMessage)
     chatApp.db.session.commit()
 
-    return newMessage.id, newMessage.timestamp
+    return newMessage.timestamp

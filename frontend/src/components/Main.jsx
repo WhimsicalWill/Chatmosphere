@@ -55,7 +55,7 @@ export function MainChat({
                 variant="contained"
                 color="primary"
                 startIcon={<AddIcon />}
-                onClick={() => addChatUnderTopic(message.matchInfo, message.id)}
+                onClick={() => addChatUnderTopic(message.matchInfo, message.messageNumber)}
                 >
                 {message.matchInfo.topicName}
                 </Button>

@@ -58,8 +58,9 @@ function App() {
 
     // Retrieve the nearest user message above this messageID to use as the topic name
     for (let j = messageID - 1; j >= 0; j--) {
+      console.log(j, brainstormChat.messages[j]);
       if (Number(brainstormChat.messages[j].senderID) === Number(userID.current)) {
-        topicName = brainstormChat.messages[j].message;
+        topicName = brainstormChat.messages[j].text;
         break;
       }
     }
@@ -163,7 +164,7 @@ function App() {
   const handleChatClick = (chatID) => {
     // TODO: I don't think we need the line below, but not sure
     // setEditingNewTopic(false);
-    setCurrentTopic(chatID);
+    setCurrentChat(chatID);
     ApiManager.loadChatMessages(topics, setTopics, chatID);
   };
 

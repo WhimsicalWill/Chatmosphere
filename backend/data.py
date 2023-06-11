@@ -36,6 +36,7 @@ def setupModels(db):
 
         id = db.Column(db.Integer, primary_key=True)  # changed from chat_id to id
         chatID = db.Column(db.Integer, db.ForeignKey('chatmetadata.id'), nullable=False)
+        messageNumber = db.Column(db.Integer, nullable=False)
         senderID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         text = db.Column(db.String(1024), nullable=False)
         timestamp = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
