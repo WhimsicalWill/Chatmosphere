@@ -66,7 +66,7 @@ python main.py
 The backend API should now be running on http://localhost:5000.
 
 # Contributing
-Contributions are welcome!
+Contributions are welcome
 
 # License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
