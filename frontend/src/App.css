@@ -176,6 +176,11 @@ body {
   outline: none;
 }
 
+.new-topic-input::placeholder {
+  color: lightgray; 
+  font-weight: 200;
+}
+
 .instruction-text {
   font-size: 1.2em; 
   font-weight: bold;

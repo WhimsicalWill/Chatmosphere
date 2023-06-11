@@ -15,6 +15,11 @@ function App() {
   const [isEditingNewTopic, setEditingNewTopic] = useState(false);
   const [currentTab, setCurrentTab] = useState('Topics');
   const [topics, setTopics] = useState(null);
+  const [lastStateInfo, setLastStateInfo] = useState([{
+    topic: null,
+    chat: null, 
+    tab: null,
+  }]);
 
   // ref variables are persistent and changes to them do not cause the component to re-render
   // TODO: add user-authentication and retrieve the user's id
@@ -103,9 +108,11 @@ function App() {
       }
       return updatedTopics;
     });
+    setLastStateInfo({ topic: currentTopic, chat: currentChat, tab: currentTab });
     setCurrentTab('Active Chats');
     setCurrentTopic(userTopicInfo.topicID);
     setCurrentChat(chatID);
+    setEditingNewTopic(false)
     console.log('Created new chat with ID:', chatID);
   };
 
@@ -160,18 +167,21 @@ function App() {
   };
 
   const handleTopicClick = (topicID) => {
-    setCurrentTopic(topicID);
-    setCurrentTab('Active Chats');
-    setEditingNewTopic(false)
-    
     // Set the first chat of the selected topic as the current chat
     const availableChats = Object.keys(topics[topicID].chats);
+    let chatToFocus = null;
     
     if (availableChats.length > 0) {
-      setCurrentChat(availableChats[0]);
+      chatToFocus = availableChats[0];
     } else {
-      setCurrentChat(null); // No chats left
+      chatToFocus = null;
     }
+    // When opening a chat:
+    setLastStateInfo({ topic: currentTopic, chat: currentChat, tab: currentTab });
+    setCurrentTopic(topicID);
+    setCurrentChat(chatToFocus);
+    setCurrentTab('Active Chats');
+    setEditingNewTopic(false)
   };
 
   const handleChatClick = (topicID, chatID) => {
@@ -184,12 +194,24 @@ function App() {
         ApiManager.loadChatMessages(topics, setTopics, chatID);
       }
     }
+
+    setLastStateInfo({ topic: currentTopic, chat: currentChat, tab: currentTab });
+    setCurrentTopic(topicID);
+    setCurrentChat(chatID);
   };
 
   const handleBackClick = () => {
-    setCurrentTab('Topics');
-    setCurrentTopic(null);
-    setCurrentChat(null);
+    if (lastStateInfo) {  // Check if there is a chat to go back to
+      const { topic, chat, tab } = lastStateInfo;  // Get the previous chat
+      setCurrentTopic(topic);
+      setCurrentChat(chat);
+      setCurrentTab(tab)
+      setLastStateInfo(null);
+    } else {  // If there is no chat to go back to, go to the topics list
+      setCurrentTopic(null);
+      setCurrentChat(null);
+      setCurrentTab('Topics');
+    }
   };
 
   const submitNewTopicName = async (event) => {
@@ -198,9 +220,6 @@ function App() {
     setEditingNewTopic(false);
     setCurrentTopic(brainstormTopicID.current);
     setCurrentChat(brainstormChatID.current);
-
-    // In case we haven't already loaded chats for brainstorm topic
-    // handleChatClick(brainstormTopicID.current, brainstormChatID.current);
   }
 
   const handleMessage = (event, chatID) => {
