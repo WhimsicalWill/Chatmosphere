@@ -169,10 +169,12 @@ class ApiManager {
     try {
       const messageResponse = await axiosInstance.get(`/chats/${chatID}`);
 
+      console.log('Message response:', messageResponse);
+
       if (messageResponse.status === 200) {
         // Fetch all match infos
         const matchInfoPromises = messageResponse.data.map(async message => {
-          if (message.matchedTopicID !== null) {
+          if (message.matchedTopicID) {
             const topicResponse = await axiosInstance.get(`/topics/${message.matchedTopicID}`);
             if (topicResponse.status === 200) {
               return {
@@ -189,6 +191,8 @@ class ApiManager {
 
         const matchInfos = await Promise.all(matchInfoPromises);
 
+        console.log('Match infos:', matchInfos);
+
         // Update messages with match info
         const messages = messageResponse.data.map((message, i) => {
           return {
@@ -197,7 +201,11 @@ class ApiManager {
           };
         });
 
+        // TODO: refactor findParentTopic out of ApiManager since its not async
         const topicID = ApiManager.findParentTopic(topics, chatID);
+        
+        console.log('parent topic', topicID);
+
         setTopics(prevTopics => {
           const updatedTopics = {...prevTopics};
           updatedTopics[topicID].chats[chatID].messages = messages;

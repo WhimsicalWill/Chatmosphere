@@ -56,6 +56,9 @@ function App() {
 
     let topicName = null;
 
+    console.log(topics);
+    console.log(brainstormTopicID.current, brainstormChatID.current);
+
     // Retrieve the nearest user message above this messageID to use as the topic name
     for (let j = messageID - 1; j >= 0; j--) {
       console.log(j, brainstormChat.messages[j]);
@@ -104,27 +107,38 @@ function App() {
     console.log('Created new chat with ID:', chatID);
   };
 
-  // TODO: fix bugs in deleteTopic and deleteChat
   const deleteTopic = (topicID) => {
-    // TODO: socketRef.current leave room by chatID
+    const topicChats = topics[topicID]?.chats || {};
+
+    // Leave all chat rooms in the topic
+    Object.keys(topicChats).forEach(chatID => {
+      socketRef.current.emit('chat-leave', { userID: userID.current, room: chatID });
+    });
+
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       delete updatedTopics[topicID];
+      
+      // Adjust currentTopic if necessary
       if (currentTopic === topicID) {
         const remainingTopics = Object.keys(updatedTopics);
         if (remainingTopics.length > 0) {
           setCurrentTopic(remainingTopics[0]); // Select the first remaining topic
+          // Reset currentChat to first chat of the new currentTopic
+          const availableChats = Object.keys(updatedTopics[remainingTopics[0]].chats);
+          setCurrentChat(availableChats.length > 0 ? availableChats[0] : null);
         } else {
           setCurrentTopic(null); // No topics left
+          setCurrentChat(null); // No chats left
         }
       }
       return updatedTopics;
     });
   };
 
-  // changed chatName to chatID
   const deleteChat = (topicID, chatID) => {
-    // TODO: socketRef.current leave room by chatID
+    socketRef.current.emit('chat-leave', { userID: userID.current, room: chatID });
+
     setTopics(prevTopics => {
       const updatedTopics = { ...prevTopics };
       if (!updatedTopics[topicID]) return updatedTopics; // handle error here
@@ -134,13 +148,10 @@ function App() {
 
       updatedTopics[topicID].chats = updatedChats;
 
+      // Adjust currentChat if necessary
       if (currentChat === chatID) {
         const remainingChats = Object.keys(updatedChats);
-        if (remainingChats.length > 0) {
-          setCurrentChat(remainingChats[0]); // Select the first remaining chat
-        } else {
-          setCurrentChat(null); // No chats left
-        }
+        setCurrentChat(remainingChats.length > 0 ? remainingChats[0] : null); // Select the first remaining chat or null if no chats left
       }
       return updatedTopics;
     });
@@ -161,11 +172,20 @@ function App() {
     }
   };
 
-  const handleChatClick = (chatID) => {
+  const handleChatClick = (topicID, chatID) => {
     // TODO: I don't think we need the line below, but not sure
     // setEditingNewTopic(false);
     setCurrentChat(chatID);
-    ApiManager.loadChatMessages(topics, setTopics, chatID);
+
+    // Get the current chat messages from the current topic
+    console.log(topics);
+    console.log(currentTopic, chatID);
+    const currentChatMessages = topics[topicID]?.chats[chatID]?.messages;
+
+    // Load chat messages only if they haven't been loaded yet
+    if (!currentChatMessages || Object.keys(currentChatMessages).length === 0) {
+      ApiManager.loadChatMessages(topics, setTopics, chatID);
+    }
   };
 
   const handleBackClick = () => {
@@ -180,6 +200,9 @@ function App() {
     setEditingNewTopic(false);
     setCurrentTopic(brainstormTopicID.current);
     setCurrentChat(brainstormChatID.current);
+
+    // In case we haven't already loaded chats for brainstorm topic
+    // handleChatClick(brainstormTopicID.current, brainstormChatID.current);
   }
 
   const handleMessage = (event, chatID) => {

@@ -100,6 +100,7 @@ class TopicMatcher:
         res = []
         for idx, score in zip(I[0], D[0]):
             topicID = idx + 1  # SQL IDs start at 1
+            print(f"Topic {topicID} has score {score}")
             if self.topicMap[topicID] == userID:
                 continue
             if self.topicNames[idx] == 'Brainstorm':

@@ -68,6 +68,7 @@ export function SidebarContent({
       placeholder="What do you want to talk about?"
       onKeyDown={(event) => submitNewTopicName(event)}
       onBlur={() => setEditingNewTopic(false)}
+      onFocus={(event) => event.target.placeholder = ""}
     />
     :
     <div 
@@ -75,7 +76,7 @@ export function SidebarContent({
       onClick={() => {
           setEditingNewTopic(true);
           setCurrentTopic(brainstormTopicID.current);
-          setCurrentChat(brainstormChatID.current);
+          handleChatClick(brainstormTopicID.current, brainstormChatID.current);
         }
       }
     >
@@ -113,7 +114,7 @@ const chatListSection = (
           <li
             key={index}
             onClick={() => {
-              handleChatClick(chatID);
+              handleChatClick(currentTopic, chatID);
             }}
             className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
           >

@@ -168,7 +168,7 @@ def setupEndpoints(chatApp, api, socketio):
                     'id': message.id,
                     'senderID': message.senderID,
                     'text': message.text,
-                    'timestamp': message.timestamp,
+                    'timestamp': message.timestamp.isoformat(),
                     'matchTopicID': message.matchedTopicID,
                 }
                 messageInfoList.append(messageInfo)
