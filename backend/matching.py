@@ -143,25 +143,25 @@ class TopicSegway:
             "query": "How will technology shape the future?",
             "topic1": "How is artificial intelligence impacting our daily lives?",
             "topic2": "What do you think about the future of cryptocurrency?",
-            "answer": "If you're curious about the future of technology, you might want to explore how AI is changing our day-to-day life.\n" \
-                    "Additionally, the evolving realm of cryptocurrency might pique your interest.\n"
+            "answer": "You might enjoy discussing how AI technology will fit into our future.\n" \
+                      "You could explore the lasting impact of cryptocurrency.\n"
         }
 
         example_2 = {
             "query": "What are the impacts of climate change?",
             "topic1": "How does climate change affect wildlife?",
             "topic2": "What are the economic consequences of climate change?",
-            "answer": "If you're interested in the impacts of climate change, you might want to look into its effects on wildlife.\n" \
-                    "You could also delve into the economic repercussions of climate change.\n"
+            "answer": "You might find it interesting to discuss how climate change is affecting wildlife.\n" \
+                      "You might enjoy conversing about how climate change will affect the economy.\n"
         } 
 
         examples = [example_1, example_2]
 
-        template = """
-        Query: {query}\n
-        Toipic 1: {topic1}\n
-        Topic 2: {topic2}\n
-        Answer: {answer}\n
+        template =  """
+        Query: {query}
+        Topic 1: {topic1}
+        Topic 2: {topic2}
+        Answer: {answer}
         """
 
         # Define the structure of the prompt with input variables and template
@@ -171,18 +171,24 @@ class TopicSegway:
         )
 
         # Define the prefix for the prompt, giving clear instructions on how to construct an engaging response
-        prompt_prefix = "Connect the user's query with each of the topics below, crafting an intriguing line for each one." \
-                        "Keep the user's curiosity alive and drive their engagement." \
-                        "Please make sure to put each sentence on its own line. Here are some examples:\n"
+        prompt_prefix = "Given the user's query, suggest two topics of discussion. For each topic, " \
+                        "craft an intriguing line explaining why the topic could be of interest to the user. " \
+                        "Make sure that you give the user a logical reason why they may be interested in the topics. " \
+                        "Please put a new line between each topic suggestion, since your response will be invalid without this. " \
+                        "Here are some examples:\n"
+        
+        prompt_suffix = """
+        Query: {query}
+        Topic 1: {topic1}
+        Topic 2: {topic2}
+        Answer:"""
 
         # Generate the few-shot prompt with the provided examples and structure
         self.few_shot_prompt = FewShotPromptTemplate(
             examples=examples,
             example_prompt=example_prompt,
             prefix=prompt_prefix,
-            suffix="Query: {query}\nTopic 1: {topic1}\n" \
-                "Topic 2: {topic2}\n" \
-                "Answer:",
+            suffix=prompt_suffix,
             input_variables=["query", "topic1", "topic2"],
             example_separator="\n",
         )

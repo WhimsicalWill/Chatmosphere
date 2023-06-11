@@ -104,30 +104,33 @@ export function SidebarContent({
   ;
 
 const chatListSection = (
-  <ul className="chat-list">
-    {topics && currentTopic && Object.keys(topics[currentTopic].chats).map((chatID, index) => {
+  <div className="chat-list-container">
+    <ul className="chat-list">
+      {topics && currentTopic && Object.keys(topics[currentTopic].chats).map((chatID, index) => {
 
-      return (
-        <li
-          key={index}
-          onClick={() => {
-            setCurrentChat(chatID);
-            setEditingNewTopic(false);
-          }}
-          className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
-        >
-          <ChatBubble className='chat-icon' /> {topics[currentTopic].chats[chatID].name}
-          <DeleteIcon 
-            className='delete-icon' 
-            onClick={(event) => {
-              event.stopPropagation(); // prevent the sidebar click event from firing
-              deleteChat(currentTopic, chatID);
+        return (
+          <li
+            key={index}
+            onClick={() => {
+              setCurrentChat(chatID);
+              setEditingNewTopic(false);
             }}
-          />
-        </li>
-      );
-    })}
-  </ul>
+            className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
+          >
+            <ChatBubble className='chat-icon' /> {topics[currentTopic].chats[chatID].name}
+            <DeleteIcon 
+              className='delete-icon' 
+              onClick={(event) => {
+                event.stopPropagation(); // prevent the sidebar click event from firing
+                deleteChat(currentTopic, chatID);
+              }}
+            />
+          </li>
+        );
+      })}
+    </ul>
+    <div className="new-matches-message">New matches will appear here</div>
+  </div>
 );
 
   return (

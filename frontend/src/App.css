@@ -65,8 +65,12 @@ body {
   color: inherit;
 }
 
-.header-icon, .topic-icon, .chat-icon, .brainstorm-icon, .info-icon {
+.topic-icon, .chat-icon, .brainstorm-icon, .info-icon {
   margin-right: 30px;
+}
+
+.header-icon {
+  margin-right: 15px;
 }
 
 .delete-icon {
@@ -203,6 +207,21 @@ body {
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+}
+
+.new-matches-message {
+  color: #888; /* A subtle color to make the message stand out */
+  font-size: 0.9em; /* Slightly smaller than the rest of the text */
+  font-weight: bold;
+  padding: 10px 0; /* Add space around the message */
+  text-align: center; /* Center align the text */
+  animation: fadeIn 2s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 /* Scrollbar Styling */
