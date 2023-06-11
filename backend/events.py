@@ -2,7 +2,7 @@ from flask_socketio import join_room, leave_room, send
 from extensions import socketio
 
 
-# Create a global variable to store the chatApp object
+# Global variable to store the chatApp object
 chatApp = None
 
 def initEventHandler(app):
@@ -63,15 +63,15 @@ def handle_new_message(data):
     send(data, room=room)
 
 def add_new_message(data):
-    chatID, messageNumber, senderID, text, matchInfo = \
-        data['chatID'], data['messageNumber'], data['senderID'], data['text'], data['matchInfo']
+    chatID, messageNumber, senderID, text, topicInfo = \
+        data['chatID'], data['messageNumber'], data['senderID'], data['text'], data['topicInfo']
     
     newMessage = chatApp.ChatMessage(
         chatID=chatID,
         messageNumber=messageNumber,
         senderID=senderID,
         text=text,
-        matchedTopicID=matchInfo['topicID'] if matchInfo else None
+        topicID=topicInfo['topicID'] if topicInfo else None
     )
     chatApp.db.session.add(newMessage)
     chatApp.db.session.commit()

@@ -85,7 +85,7 @@ def setupEndpoints(chatApp, api, socketio):
             if not topic:
                 return {'error': 'Topic not found'}, 404
 
-            return {'title': topic.title}, 200
+            return {'title': topic.title, 'userID': topic.userID}, 200
 
         def delete(self, topicID):
             # DELETE method to delete topic
@@ -101,7 +101,7 @@ def setupEndpoints(chatApp, api, socketio):
     class CreateChatResource(Resource):
         def post(self):
             print('Creating new chat...')
-            parser = reqparse.RequestParser()  
+            parser = reqparse.RequestParser()
             parser.add_argument('creatorTopicID', type=int, required=True, help="Creator topic id cannot be blank!")
             parser.add_argument('matchedTopicID', type=int, required=True, help="Matched topic id cannot be blank!")
             parser.add_argument('userCreatorID', type=int, required=True, help="User creator id cannot be blank!")
@@ -166,10 +166,11 @@ def setupEndpoints(chatApp, api, socketio):
             for message in messageList:
                 messageInfo = {
                     'id': message.id,
+                    'messageNumber': message.messageNumber,
                     'senderID': message.senderID,
                     'text': message.text,
                     'timestamp': message.timestamp.isoformat(),
-                    'matchTopicID': message.matchedTopicID,
+                    'topicID': message.topicID,
                 }
                 messageInfoList.append(messageInfo)
 

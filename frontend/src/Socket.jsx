@@ -23,7 +23,7 @@ export const setupSocket = ({
   // handle receiving a message for a specific chat
   socketRef.current.on('message', (response) => {
     // TODO: pass the timestamp from the backend
-    const { messageNumber, isoString, chatID, text, senderID, matchInfo } = response;
+    const { messageNumber, isoString, chatID, text, senderID, topicInfo } = response;
     const timestamp = new Date(isoString);
 
     // update the topic object to include the new message
@@ -39,7 +39,7 @@ export const setupSocket = ({
 
       const updatedChat = {
         ...prevTopics[topicID].chats[chatID],
-        messages: [...prevTopics[topicID].chats[chatID].messages, { messageNumber, senderID, text, timestamp, matchInfo }],
+        messages: [...prevTopics[topicID].chats[chatID].messages, { messageNumber, senderID, text, timestamp, topicInfo }],
       };
 
       const updatedTopics = {

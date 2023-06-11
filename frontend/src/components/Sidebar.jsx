@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // Material UI imports
 import ChatBubble from '@mui/icons-material/ChatBubble';
@@ -48,7 +48,6 @@ export function SidebarContent({
   currentTopic, 
   currentChat, 
   setCurrentTopic, 
-  setCurrentChat, 
   deleteChat, 
   deleteTopic,
   handleTopicClick,
@@ -60,22 +59,23 @@ export function SidebarContent({
   brainstormChatID,
 }) {
 
+  const inputRef = useRef(null);
+
   // Declare some tricky sections as variables
   const editingNewTopicSection = isEditingNewTopic ?
     <input
+      ref={inputRef}
       className="new-topic-input"
       type="text"
       placeholder="What do you want to talk about?"
       onKeyDown={(event) => submitNewTopicName(event)}
       onBlur={() => setEditingNewTopic(false)}
-      onFocus={(event) => event.target.placeholder = ""}
     />
     :
     <div 
       className="topic" 
       onClick={() => {
           setEditingNewTopic(true);
-          setCurrentTopic(brainstormTopicID.current);
           handleChatClick(brainstormTopicID.current, brainstormChatID.current);
         }
       }
@@ -83,6 +83,12 @@ export function SidebarContent({
       <AddIcon className='brainstorm-icon' /> New Topic
     </div>
   ;
+
+  useEffect(() => {
+    if (isEditingNewTopic && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditingNewTopic]);
 
   const topicListSection = 
     <ul className="topic-list">
@@ -114,6 +120,7 @@ const chatListSection = (
           <li
             key={index}
             onClick={() => {
+              setEditingNewTopic(true);
               handleChatClick(currentTopic, chatID);
             }}
             className={`chat ${currentChat === chatID ? "active-chat" : ""}`}

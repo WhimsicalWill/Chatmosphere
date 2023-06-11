@@ -14,11 +14,11 @@ class ApiManager {
     return null;
   };
 
-  static async submitTopicAndGetResponse(message, userID, setTopics, topicIDMap) {
+  static async getBotResponse(text, userID) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
         params: { 
-          topic: message,
+          topic: text,
           userID: userID,
         }
       });
@@ -28,16 +28,13 @@ class ApiManager {
 
       const combined = segwayResponses.map((segwayResponse, i) => ({
         text: segwayResponse,
-        matchInfo: topicMatches[i]
+        topicInfo: topicMatches[i]
       }));
-
-      // Add the new topic to the database and to our local map
-      await ApiManager.addTopic(userID, message, setTopics, topicIDMap);
 
       return combined;
     } catch (error) {
       console.error(error);
-      return [{ text: "An error occurred :(", matchInfo: null }]; // return an array with one element in the case of an error
+      return [{ text: "An error occurred :(", topicInfo: null }]; // return an array with one element in the case of an error
     }
   }
 
@@ -76,7 +73,6 @@ class ApiManager {
   static async getTopicsAndChats(userID, setTopics) {
     try {
       let topicInfo = await ApiManager.getTopics(userID);
-
       let brainstormTopic = topicInfo.find(topic => topic.title === 'Brainstorm');
       let brainstormTopicID = brainstormTopic ? String(brainstormTopic.id) : null;
 
@@ -102,9 +98,6 @@ class ApiManager {
       await Promise.all(chatPromises)
         .then((results) => {
           results.forEach((topicChats, i) => {
-
-            // TODO: potentially join chat rooms here
-            
             const topic = topicInfo[i];
             topics[topic.id] = {
               title: topic.title,
@@ -116,7 +109,6 @@ class ApiManager {
 
       setTopics(topics);
       const brainstormChatID = Object.keys(topics[brainstormTopicID].chats)[0];
-
       return [brainstormTopicID, brainstormChatID];
     } catch (error) {
       console.error(error);
@@ -142,18 +134,44 @@ class ApiManager {
       return [];
     }
   }
-
   static async getChatsByTopicID(topicID, userID) {
     try {
       const topicChats = {};
       const response = await axiosInstance.get(`/chatmetadata/${topicID}`);
-      response.data.forEach(chatResponse => {
-        topicChats[chatResponse.chatID] = { 
-          name: `Chat ${chatResponse.chatID}`, 
-          otherUserID: userID === chatResponse.userCreatorID ? chatResponse.userMatchedID : chatResponse.userCreatorID,
-          messages: []
-        };
-      });
+      for (let chatResponse of response.data) {
+        if (chatResponse.matchedTopicID === -1) {
+          topicChats[chatResponse.chatID] = { 
+            name: "Brainstorm", 
+            otherUserID: -1,
+            messages: []
+          };
+          continue;
+        }
+
+        let otherUserID, otherTopicID;
+
+        if (userID === chatResponse.userCreatorID) {
+          otherTopicID = chatResponse.matchedTopicID;
+          otherUserID = chatResponse.userMatchedID;
+        } else {
+          otherTopicID = chatResponse.creatorTopicID;
+          otherUserID = chatResponse.userCreatorID;
+        }
+
+        // Get the name of the other user's topic to use as our chat name
+        try {
+          console.log("requesting chat name");
+          const topicResponse = await axiosInstance.get(`/topics/${otherTopicID}`);
+          topicChats[chatResponse.chatID] = { 
+            name: topicResponse.data.title, 
+            otherUserID: otherUserID,
+            messages: []
+          };
+        } catch (topicError) {
+          console.error(`Failed to get topic name for user ${otherTopicID}`, topicError);
+          continue; // Skip to next chat if we fail to get the topic name
+        }
+      }
       return topicChats;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -173,13 +191,14 @@ class ApiManager {
 
       if (messageResponse.status === 200) {
         // Fetch all match infos
-        const matchInfoPromises = messageResponse.data.map(async message => {
-          if (message.matchedTopicID) {
-            const topicResponse = await axiosInstance.get(`/topics/${message.matchedTopicID}`);
+        const topicInfoPromises = messageResponse.data.map(async message => {
+          if (message.topicID) {
+            const topicResponse = await axiosInstance.get(`/topics/${message.topicID}`);
             if (topicResponse.status === 200) {
+              console.log(topicResponse);
               return {
                 topicName: topicResponse.data.title,
-                topicID: message.matchedTopicID,
+                topicID: message.topicID,
                 userID: topicResponse.data.userID
               };
             } else {
@@ -189,15 +208,15 @@ class ApiManager {
           return null;
         });
 
-        const matchInfos = await Promise.all(matchInfoPromises);
+        const topicInfos = await Promise.all(topicInfoPromises);
 
-        console.log('Match infos:', matchInfos);
+        console.log('Match infos:', topicInfos);
 
         // Update messages with match info
         const messages = messageResponse.data.map((message, i) => {
           return {
             ...message,
-            matchInfo: matchInfos[i],
+            topicInfo: topicInfos[i],
           };
         });
 
@@ -248,15 +267,14 @@ class ApiManager {
   }
 
   // TODO: throw error when user enters a repeat topic
-  static async addTopic(userID, topicName, setTopics, topicIDMap) {
+  static async addTopic(topicName, userID, setTopics) {
     console.log('Adding topic', topicName);
 
-    // then, add the topic to the database
+    // add the topic to the database
     try {
       const topicResponse = await axiosInstance.post(`/user-topics/${userID}`, {
         title: topicName,
       });
-      topicIDMap[topicName] = topicResponse.data.id;
       
       // add the topic to the user's local info
       setTopics(prevTopics => {
@@ -269,6 +287,10 @@ class ApiManager {
         }
         return updatedTopics;
       });
+
+      // return a topicInfo object
+      return { topicName: topicName, topicID: topicResponse.data.id, userID: userID };
+
     } catch (error) {
       console.error(error);
     }

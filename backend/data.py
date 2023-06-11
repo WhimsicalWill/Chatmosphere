@@ -40,7 +40,7 @@ def setupModels(db):
         senderID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         text = db.Column(db.String(1024), nullable=False)
         timestamp = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
-        matchedTopicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=True)
+        topicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=True)
 
         chatmetadata = db.relationship('ChatMetadata', backref=db.backref('chats', lazy=True))
 
