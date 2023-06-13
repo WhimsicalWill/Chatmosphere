@@ -30,61 +30,36 @@ class AsymmetricQueryGenerator:
         openai.api_key = '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' 
         
 
+    # changed the prompt/examples to create alternates in both directions
     def configurePrompt(self):
-
-        # Generate a list of examples of original queries and alternate queries
-        # example_1 = {
-        #     "original_query": "What is it like getting old?",
-        #     "alternate_query": "Dealing with old age"
-        # }
         example_1 = {
             "original_query": "What is it like getting old?",
             "alternate_query": "My experiences getting older"
         }
 
-        # example_2 = {
-        #     "original_query": "What are the key elements of painting?",
-        #     "alternate_query": "Fundamentals of art and painting"
-        # }
         example_2 = {
-            "original_query": "What are the key elements of painting?",
-            "alternate_query": "I'm an art history fanatic"
+            "original_query": "I'm an expert on painting and color theory",
+            "alternate_query": "What are the key elements of painting?"
         }
 
-        # example_3 = {
-        #     "original_query": "How is it like working in a startup?",
-        #     "alternate_query": "The dynamics of a startup work environment"
-        # }
         example_3 = {
             "original_query": "How is it like working in a startup?",
             "alternate_query": "I developed a startup at 18, ask me anything!"
         }
 
-        # example_4 = {
-        #     "original_query": "What does it feel like to be a professional musician?",
-        #     "alternate_query": "The life and challenges of a professional musician"
-        # }
         example_4 = {
-            "original_query": "What does it feel like to be a professional musician?",
-            "alternate_query": "My life and experiences as a professional musician"
+            "original_query": "Experiences as a professional musician",
+            "alternate_query": "What does it feel like to be a professional musician?"
         }
 
-        # example_5 = {
-        #     "original_query": "How does one experience space travel?",
-        #     "alternate_query": "The physical and psychological effects of space travel"
-        # }
         example_5 = {
-            "original_query": "How does one experience space travel?",
+            "original_query": "What does it feel like to travel in space?",
             "alternate_query": "The physical and psychological effects of space travel"
         }
 
-        # example_6 = {
-        #     "original_query": "What is it like to live in an eco-friendly way?",
-        #     "alternate_query": "Practices for sustainable and green living"
-        # }
         example_6 = {
-            "original_query": "What is it like to live in an eco-friendly way?",
-            "alternate_query": "I run a hydroponics farm"
+            "original_query": "Running a hydroponics farm",
+            "alternate_query": "What is it like to live in an eco-friendly way?"
         }
         example_7 = {
             "original_query": "What is it like to be a software engineer?",
@@ -92,8 +67,8 @@ class AsymmetricQueryGenerator:
         }
 
         example_8 = {
-            "original_query": "What's the experience of learning a new language?",
-            "alternate_query": "Methods and challenges of language acquisition"
+            "original_query": "Methods and challenges of language acquisition",
+            "alternate_query": "What's it like to learn a new language?"
         }
 
         example_9 = {
@@ -102,13 +77,17 @@ class AsymmetricQueryGenerator:
         }
 
         example_10 = {
-            "original_query": "What is it like to climb Mount Everest?",
-            "alternate_query": "The preparation and challenges of high-altitude mountaineering"
+            "original_query": "The preparation and challenges of high-altitude mountaineering",
+            "alternate_query": "What is it like to climb Mount Everest?"
         }
 
+        example_11 = {
+            "original_query": "What are the best hidden spots in New York City?",
+            "alternate_query": "Unveiling the hidden gems of New York City from a local's perspective"
+        }
 
         examples = [example_1, example_2, example_3, example_4, example_5,
-                    example_6, example_7, example_8, example_9, example_10,]
+                    example_6, example_7, example_8, example_9, example_10, example_11]
 
         example_prompt = PromptTemplate(
             input_variables=["original_query", "alternate_query"],
@@ -116,14 +95,13 @@ class AsymmetricQueryGenerator:
         )
 
         # Define the prefix for the prompt, giving clear instructions on how to construct an engaging response
-        prompt_prefix = "In this task, you will take on the role of a topic matcher for an application that centers around conversational" \
-        "topics, specifically focusing on its asymmetric functionality. Your role requires you to think like an expert or someone with" \
-        "extensive knowledge or experience in a particular field. For every provided query, imagine there's a user capable of answering" \
-        "that query in depth. Your job is to figure out what query this user might have entered themselves in relation to their expertise." \
-        "Your goal is to create an alternate query that would cater to someone interested in learning more about the subject. In essence, " \
-        "you are matching the curiosity of one user with the expertise of another. Below are some examples to illustrate this process:"
-        
-        #image there is a user that can answer the question of the query. What would this user have entered as their own query?
+        prompt_prefix = "In this task, you will take on the role of a topic matcher for an application that centers around conversational " \
+        "topics, and you will focus on creating asymmetric queries. Your role requires you to either think like an expert or someone who is " \
+        "curious to learn more about a particular topic, depending on the user's query. For queries that express amateur interest in a subject, " \
+        "please produce an alternate query by doing the following: imagine there's a user capable of answering this query in depth. Please " \
+        "create an alternate query that this qualified user may have entered themselves in relation to their expertise. For queries that express " \
+        "proficiency in a topic, please create an alternate query that expresses amateur interest in said topic. In essence, you are matching the " \
+        "curiosity of one user with the expertise of another. Below are some examples to illustrate this process:"
 
         # Generate the few-shot prompt with the provided examples and structure
         self.few_shot_prompt = FewShotPromptTemplate(
@@ -158,7 +136,7 @@ class AsymmetricQueryGenerator:
         return alternate_queries
 
 generator = AsymmetricQueryGenerator()
-query = "I want to learn more about philosphers from the 60's"
+query = "How can I learn to code?"
 alternates = generator.generate(query, num_alternates=5 )
 for i, alt in enumerate(alternates):
         print(f"Alternate Query {i+1}: {alt}")

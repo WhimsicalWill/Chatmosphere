@@ -177,8 +177,8 @@ body {
 }
 
 .new-topic-input::placeholder {
-  color: lightgray; 
-  font-weight: 200;
+  color: gray; 
+  font-weight: 300;
 }
 
 .instruction-text {
