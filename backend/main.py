@@ -47,18 +47,14 @@ class ChatApplication:
 
     def setupTopicHelpers(self):
         llm = OpenAI(model_name="text-davinci-003")  # Initialize your language model
-        print("Setting up matcher")
         self.matcher = TopicMatcher(llm, k=2)
-        print("Setting up segway")
-        # self.segway = TopicSegway(llm)
+        self.segway = TopicSegway(llm)
 
         with self.app.app_context():
             self.db.create_all()
             topics = self.Topic.query.all()  # grab all topics from the database
 
-        print("Started db")
-        print(f"Found {len(topics)} topics")
-
+        print(f"Loading {len(topics)} topics")
         topicTuples = [(topic.userID, topic.title) for topic in topics]
         self.matcher.addTopics(topicTuples)
         print("Added topics")
@@ -66,9 +62,7 @@ class ChatApplication:
     def run(self):
         self.initApiKey()
         self.setupTopicHelpers()
-        print("Setting up sockets")
         socketio.run(self.app, debug=True)
-        print("Backend started")
 
 
 if __name__ == '__main__':

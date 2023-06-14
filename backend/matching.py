@@ -49,7 +49,7 @@ class TopicMatcher:
             self.topicNames.append(title)
             self.topicMap[topicID] = userID
             self.embeddings.append(get_embedding(title, engine=self.engine))
-            print(f"{topicID} Added topic {title} for user {userID}")
+            print(f"Added topic {topicID}")
         self.buildIndex()
 
     def addTopic(self, userID, title):
@@ -91,7 +91,7 @@ class TopicMatcher:
         res = []
         for idx, score in zip(I[0], D[0]):
             topicID = idx + 1  # SQL IDs start at 1
-            print(f"Topic {topicID} has score {score}")
+            print(f"Topic {topicID} has score {score}. Topic:\n{self.topicNames[idx]}\n")
             if self.topicMap[topicID] == userID:
                 continue
             if self.topicNames[idx] == 'Brainstorm':
@@ -119,13 +119,10 @@ class TopicMatcher:
         queryEmbedding = get_embedding(query, engine=self.engine)
         queryEmbedding = np.array([queryEmbedding]).astype('float32')
 
-        alternateQueries = self.queryHelper.getAlternateQuery(query, num_alternates=5)
-        print("alternate queries: ", alternateQueries)
+        alternateQueries = self.queryHelper.getAlternateQuery(query, numAlternates=5)
+        print("Alternate queries: ", alternateQueries)
         alternateEmbeddings = [get_embedding(alternateQuery, engine=self.engine) for alternateQuery in alternateQueries]
         alternateEmbeddings = np.array(alternateEmbeddings).astype('float32')
-
-        print("query embedding shape: ", queryEmbedding.shape)
-        print("alternate embeddings shape: ", alternateEmbeddings.shape)
 
         numDesiredOriginal = self.k // 2
         numDesiredAlternate = self.k - numDesiredOriginal
