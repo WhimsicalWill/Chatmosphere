@@ -1,11 +1,15 @@
 import os
 
+import openai
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
+from langchain.llms import OpenAI
+from dotenv import load_dotenv
 
-from matching import TopicMatcher, TopicSegway
+from matching import TopicMatcher
+from segway import TopicSegway
 from events import socketio, initEventHandler
 from data import setupModels
 from endpoints import setupEndpoints
@@ -36,19 +40,33 @@ class ChatApplication:
         self.userID += 1
         return self.userID
 
+    def initApiKey(self):
+        """Loads the OpenAI API key from the .env file"""
+        load_dotenv()  
+        openai.api_key = os.getenv('OPENAI_API_KEY')
+
     def setupTopicHelpers(self):
-        self.matcher = TopicMatcher(k=2)
-        
+        llm = OpenAI(model_name="text-davinci-003")  # Initialize your language model
+        print("Setting up matcher")
+        self.matcher = TopicMatcher(llm, k=2)
+        print("Setting up segway")
+        # self.segway = TopicSegway(llm)
+
         with self.app.app_context():
             self.db.create_all()
             topics = self.Topic.query.all()  # grab all topics from the database
 
+        print("Started db")
+        print(f"Found {len(topics)} topics")
+
         topicTuples = [(topic.userID, topic.title) for topic in topics]
         self.matcher.addTopics(topicTuples)
-        self.segway = TopicSegway()
+        print("Added topics")
 
     def run(self):
+        self.initApiKey()
         self.setupTopicHelpers()
+        print("Setting up sockets")
         socketio.run(self.app, debug=True)
         print("Backend started")
 
