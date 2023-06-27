@@ -28,7 +28,9 @@ def setupModels(db):
         matchedTopicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
         userCreatorID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         userMatchedID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-        # lastMessage = db.Column(db.String(256), nullable=True)
+        creatorLastViewedAt = db.Column(db.DateTime, nullable=True)
+        matchedLastViewedAt = db.Column(db.DateTime, nullable=True)
+        lastMessageTimestamp = db.Column(db.DateTime, nullable=True)
 
 
     class ChatMessage(db.Model):

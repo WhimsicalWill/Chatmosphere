@@ -3,9 +3,10 @@ import ApiManager from './ApiManager';
 
 export const setupSocket = ({
   socketRef,
-  userID, 
+  userID,
   topics,
-  setTopics, 
+  setTopics,
+  currentChat,
 }) => {
 
   socketRef.current = io('http://localhost:5000');
@@ -42,10 +43,19 @@ export const setupSocket = ({
         messages: [...prevTopics[topicID].chats[chatID].messages, { messageNumber, senderID, text, timestamp, topicInfo }],
       };
 
+      if (chatID === currentChat) {
+        // Update the last viewed timestamp in the backend
+        ApiManager.updateLastViewedAt(chatID, userID.current);
+      } else {
+        updatedChat.hasUnreadMessages = true;
+      }
+
       const updatedTopics = {
         ...prevTopics,
         [topicID]: {
+          ...prevTopics[topicID],
           title: prevTopics[topicID].title,
+          hasUnreadChats: updatedTopics[topicID].hasUnreadChats || updatedChat.hasUnreadMessages,
           chats: {
             ...prevTopics[topicID].chats,
             [chatID]: updatedChat,

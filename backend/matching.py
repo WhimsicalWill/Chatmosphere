@@ -75,7 +75,7 @@ class TopicMatcher:
         self.index = faiss.IndexFlatL2(d)
         self.index.add(embeddings)
 
-    def searchIndexWithQuery(self, embedding, userID, k, selectedTopicIDs=set()):
+    def searchIndexWithQuery(self, embedding, userID, k, selectedTopicIDs=None):
         """
         Retrieves the most similar topics to the provided query.
 
@@ -91,7 +91,7 @@ class TopicMatcher:
         res = []
         for idx, score in zip(I[0], D[0]):
             topicID = idx + 1  # SQL IDs start at 1
-            if topicID in selectedTopicIDs:
+            if selectedTopicIDs and topicID in selectedTopicIDs:
                 continue
             if self.topicMap[topicID] == userID:
                 continue
@@ -123,7 +123,6 @@ class TopicMatcher:
         queryEmbedding = np.array([queryEmbedding]).astype('float32')
 
         alternateQueries = self.queryHelper.getAlternateQuery(query, numAlternates=5)
-        print("Alternate queries: ", alternateQueries)
         alternateEmbeddings = [get_embedding(alternateQuery, engine=self.engine) for alternateQuery in alternateQueries]
         alternateEmbeddings = np.array(alternateEmbeddings).astype('float32')
 
@@ -132,5 +131,8 @@ class TopicMatcher:
 
         originalResults = self.searchIndexWithQuery(queryEmbedding, userID, numDesiredOriginal)
         selectedTopics = set([topic['topicID'] for topic in originalResults])
+
+        print(f"Alternate queries: {alternateQueries}\n")
         alternateResults = self.searchIndexWithQuery(alternateEmbeddings, userID, numDesiredAlternate, selectedTopics)
+
         return originalResults + alternateResults

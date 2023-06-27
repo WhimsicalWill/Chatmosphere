@@ -43,8 +43,7 @@ function App() {
     // Hack to check if the promises have resolved
     console.log('Trying to setup socket');
     if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'string') {
-      console.log('Setting up socket');
-      const cleanup = setupSocket({ socketRef, userID, topics, setTopics });
+      const cleanup = setupSocket({ socketRef, userID, topics, setTopics, currentChat });
       console.log('Socket setup');
       return () => cleanup;
     }
@@ -185,13 +184,41 @@ function App() {
   };
 
   const handleChatClick = (topicID, chatID) => {
-    setCurrentChat(chatID);
-
     if (topics) {
-      const currentChatMessages = topics[topicID]?.chats[chatID]?.messages;
+      const chatMessages = topics[topicID]?.chats[chatID]?.messages;
 
-      if (!currentChatMessages || Object.keys(currentChatMessages).length === 0) {
+      // Load the chat messages from the database if necessary
+      if (!chatMessages || Object.keys(chatMessages).length === 0) {
         ApiManager.loadChatMessages(topics, setTopics, chatID);
+      }
+
+      // Update the last viewed timestamp for this chat for the current user
+      ApiManager.updateLastViewedAt(chatID, userID.current);
+      
+      const chat = topics[topicID]?.chats[chatID];
+
+      // If this chat has unread messages, update unread attributes for topics/chats
+      if (chat?.hasUnreadMessages) {
+        chat.hasUnreadMessages = false;
+
+        setTopics(prevTopics => {
+          const updatedTopics = {...prevTopics};
+          updatedTopics[topicID].chats[chatID] = chat;
+          return updatedTopics;
+        });
+
+        const unreadChats = Object.values(topics[topicID]?.chats).filter(c => c.hasUnreadMessages);
+
+        // If all chats are read, set the hasUnreadChats attribute to false for the topic
+        if (unreadChats.length === 0) {
+          const topic = topics[topicID];
+          topic.hasUnreadChats = false;
+          setTopics(prevTopics => {
+            const updatedTopics = {...prevTopics};
+            updatedTopics[topicID] = topic;
+            return updatedTopics;
+          });
+        }
       }
     }
 

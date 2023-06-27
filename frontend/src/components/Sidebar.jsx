@@ -6,6 +6,7 @@ import Topic from '@mui/icons-material/Topic';
 import Forum from '@mui/icons-material/Forum';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -99,6 +100,8 @@ export function SidebarContent({
           className={`topic ${currentTopic === topicID ? "active-topic" : ""}`}
         >
           <Topic className='topic-icon' /> {topics[topicID].title}
+          {topics[topicID].hasUnreadChats && 
+          <NotificationsActiveIcon />}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {
@@ -126,6 +129,8 @@ const chatListSection = (
             className={`chat ${currentChat === chatID ? "active-chat" : ""}`}
           >
             <ChatBubble className='chat-icon' /> {topics[currentTopic].chats[chatID].name}
+            {topics[currentTopic].chats[chatID].hasUnreadMessages && 
+            <NotificationsActiveIcon />}
             <DeleteIcon 
               className='delete-icon' 
               onClick={(event) => {

@@ -14,6 +14,15 @@ class ApiManager {
     return null;
   };
 
+  static topicHasUnreadChats(topicChats) {
+    for (let chatID in topicChats) {
+      if (topicChats[chatID].hasUnreadMessages) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static async getBotResponse(text, userID) {
     try {
       const botResponse = await axiosInstance.get('/bot-response', {
@@ -102,6 +111,7 @@ class ApiManager {
             topics[topic.id] = {
               title: topic.title,
               chats: { ...topicChats },
+              hasUnreadChats: ApiManager.topicHasUnreadChats(topicChats)
             };
           });
         })
@@ -134,6 +144,7 @@ class ApiManager {
       return [];
     }
   }
+
   static async getChatsByTopicID(topicID, userID) {
     try {
       const topicChats = {};
@@ -148,15 +159,27 @@ class ApiManager {
           continue;
         }
 
-        let otherUserID, otherTopicID;
+        let otherUserID, otherTopicID, lastViewedAt;
 
         if (userID === chatResponse.userCreatorID) {
+          lastViewedAt = chatResponse.creatorLastViewedAt;
           otherTopicID = chatResponse.matchedTopicID;
           otherUserID = chatResponse.userMatchedID;
-        } else {
+        } else { // matched user
+          lastViewedAt = chatResponse.matchedLastViewedAt;
           otherTopicID = chatResponse.creatorTopicID;
           otherUserID = chatResponse.userCreatorID;
         }
+
+        let lastMessageTimestamp = chatResponse.lastMessageTimestamp;
+        let hasUnreadMessages = false;
+
+        if (lastMessageTimestamp) {
+          if (!lastViewedAt || lastMessageTimestamp > lastViewedAt)
+            hasUnreadMessages = true;
+        }
+
+        console.log("lastViewedAt: ", lastViewedAt, ", lastMessageTimestamp: ", lastMessageTimestamp, ", hasUnreadMessages: ", hasUnreadMessages);
 
         // Get the name of the other user's topic to use as our chat name
         try {
@@ -165,7 +188,8 @@ class ApiManager {
           topicChats[chatResponse.chatID] = { 
             name: topicResponse.data.title, 
             otherUserID: otherUserID,
-            messages: []
+            messages: [],
+            hasUnreadMessages: hasUnreadMessages,
           };
         } catch (topicError) {
           console.error(`Failed to get topic name for user ${otherTopicID}`, topicError);
@@ -308,6 +332,19 @@ class ApiManager {
       }
     } catch (error) {
       console.error('Failed to add a new user to the database:', error);
+      return null;
+    }
+  }
+
+  
+  static async updateLastViewedAt(chatID, userID) {
+    try {
+      const response = await axiosInstance.post('/update-timestamp', {
+        chatID: chatID,
+        userID: userID,
+      });
+    } catch (error) {
+      console.error('Failed to update timestamp', error);
       return null;
     }
   }

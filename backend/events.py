@@ -66,6 +66,7 @@ def add_new_message(data):
     chatID, messageNumber, senderID, text, topicInfo = \
         data['chatID'], data['messageNumber'], data['senderID'], data['text'], data['topicInfo']
     
+    # Create a new message in the database
     newMessage = chatApp.ChatMessage(
         chatID=chatID,
         messageNumber=messageNumber,
@@ -74,6 +75,21 @@ def add_new_message(data):
         topicID=topicInfo['topicID'] if topicInfo else None
     )
     chatApp.db.session.add(newMessage)
+
+    # Update the last message timestamp for chat metadata
+    chatMetadata = chatApp.ChatMetadata.query.filter_by(id=chatID).first()
+    if chatMetadata:
+        # update the timestamp of the last message
+        chatMetadata.lastMessageAt = newMessage.timestamp
+
+        # determine which user sent the message and update their last viewed timestamp
+        if senderID == chatMetadata.userCreatorID:
+            chatMetadata.creatorLastViewedAt = newMessage.timestamp
+        else: # user is the matched user
+            chatMetadata.matchedLastViewedAt = newMessage.timestamp
+
+        chatApp.db.session.add(chatMetadata)
+    
     chatApp.db.session.commit()
 
     data['isoString'] = newMessage.timestamp.isoformat()

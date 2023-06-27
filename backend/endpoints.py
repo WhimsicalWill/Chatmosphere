@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from flask_restful import Resource, reqparse
 from flask import request
 from sqlalchemy import or_
@@ -150,6 +152,9 @@ def setupEndpoints(chatApp, api, socketio):
                     'matchedTopicID': chatMetadata.matchedTopicID,
                     'userCreatorID': chatMetadata.userCreatorID,
                     'userMatchedID': chatMetadata.userMatchedID,
+                    'creatorLastViewedAt': chatMetadata.creatorLastViewedAt.isoformat() if chatMetadata.creatorLastViewedAt else None,
+                    'matchedLastViewedAt': chatMetadata.matchedLastViewedAt.isoformat() if chatMetadata.matchedLastViewedAt else None,
+                    'lastMessageTimestamp': chatMetadata.lastMessageTimestamp.isoformat() if chatMetadata.lastMessageTimestamp else None,
                 }
                 chatInfoList.append(chatInfo)
 
@@ -201,6 +206,22 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.commit()
             return {'message': 'Chat message was deleted'}, 200
 
+    class LastViewedTimestamp(Resource):
+        def post(self):
+            parser = reqparse.RequestParser()  
+            parser.add_argument('chatID', required=True, help="Sender id cannot be blank!")
+            parser.add_argument('userID', required=True, help="Text cannot be blank!")
+            args = parser.parse_args()
+
+            chatMetadata = chatApp.ChatMetadata.query.filter_by(id=args['chatID']).first()
+            if args['userID'] == chatMetadata.userCreatorID:
+                chatMetadata.creatorLastViewedAt = datetime.now(timezone.utc)
+            else: # user is the matched user
+                chatMetadata.matchedLastViewedAt =  datetime.now(timezone.utc)
+            
+            chatApp.db.session.add(chatMetadata)
+            chatApp.db.session.commit()
+
 
     class BotResponseResource(Resource):
         def get(self):
@@ -221,4 +242,5 @@ def setupEndpoints(chatApp, api, socketio):
     api.add_resource(CreateChatResource, '/create-chat')
     api.add_resource(TopicChatMetadataResource, '/chatmetadata/<int:topicID>')
     api.add_resource(ChatMessagesResource, '/chats/<int:chatID>')
+    api.add_resource(LastViewedTimestamp, '/update-timestamp')
     api.add_resource(BotResponseResource, '/bot-response')
