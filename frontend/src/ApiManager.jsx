@@ -174,8 +174,9 @@ class ApiManager {
         let lastMessageTimestamp = chatResponse.lastMessageTimestamp;
         let hasUnreadMessages = false;
 
-        if (lastMessageTimestamp) {
-          if (!lastViewedAt || lastMessageTimestamp > lastViewedAt)
+        if (!lastViewedAt) {
+          hasUnreadMessages = true;
+        } else if (lastMessageTimestamp && lastMessageTimestamp > lastViewedAt) {
             hasUnreadMessages = true;
         }
 
@@ -211,7 +212,7 @@ class ApiManager {
     try {
       const messageResponse = await axiosInstance.get(`/chats/${chatID}`);
 
-      console.log('Message response:', messageResponse);
+      // console.log('Message response:', messageResponse);
 
       if (messageResponse.status === 200) {
         // Fetch all match infos
@@ -233,8 +234,6 @@ class ApiManager {
         });
 
         const topicInfos = await Promise.all(topicInfoPromises);
-
-        console.log('Match infos:', topicInfos);
 
         // Update messages with match info
         const messages = messageResponse.data.map((message, i) => {
@@ -307,6 +306,7 @@ class ApiManager {
           updatedTopics[topicResponse.data.id] = {
             title: topicName,
             chats: {},
+            hasUnreadChats: false,
           };
         }
         return updatedTopics;

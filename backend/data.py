@@ -1,5 +1,10 @@
-# Define User and Conversation database models here
+from datetime import datetime, timezone
+
+
 def setupModels(db):
+    """
+    Creates the SQLAlchemy models for the database
+    """
 
     class User(db.Model):
         __tablename__ = 'users'
@@ -41,7 +46,7 @@ def setupModels(db):
         messageNumber = db.Column(db.Integer, nullable=False)
         senderID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         text = db.Column(db.String(1024), nullable=False)
-        timestamp = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
+        timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
         topicID = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=True)
 
         chatmetadata = db.relationship('ChatMetadata', backref=db.backref('chats', lazy=True))

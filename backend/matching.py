@@ -58,6 +58,8 @@ class TopicMatcher:
            userID (str): The user ID associated with the topic.
            title (str): The title of the topic.
         """
+        if title == "Brainstorm": # skip Brainstorm chats
+            return
         self.topicInfo.append((topicID, userID, title))
         self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
@@ -83,7 +85,7 @@ class TopicMatcher:
         Returns:
            list: A list of dictionaries, each containing the topic name, topic ID, and user ID for a similar topic.
         """
-        D, I = self.index.search(embedding, 4*k)
+        D, I = self.index.search(embedding, 6*k)
         res = []
         for idx, score in zip(I[0], D[0]):
             topicID, userCreatorID, title = self.topicInfo[idx]
@@ -91,8 +93,6 @@ class TopicMatcher:
             if selectedTopicIDs and topicID in selectedTopicIDs:
                 continue
             if userCreatorID == userID:
-                continue
-            if title == 'Brainstorm':
                 continue
 
             print(f"Topic {topicID} has score {score}. \nTopic: {title}\n")

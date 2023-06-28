@@ -51,7 +51,8 @@ export const setupSocket = ({
           updatedChat.hasUnreadMessages = true;
         }
         console.log('Received message', chatID, currentChat, updatedChat);
-        console.log('equality test', chatID === currentChat);
+        console.log('equality test1', Number(chatID) === Number(currentChat));
+        console.log('equality test2', chatID === currentChat);
         console.log('types', typeof chatID, typeof currentChat);
         return currentChat;
       })
@@ -93,7 +94,7 @@ export const setupSocket = ({
 
         if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = { title: creatorTopicName, chats: {} };
         if (!updatedTopics[creatorTopicID].chats[chatID]) 
-          updatedTopics[creatorTopicID].chats[chatID] = { name: chatName, messages: [], hasUnreadMessages: false };
+          updatedTopics[creatorTopicID].chats[chatID] = { name: chatName, messages: [], hasUnreadMessages: true };
 
         return updatedTopics;
       });

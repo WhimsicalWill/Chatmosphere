@@ -90,6 +90,7 @@ body {
 }
 
 .topic, .chat, .brainstorm {
+  position: relative;
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
@@ -103,6 +104,15 @@ body {
 
 .topic:hover, .chat:hover, .brainstorm:hover {
   background-color: #ddd;
+}
+
+.unread-notification {
+  height: 8px;
+  width: 8px;
+  background-color: #2766da;
+  border-radius: 50%;
+  position: absolute;
+  left: 0px;
 }
 
 .active-topic, .active-chat, .active-brainstorm {
