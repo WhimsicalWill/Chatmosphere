@@ -79,6 +79,11 @@ body {
   color: #888;
 }
 
+.alert-icon {
+  margin-left: auto;
+  color: #888;
+}
+
 .topic-list, .chat-list {
   list-style-type: none;
   padding: 0;

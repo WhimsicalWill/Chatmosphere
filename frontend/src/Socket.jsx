@@ -6,7 +6,7 @@ export const setupSocket = ({
   userID,
   topics,
   setTopics,
-  currentChat,
+  setCurrentChat,
 }) => {
 
   socketRef.current = io('http://localhost:5000');
@@ -43,19 +43,25 @@ export const setupSocket = ({
         messages: [...prevTopics[topicID].chats[chatID].messages, { messageNumber, senderID, text, timestamp, topicInfo }],
       };
 
-      if (chatID === currentChat) {
-        // Update the last viewed timestamp in the backend
-        ApiManager.updateLastViewedAt(chatID, userID.current);
-      } else {
-        updatedChat.hasUnreadMessages = true;
-      }
+      setCurrentChat(currentChat => {
+        if (Number(chatID) === Number(currentChat)) {
+          // Update the last viewed timestamp in the backend
+          ApiManager.updateLastViewedAt(chatID, userID.current);
+        } else {
+          updatedChat.hasUnreadMessages = true;
+        }
+        console.log('Received message', chatID, currentChat, updatedChat);
+        console.log('equality test', chatID === currentChat);
+        console.log('types', typeof chatID, typeof currentChat);
+        return currentChat;
+      })
 
       const updatedTopics = {
         ...prevTopics,
         [topicID]: {
           ...prevTopics[topicID],
           title: prevTopics[topicID].title,
-          hasUnreadChats: updatedTopics[topicID].hasUnreadChats || updatedChat.hasUnreadMessages,
+          hasUnreadChats: prevTopics[topicID].hasUnreadChats || updatedChat.hasUnreadMessages,
           chats: {
             ...prevTopics[topicID].chats,
             [chatID]: updatedChat,
@@ -87,7 +93,7 @@ export const setupSocket = ({
 
         if (!updatedTopics[creatorTopicID]) updatedTopics[creatorTopicID] = { title: creatorTopicName, chats: {} };
         if (!updatedTopics[creatorTopicID].chats[chatID]) 
-          updatedTopics[creatorTopicID].chats[chatID] = { name: chatName, messages: [] }
+          updatedTopics[creatorTopicID].chats[chatID] = { name: chatName, messages: [], hasUnreadMessages: false };
 
         return updatedTopics;
       });

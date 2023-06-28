@@ -43,7 +43,7 @@ function App() {
     // Hack to check if the promises have resolved
     console.log('Trying to setup socket');
     if (typeof userID.current === 'number' && typeof brainstormChatID.current === 'string') {
-      const cleanup = setupSocket({ socketRef, userID, topics, setTopics, currentChat });
+      const cleanup = setupSocket({ socketRef, userID, topics, setTopics, setCurrentChat });
       console.log('Socket setup');
       return () => cleanup;
     }
@@ -103,7 +103,8 @@ function App() {
         name: botTopicInfo.topicName,
         userTopicID: userTopicInfo.topicID,
         otherUserTopicID: botTopicInfo.topicID,
-        messages: [] 
+        messages: [],
+        hasUnreadMessages: false,
       }
       return updatedTopics;
     });
@@ -172,9 +173,11 @@ function App() {
     
     if (availableChats.length > 0) {
       chatToFocus = availableChats[0];
+      ApiManager.updateAlerts(topics, topicID, chatToFocus, userID.current, setTopics)
     } else {
       chatToFocus = null;
     }
+
     // When opening a chat:
     setLastStateInfo({ topic: currentTopic, chat: currentChat, tab: currentTab });
     setCurrentTopic(topicID);
@@ -192,34 +195,8 @@ function App() {
         ApiManager.loadChatMessages(topics, setTopics, chatID);
       }
 
-      // Update the last viewed timestamp for this chat for the current user
-      ApiManager.updateLastViewedAt(chatID, userID.current);
-      
-      const chat = topics[topicID]?.chats[chatID];
-
-      // If this chat has unread messages, update unread attributes for topics/chats
-      if (chat?.hasUnreadMessages) {
-        chat.hasUnreadMessages = false;
-
-        setTopics(prevTopics => {
-          const updatedTopics = {...prevTopics};
-          updatedTopics[topicID].chats[chatID] = chat;
-          return updatedTopics;
-        });
-
-        const unreadChats = Object.values(topics[topicID]?.chats).filter(c => c.hasUnreadMessages);
-
-        // If all chats are read, set the hasUnreadChats attribute to false for the topic
-        if (unreadChats.length === 0) {
-          const topic = topics[topicID];
-          topic.hasUnreadChats = false;
-          setTopics(prevTopics => {
-            const updatedTopics = {...prevTopics};
-            updatedTopics[topicID] = topic;
-            return updatedTopics;
-          });
-        }
-      }
+      // Update the alerts for the chat (and possibly the topic)
+      ApiManager.updateAlerts(topics, topicID, chatID, userID.current, setTopics)
     }
 
     setLastStateInfo({ topic: currentTopic, chat: currentChat, tab: currentTab });

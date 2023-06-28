@@ -13,8 +13,7 @@ class TopicMatcher:
     Attributes:
         k (int): Number of similar topics to find.
         engine (str): The name of the embedding engine to use.
-        topicNames (list): List of topic names.
-        topicMap (dict): Mapping from topic ID to user ID.
+        topicInfo (list): List of topic info (topicID, userID, topicName).
         embeddings (list): List of embeddings for each topic.
         index (faiss.Index): Index for searching embeddings.
     """
@@ -30,8 +29,7 @@ class TopicMatcher:
         self.llm = llm
         self.k = k
         self.engine = engine
-        self.topicNames = []
-        self.topicMap = {}
+        self.topicInfo = []
         self.embeddings = []
         self.index = None
         self.queryHelper = AsymmetricQueryHelper(llm)
@@ -43,16 +41,16 @@ class TopicMatcher:
         Parameters:
            topicTuples (list): A list of tuples where each tuple contains a user ID and a topic title.
         """
-        for idx, info in enumerate(topicTuples):
-            topicID = idx + 1  # SQL IDs start at 1
-            userID, title = info
-            self.topicNames.append(title)
-            self.topicMap[topicID] = userID
+        for info in topicTuples:
+            topicID, _, title = info
+            if title == "Brainstorm": # skip Brainstorm chats
+                continue
+            self.topicInfo.append(info)
             self.embeddings.append(get_embedding(title, engine=self.engine))
             print(f"Added topic {topicID}")
         self.buildIndex()
 
-    def addTopic(self, userID, title):
+    def addTopic(self, topicID, userID, title):
         """
         Adds a single topic to the matcher.
 
@@ -60,9 +58,7 @@ class TopicMatcher:
            userID (str): The user ID associated with the topic.
            title (str): The title of the topic.
         """
-        numTopics = len(self.topicNames)
-        self.topicNames.append(title)
-        self.topicMap[numTopics + 1] = userID
+        self.topicInfo.append((topicID, userID, title))
         self.embeddings.append(get_embedding(title, engine=self.engine))
         self.buildIndex()
 
@@ -87,22 +83,23 @@ class TopicMatcher:
         Returns:
            list: A list of dictionaries, each containing the topic name, topic ID, and user ID for a similar topic.
         """
-        D, I = self.index.search(embedding, 3*k)
+        D, I = self.index.search(embedding, 4*k)
         res = []
         for idx, score in zip(I[0], D[0]):
-            topicID = idx + 1  # SQL IDs start at 1
+            topicID, userCreatorID, title = self.topicInfo[idx]
+            print('Search results: ', topicID, userCreatorID, title)
             if selectedTopicIDs and topicID in selectedTopicIDs:
                 continue
-            if self.topicMap[topicID] == userID:
+            if userCreatorID == userID:
                 continue
-            if self.topicNames[idx] == 'Brainstorm':
+            if title == 'Brainstorm':
                 continue
 
-            print(f"Topic {topicID} has score {score}. Topic:\n{self.topicNames[idx]}\n")
+            print(f"Topic {topicID} has score {score}. \nTopic: {title}\n")
             res.append({
-                "topicName": self.topicNames[idx],
-                "topicID": int(topicID),
-                "userID": self.topicMap[topicID]
+                "topicName": title,
+                "topicID": topicID,
+                "userID": userCreatorID
             })
             if len(res) == k:
                 break

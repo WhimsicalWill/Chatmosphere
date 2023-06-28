@@ -335,7 +335,6 @@ class ApiManager {
       return null;
     }
   }
-
   
   static async updateLastViewedAt(chatID, userID) {
     try {
@@ -345,6 +344,42 @@ class ApiManager {
       });
     } catch (error) {
       console.error('Failed to update timestamp', error);
+      return null;
+    }
+  }
+
+  static async updateAlerts(topics, topicID, chatID, userID, setTopics) {
+    try {
+      // Update the last viewed timestamp for this chat for the current user
+      ApiManager.updateLastViewedAt(chatID, userID);
+      
+      const chat = topics[topicID]?.chats[chatID];
+
+      // If this chat has unread messages, update unread attributes for topics/chats
+      if (chat?.hasUnreadMessages) {
+        chat.hasUnreadMessages = false;
+
+        setTopics(prevTopics => {
+          const updatedTopics = {...prevTopics};
+          updatedTopics[topicID].chats[chatID] = chat;
+          return updatedTopics;
+        });
+
+        const unreadChats = Object.values(topics[topicID]?.chats).filter(c => c.hasUnreadMessages);
+
+        // If all chats are read, set the hasUnreadChats attribute to false for the topic
+        if (unreadChats.length === 0) {
+          const topic = topics[topicID];
+          topic.hasUnreadChats = false;
+          setTopics(prevTopics => {
+            const updatedTopics = {...prevTopics};
+            updatedTopics[topicID] = topic;
+            return updatedTopics;
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update alerts', error);
       return null;
     }
   }

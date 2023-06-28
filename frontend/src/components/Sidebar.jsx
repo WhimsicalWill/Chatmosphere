@@ -101,7 +101,7 @@ export function SidebarContent({
         >
           <Topic className='topic-icon' /> {topics[topicID].title}
           {topics[topicID].hasUnreadChats && 
-          <NotificationsActiveIcon />}
+          <NotificationsActiveIcon className='alert-icon' />}
           <DeleteIcon 
             className='delete-icon' 
             onClick={(event) => {
@@ -130,7 +130,7 @@ const chatListSection = (
           >
             <ChatBubble className='chat-icon' /> {topics[currentTopic].chats[chatID].name}
             {topics[currentTopic].chats[chatID].hasUnreadMessages && 
-            <NotificationsActiveIcon />}
+            <NotificationsActiveIcon className='alert-icon' />}
             <DeleteIcon 
               className='delete-icon' 
               onClick={(event) => {

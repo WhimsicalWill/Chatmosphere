@@ -60,7 +60,7 @@ def setupEndpoints(chatApp, api, socketio):
 
         def post(self, userID):
             # POST method to create new topic for user
-            parser = reqparse.RequestParser()  
+            parser = reqparse.RequestParser()
             parser.add_argument('title', required=True, help="title cannot be blank!")
             args = parser.parse_args()
 
@@ -76,7 +76,7 @@ def setupEndpoints(chatApp, api, socketio):
             chatApp.db.session.commit()
 
             # add the topic to the matcher list
-            chatApp.matcher.addTopic(userID, args['title'])
+            chatApp.matcher.addTopic(newTopic.id, userID, args['title'])
 
             return {'id': newTopic.id}, 201
 

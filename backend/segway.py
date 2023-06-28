@@ -94,7 +94,7 @@ class TopicSegway:
         """
         print(f"Generating response for query {query}")
 
-        assert len(topics) == 2, f"Must provide two topics, not {len(topics)}"
+        assert len(topics) == 2, f"Must provide two topics, not {len(topics)}. Topics: {topics}"
 
         # Assuming topics is a list of three topicNames
         input = {

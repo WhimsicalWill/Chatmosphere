@@ -55,7 +55,7 @@ class ChatApplication:
             topics = self.Topic.query.all()  # grab all topics from the database
 
         print(f"Loading {len(topics)} topics")
-        topicTuples = [(topic.userID, topic.title) for topic in topics]
+        topicTuples = [(topic.id, topic.userID, topic.title) for topic in topics]
         self.matcher.addTopics(topicTuples)
         print("Added topics")
 

@@ -80,7 +80,7 @@ def add_new_message(data):
     chatMetadata = chatApp.ChatMetadata.query.filter_by(id=chatID).first()
     if chatMetadata:
         # update the timestamp of the last message
-        chatMetadata.lastMessageAt = newMessage.timestamp
+        chatMetadata.lastMessageTimestamp = newMessage.timestamp
 
         # determine which user sent the message and update their last viewed timestamp
         if senderID == chatMetadata.userCreatorID:
