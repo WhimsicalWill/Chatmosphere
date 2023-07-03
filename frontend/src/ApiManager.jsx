@@ -33,11 +33,9 @@ class ApiManager {
       });
 
       const topicMatches = botResponse.data.topicMatches;
-      const segwayResponses = botResponse.data.segwayResponses.split('\n');
-
-      const combined = segwayResponses.map((segwayResponse, i) => ({
-        text: segwayResponse,
-        topicInfo: topicMatches[i]
+      const combined = topicMatches.map((topicMatch) => ({
+        text: "",
+        topicInfo: topicMatch
       }));
 
       return combined;
@@ -59,6 +57,19 @@ class ApiManager {
       return null; // return null in the case of an error
     }
   }
+
+  static async createNewUser() {
+    try {
+      const response = await axiosInstance.post('/create-user');
+      const uuid = response.data.uuid;
+      console.log("response from backend is: ", response.data);
+      return uuid;
+    } catch (error) {
+      console.error('Failed to create a new user:', error);
+      return null;
+    }
+  }
+
 
   // TODO: make sure that the arguments are passed correctly
   // the creator is the person whose topic was in the DB first

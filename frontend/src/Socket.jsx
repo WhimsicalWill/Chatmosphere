@@ -10,13 +10,13 @@ export const setupSocket = ({
 }) => {
 
   socketRef.current = io('http://localhost:5000');
-  socketRef.current.emit('user-join', { userID: userID.current, room: userID.current });
+  socketRef.current.emit('user-join', { userID: userID, room: userID });
 
   // Iterate through all chats and join the rooms using chat-join
   Object.keys(topics).forEach(topicID => {
     const chats = topics[topicID].chats;
     Object.keys(chats).forEach(chatID => {
-      socketRef.current.emit('chat-join', { userID: userID.current, room: chatID });
+      socketRef.current.emit('chat-join', { userID: userID, room: chatID });
       console.log('Joined room', chatID);
     });
   });
@@ -46,14 +46,10 @@ export const setupSocket = ({
       setCurrentChat(currentChat => {
         if (Number(chatID) === Number(currentChat)) {
           // Update the last viewed timestamp in the backend
-          ApiManager.updateLastViewedAt(chatID, userID.current);
+          ApiManager.updateLastViewedAt(chatID, userID);
         } else {
           updatedChat.hasUnreadMessages = true;
         }
-        console.log('Received message', chatID, currentChat, updatedChat);
-        console.log('equality test1', Number(chatID) === Number(currentChat));
-        console.log('equality test2', chatID === currentChat);
-        console.log('types', typeof chatID, typeof currentChat);
         return currentChat;
       })
 

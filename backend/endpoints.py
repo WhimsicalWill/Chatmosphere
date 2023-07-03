@@ -12,6 +12,17 @@ def setupEndpoints(chatApp, api, socketio):
             return {'nextUserID': nextID}, 200
 
 
+    class CreateUserResource(Resource):
+        def post(self):
+            # POST method to create new user
+            # Create new user instance and add to the database
+            newUser = chatApp.User()
+            chatApp.db.session.add(newUser)
+            chatApp.db.session.commit()
+
+            return {'uuid': newUser.id }, 201
+
+
     class UserResource(Resource):
         def get(self, userID):
             user = chatApp.User.query.get(userID)
@@ -19,24 +30,6 @@ def setupEndpoints(chatApp, api, socketio):
                 return {'username': user.username}, 200
             else:
                 return {'error': 'chatApp.User not found'}, 404
-
-        def post(self):
-            # POST method to create new user
-            parser = reqparse.RequestParser()  
-            parser.add_argument('username', required=True, help="Username cannot be blank!")
-            args = parser.parse_args()
-
-            # Check if user already exists
-            user = chatApp.User.query.filter_by(username=args['username']).first()
-            if user:
-                return {'message': f'A user with username {args["username"]} already exists'}, 400
-
-            # Create new user instance and add to the database
-            newUser = chatApp.User(username=args['username'])
-            chatApp.db.session.add(newUser)
-            chatApp.db.session.commit()
-
-            return {'id': newUser.id }, 201
 
         def delete(self, userID):
             # DELETE method to delete user
@@ -106,8 +99,8 @@ def setupEndpoints(chatApp, api, socketio):
             parser = reqparse.RequestParser()
             parser.add_argument('creatorTopicID', type=int, required=True, help="Creator topic id cannot be blank!")
             parser.add_argument('matchedTopicID', type=int, required=True, help="Matched topic id cannot be blank!")
-            parser.add_argument('userCreatorID', type=int, required=True, help="User creator id cannot be blank!")
-            parser.add_argument('userMatchedID', type=int, required=True, help="User matched id cannot be blank!")
+            parser.add_argument('userCreatorID', type=str, required=True, help="User creator id cannot be blank!")
+            parser.add_argument('userMatchedID', type=str, required=True, help="User matched id cannot be blank!")
             args = parser.parse_args()
 
             newMetadata = chatApp.ChatMetadata(
@@ -226,18 +219,18 @@ def setupEndpoints(chatApp, api, socketio):
     class BotResponseResource(Resource):
         def get(self):
             topic = request.args.get('topic')
-            userID = int(request.args.get('userID'))
+            userID = request.args.get('userID')
             if topic:
                 topicMatches = chatApp.matcher.getSimilarTopics(topic, userID)
-                segwayResponses = chatApp.segway.getResponse(topic, topicMatches)
-                return {'topicMatches': topicMatches, 'segwayResponses': segwayResponses}, 200
+                return {'topicMatches': topicMatches}, 200
             else:
                 return {'error': 'No topic provided'}, 400
 
     api.add_resource(NextUserIDResource, '/next-user-id')
     # TODO: get rid of the NextID resources above
-    api.add_resource(UserResource, '/users/<int:userID>')
-    api.add_resource(UserTopicResource, '/user-topics/<int:userID>')
+    api.add_resource(CreateUserResource, '/create-user')
+    api.add_resource(UserResource, '/users/<string:userID>')
+    api.add_resource(UserTopicResource, '/user-topics/<string:userID>')
     api.add_resource(TopicResource, '/topics/<int:topicID>')
     api.add_resource(CreateChatResource, '/create-chat')
     api.add_resource(TopicChatMetadataResource, '/chatmetadata/<int:topicID>')

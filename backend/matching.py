@@ -118,18 +118,22 @@ class TopicMatcher:
         """
         queryEmbedding = get_embedding(query, engine=self.engine)
         queryEmbedding = np.array([queryEmbedding]).astype('float32')
+        originalResults = self.searchIndexWithQuery(queryEmbedding, userID, self.k)
+        return originalResults
 
-        alternateQueries = self.queryHelper.getAlternateQuery(query, numAlternates=5)
-        alternateEmbeddings = [get_embedding(alternateQuery, engine=self.engine) for alternateQuery in alternateQueries]
-        alternateEmbeddings = np.array(alternateEmbeddings).astype('float32')
+        # TODO: profile the timing of altnerate queries, and implement them efficiently
 
-        numDesiredOriginal = self.k // 2
-        numDesiredAlternate = self.k - numDesiredOriginal
+        # alternateQueries = self.queryHelper.getAlternateQuery(query, numAlternates=5)
+        # alternateEmbeddings = [get_embedding(alternateQuery, engine=self.engine) for alternateQuery in alternateQueries]
+        # alternateEmbeddings = np.array(alternateEmbeddings).astype('float32')
 
-        originalResults = self.searchIndexWithQuery(queryEmbedding, userID, numDesiredOriginal)
-        selectedTopics = set([topic['topicID'] for topic in originalResults])
+        # numDesiredOriginal = self.k // 2
+        # numDesiredAlternate = self.k - numDesiredOriginal
 
-        print(f"Alternate queries: {alternateQueries}\n")
-        alternateResults = self.searchIndexWithQuery(alternateEmbeddings, userID, numDesiredAlternate, selectedTopics)
+        # originalResults = self.searchIndexWithQuery(queryEmbedding, userID, numDesiredOriginal)
+        # selectedTopics = set([topic['topicID'] for topic in originalResults])
 
-        return originalResults + alternateResults
+        # print(f"Alternate queries: {alternateQueries}\n")
+        # alternateResults = self.searchIndexWithQuery(alternateEmbeddings, userID, numDesiredAlternate, selectedTopics)
+
+        # return originalResults + alternateResults

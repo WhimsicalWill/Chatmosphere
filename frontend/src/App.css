@@ -134,6 +134,10 @@ body {
   clear: both;
 }
 
+.chat-message-button {
+  width: 20em;
+}
+
 .chat-message.user {
   background-color: #d0d0d0;
   float: right;

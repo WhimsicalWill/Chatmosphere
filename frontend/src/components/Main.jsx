@@ -46,12 +46,13 @@ export function MainChat({
             messagesToRender.map((message, index) => (
             <div
               key={index}
-              className={`chat-message ${message.senderID === userID.current ? 'user' : 'other-user'}`}
+              className={`chat-message ${message.senderID === userID ? 'user' : 'other-user'}`}
             >
               {message.text}
-              {message.topicInfo && message.senderID !== userID.current &&
+              {message.topicInfo && message.senderID !== userID &&
               <div className="topic-match">
                 <Button
+                className="chat-message-button"
                 variant="contained"
                 color="primary"
                 startIcon={<AddIcon />}
